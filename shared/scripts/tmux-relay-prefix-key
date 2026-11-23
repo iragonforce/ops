@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# Forward the configured prefix action to the existing tmux relay. See tmux-relay-prefix-key(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Forward the configured prefix action to the existing tmux relay.
+Usage: tmux-relay-prefix-key  [ARGUMENT ...]
+
+Source: shared/scripts/tmux-relay-prefix-key in ~/ops
+See man tmux-relay-prefix-key for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+set -euo pipefail
+
+key="${1:?key required}"
+tmux_bin="${TMUX_BIN:-$(command -v tmux 2>/dev/null || true)}"
+
+if [[ -z "$tmux_bin" && -x /usr/bin/tmux ]]; then
+  tmux_bin=/usr/bin/tmux
+fi
+
+if [[ -z "$tmux_bin" && -x /opt/homebrew/bin/tmux ]]; then
+  tmux_bin=/opt/homebrew/bin/tmux
+fi
+
+if [[ -z "$tmux_bin" ]]; then
+  exit 127
+fi
+
+session_name="$("$tmux_bin" display-message -p '#S' 2>/dev/null || true)"
+window_index="$("$tmux_bin" display-message -p '#I' 2>/dev/null || true)"
+
+if [[ -z "$session_name" || -z "$window_index" ]]; then
+  exit 0
+fi
+
+target="${session_name}:${window_index}"
+relay_flag="$("$tmux_bin" show-window-options -v -t "$target" @relay_window 2>/dev/null || true)"
+relay_control="$("$tmux_bin" show-window-options -v -t "$target" @relay_control 2>/dev/null || printf 'outer')"
+
+if [[ "$relay_flag" == "on" && "$relay_control" == "inner" ]]; then
+  "$tmux_bin" send-prefix -t "$target"
+  sleep 0.05
+  "$tmux_bin" send-keys -t "$target" "$key"
+  exit 0
+fi
+
+case "$key" in
+  1|2|3|4|5|6|7|8|9)
+    "$tmux_bin" select-window -t "${session_name}:${key}" >/dev/null 2>&1 || true
+    ;;
+  n)
+    "$tmux_bin" next-window
+    ;;
+  p)
+    "$tmux_bin" previous-window
+    ;;
+  c)
+    "$tmux_bin" new-window
+    ;;
+  *)
+    exit 0
+    ;;
+esac

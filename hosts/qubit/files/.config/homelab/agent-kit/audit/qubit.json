@@ -1,0 +1,2840 @@
+{
+  "host": "qubit",
+  "config_files": [
+    {
+      "path": ".claude/CLAUDE.md",
+      "bytes": 5389,
+      "sha256": "13be89387e97ddef9526822bac1f5bcd6e1976895f311133a232c92341d66905"
+    },
+    {
+      "path": ".claude/settings.json",
+      "bytes": 1370,
+      "sha256": "5fb2b48100d43cd2169a463acebd631d8073b6185d77bf33fd1880a379f6fc64",
+      "keys": [
+        "permissions",
+        "hooks",
+        "statusLine",
+        "enabledPlugins",
+        "effortLevel",
+        "autoUpdatesChannel",
+        "skipDangerousModePermissionPrompt"
+      ],
+      "mcp_servers": [],
+      "enabled_plugins": {
+        "everything-claude-code@everything-claude-code": true,
+        "context-mode@claude-context-mode": true,
+        "context-mode@context-mode": true
+      },
+      "hook_events": [
+        "PreToolUse",
+        "PostToolUse",
+        "Stop",
+        "SessionStart"
+      ]
+    },
+    {
+      "path": ".claude/settings.local.json",
+      "bytes": 2900,
+      "sha256": "5bafc08d38785e1a8a123ef5d5c8b4655539835d08908adf02e4bda9667c8aa6",
+      "keys": [
+        "permissions",
+        "enableAllProjectMcpServers",
+        "enabledMcpjsonServers",
+        "outputStyle"
+      ],
+      "mcp_servers": [],
+      "enabled_plugins": null,
+      "hook_events": []
+    },
+    {
+      "path": ".codex/AGENTS.md",
+      "bytes": 4253,
+      "sha256": "672364e1a969c80fe1cd47124ec8e2f98bc9a4a10ae54c0c9de7385cc340d21f"
+    },
+    {
+      "path": ".codex/config.toml",
+      "bytes": 8171,
+      "sha256": "c2754f237bfb27f0adfab3115eab3eb8ca61d0957180caa293f5edc022e33e2b",
+      "keys": [
+        "model",
+        "model_reasoning_effort",
+        "approval_policy",
+        "sandbox_mode",
+        "approvals_reviewer",
+        "notify",
+        "projects",
+        "notice",
+        "tui",
+        "marketplaces",
+        "plugins",
+        "desktop",
+        "features",
+        "mcp_servers",
+        "shell_environment_policy",
+        "hooks",
+        "skills"
+      ],
+      "mcp_servers": [
+        {
+          "name": "computer-use",
+          "command": "SkyComputerUseClient",
+          "package_args": [],
+          "url_host": null,
+          "port": null,
+          "transport": null,
+          "env_names": [],
+          "enabled": false
+        },
+        {
+          "name": "node_repl",
+          "command": "node_repl",
+          "package_args": [],
+          "url_host": null,
+          "port": null,
+          "transport": null,
+          "env_names": [
+            "BROWSER_USE_AVAILABLE_BACKENDS",
+            "BROWSER_USE_CODEX_APP_BUILD_FLAVOR",
+            "BROWSER_USE_CODEX_APP_VERSION",
+            "BROWSER_USE_TINYSKY_ENABLED",
+            "CODEX_CLI_PATH",
+            "CODEX_HOME",
+            "NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER",
+            "NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME",
+            "NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE",
+            "NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS",
+            "NODE_REPL_NODE_MODULE_DIRS",
+            "NODE_REPL_NODE_PATH",
+            "NODE_REPL_TRUSTED_CODE_PATHS",
+            "NODE_REPL_TRUSTED_SERVICES",
+            "SKY_CUA_SERVICE_PATH"
+          ],
+          "enabled": null
+        }
+      ],
+      "enabled_plugins": null,
+      "hook_events": [
+        "state"
+      ]
+    },
+    {
+      "path": ".local/bin/tmux-auto-start",
+      "bytes": 1423,
+      "sha256": "97f41952cd95410b2349eb83677e02ca031fd5b315f8723992510ed3b4d3bbde"
+    },
+    {
+      "path": ".local/bin/tmux-bootstrap-session",
+      "bytes": 1702,
+      "sha256": "38d18c1a5ef2cbd36459aa556b60eda15e442aaf1b510f3db7f9a813ab962d4c"
+    },
+    {
+      "path": ".local/bin/tmux-client-refresh",
+      "bytes": 348,
+      "sha256": "a7a5b70081ac64212de02be06d2d9c0701ce7813c6257ea5ad95bc683e85a43c"
+    },
+    {
+      "path": ".local/bin/tmux-ensure-layout",
+      "bytes": 2747,
+      "sha256": "0320f815dd93bfdf966492e208e98a31385ad51c29a6cf2da4a56e7ab70cb868"
+    },
+    {
+      "path": ".local/bin/tmux-managed-nvim",
+      "bytes": 1084,
+      "sha256": "59a85e43918440299031f77dfa369c736d48465b48a60278e9951ef4d45c320c"
+    },
+    {
+      "path": ".local/bin/tmux-managed-spf",
+      "bytes": 261,
+      "sha256": "15237c7f134d0f1b5333132497728f73f415f81e9d3488fd80d0a5077be802ca"
+    },
+    {
+      "path": ".local/bin/tmux-refresh-status",
+      "bytes": 1846,
+      "sha256": "2b527ab7cbbc4736aab2809a465a025a8f054d5674f66283247a2d39d161e429"
+    },
+    {
+      "path": ".local/bin/tmux-relay-inner-status",
+      "bytes": 1778,
+      "sha256": "fcd355c2c7209e0ab2f3ae12516d6531512c27f90bcc8ac2aaa14f5a35efbf30"
+    },
+    {
+      "path": ".local/bin/tmux-relay-prefix-key",
+      "bytes": 1272,
+      "sha256": "1392520d89891f045b150038e57d1213eb6fc0ddb1fbbfe9fb9e059f8e988104"
+    },
+    {
+      "path": ".local/bin/tmux-relay-toggle-control",
+      "bytes": 1539,
+      "sha256": "64c29a7dab5cbb0c17ba5006abdc8483b1cef37d4efd113d7420f993da1f2676"
+    },
+    {
+      "path": ".local/bin/tmux-ssh",
+      "bytes": 1871,
+      "sha256": "720bdccb31f0df233b515c036028a938251df12f7e596e7e2aad82cb22105a60"
+    },
+    {
+      "path": ".local/bin/tmux-ssh-relay",
+      "bytes": 3199,
+      "sha256": "f5027fd0d091a69b2427a8f7c1dbcb6ce122f55ba368c6574651e7905777f7ae"
+    },
+    {
+      "path": ".local/bin/tmux-unwind-or-home",
+      "bytes": 785,
+      "sha256": "2a45c09640e841a5273bcbfbc2e8fda8d9250701fc42576c23e7a57cc96cb8ca"
+    },
+    {
+      "path": ".tmux.conf",
+      "bytes": 2815,
+      "sha256": "1059ba057f99dbd6b2113aca21f266f381cd13e519b4e4497ffe52061d036673"
+    },
+    {
+      "path": ".zprofile",
+      "bytes": 208,
+      "sha256": "a71b89043dfc4f89f9850b102c779540550f8416288b9fe1fe493ee3d5dddf5a"
+    },
+    {
+      "path": ".zshrc",
+      "bytes": 4671,
+      "sha256": "d8392bdbcb134b0d8a9743cf6a6f7c37487605b11cb622b5d1bb4d7e00ccf481"
+    }
+  ],
+  "skills": [
+    {
+      "path": ".codex/skills/conductor-setup/SKILL.md",
+      "sha256": "bee51216b38b7d14a36d76c92c855fc8ee5ed3bc6d12821ecb9ddbe8799935b3",
+      "bytes": 38149
+    },
+    {
+      "path": ".codex/skills/hatch-pet/SKILL.md",
+      "sha256": "ccfabd5d761faa721586f8793dd93bdd735e2a2c07099a5d593a7e31286e58f3",
+      "bytes": 85522
+    },
+    {
+      "path": ".codex/skills/update-conductor/SKILL.md",
+      "sha256": "f371869f28601969f12872ad60ded3c10f701119f442b6e0cd0328b99fd4471d",
+      "bytes": 1798
+    },
+    {
+      "path": ".codex/skills/playwright/SKILL.md",
+      "sha256": "0ffaabcc8e0990627c4725f18bf1c7955534a796c1c199e872909de2013ce6a8",
+      "bytes": 3771
+    },
+    {
+      "path": ".codex/skills/conductor-status/SKILL.md",
+      "sha256": "d6e619ed30128c58e7145314b5732ed091d52a0b76bb2ffa7b65c003b908b2d3",
+      "bytes": 3630
+    },
+    {
+      "path": ".codex/skills/conductor-revert/SKILL.md",
+      "sha256": "a4c74c1c349d73b0174e67b273502c5f7edfd07bc0910e57b0d54a5151671971",
+      "bytes": 8861
+    },
+    {
+      "path": ".codex/skills/conductor-newTrack/SKILL.md",
+      "sha256": "ba71f73232499982dfbc34634f687409dae6c8881e26d5107460c408b2a6a1f9",
+      "bytes": 10601
+    },
+    {
+      "path": ".codex/skills/conductor-implement/SKILL.md",
+      "sha256": "890423234626788a0215ca9c6e7cdb1bb3a9ecce90ba7880720c52a628d6b7c6",
+      "bytes": 13476
+    },
+    {
+      "path": ".codex/skills/.system/review-agent/SKILL.md",
+      "sha256": "07079efd0dc76f05fade424e5dfb048dce1de2df7626e1a4f56292a4f3f92228",
+      "bytes": 2661
+    },
+    {
+      "path": ".codex/skills/.system/skill-creator/SKILL.md",
+      "sha256": "6656e54755638e8efcf275a472b9672eaa8a9a1b9e59dc210e275b03b59e1e66",
+      "bytes": 15311
+    },
+    {
+      "path": ".codex/skills/.system/skill-installer/SKILL.md",
+      "sha256": "d68b77e5bbb34dedab89d134da52855f140fc4b4299b80104f534e3b9e98f8ee",
+      "bytes": 3367
+    },
+    {
+      "path": ".codex/skills/.system/openai-docs/SKILL.md",
+      "sha256": "aa6829e21df2223167c85d2e49b6337a7345c84c1033f1ec10182c7882b36d45",
+      "bytes": 5437
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/SKILL.md",
+      "sha256": "681ddb4ad6d06a2acc78a3535b583f8d0c1ea800ecda3d56370d3310fd2cd4ba",
+      "bytes": 19201
+    },
+    {
+      "path": ".codex/plugins/cache/openai-bundled/visualize/1.0.49/skills/visualize/SKILL.md",
+      "sha256": "37a648f231b3716956e5b534bff1eef36195b5f7261ccd78e913a9ad5c961f0f",
+      "bytes": 33386
+    },
+    {
+      "path": ".codex/plugins/cache/openai-primary-runtime/documents/26.1013.11914/skills/documents/SKILL.md",
+      "sha256": "c9b9ba61ac15f20a600220bc10a380c7753992bbd3c323bfe33fae864adefc21",
+      "bytes": 41564
+    },
+    {
+      "path": ".codex/plugins/cache/openai-primary-runtime/presentations/26.1013.11914/skills/presentations/SKILL.md",
+      "sha256": "bb3726eff35cb82241fd2c3b09fcdb18cc3bf3daefddf8df929d2e0bd4d2af2f",
+      "bytes": 29794
+    },
+    {
+      "path": ".codex/plugins/cache/openai-primary-runtime/pdf/26.1013.11914/skills/pdf/SKILL.md",
+      "sha256": "a6e20f4ae66364a06d577dd51e0ce66ee2ef955be129cbe195e0a27f403daaf8",
+      "bytes": 7809
+    },
+    {
+      "path": ".codex/plugins/cache/openai-primary-runtime/spreadsheets/26.1013.11914/skills/spreadsheets/SKILL.md",
+      "sha256": "dd22f4bae5bf3f76457c80eb1f079ba7a47b87db52b144edeb1e5f4585dc8f34",
+      "bytes": 66066
+    },
+    {
+      "path": ".codex/plugins/cache/openai-primary-runtime/spreadsheets/26.1013.11914/skills/excel-live-control/SKILL.md",
+      "sha256": "1c27488fa2a59ce2cc8925a12527ee9c7aa40ccf0701f3f2719ab17858586e8b",
+      "bytes": 71942
+    },
+    {
+      "path": ".codex/plugins/cache/openai-primary-runtime/template-creator/26.1013.11914/skills/template-creator/SKILL.md",
+      "sha256": "f1d14fd2847a2e879611a8b8f872f5dc4676a0607958d015274d2dc61e812deb",
+      "bytes": 19036
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated/github/f78e3ad49297672a905eb7afb6aa0cef34edc79e/skills/github/SKILL.md",
+      "sha256": "81dbdd90934fe86a79ddc4790fd211e5fca866302a74090ad153395f56f2bd42",
+      "bytes": 4356
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated/github/f78e3ad49297672a905eb7afb6aa0cef34edc79e/skills/gh-fix-ci/SKILL.md",
+      "sha256": "7621a3560d788fb221d25f9753233fe0c393c5cfe63167c88b11f027c277b1f8",
+      "bytes": 4326
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated/github/f78e3ad49297672a905eb7afb6aa0cef34edc79e/skills/yeet/SKILL.md",
+      "sha256": "93a0bcbc834c9b3ad6a8965c1a273b237b6d226e870cd0c16e08e87bc8769814",
+      "bytes": 4019
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated/github/f78e3ad49297672a905eb7afb6aa0cef34edc79e/skills/gh-address-comments/SKILL.md",
+      "sha256": "c1ebc337357402f7faabafe712e0c463981a65f736453efe52abd305bcb74769",
+      "bytes": 3536
+    },
+    {
+      "path": ".codex/plugins/cache/context-mode/context-mode/1.0.169/skills/context-mode/SKILL.md",
+      "sha256": "ce26cb01de7a116eab256f916620935f029e850771f3fb6cb7d40a3ce8d1f7ff",
+      "bytes": 16683
+    },
+    {
+      "path": ".codex/plugins/cache/context-mode/context-mode/1.0.169/skills/ctx-purge/SKILL.md",
+      "sha256": "1961df70dcdd82f556c1c5219a40359632f807a0c6720a150d96a30e86c6bddc",
+      "bytes": 2698
+    },
+    {
+      "path": ".codex/plugins/cache/context-mode/context-mode/1.0.169/skills/ctx-insight/SKILL.md",
+      "sha256": "20e8ff66d05f9456ae2247f1ce393cc2a678606265927981baf6ab3e116aa841",
+      "bytes": 918
+    },
+    {
+      "path": ".codex/plugins/cache/context-mode/context-mode/1.0.169/skills/ctx-upgrade/SKILL.md",
+      "sha256": "e9c0d55a31172ad943135c450bc26386b3d9ac0341d108cf20e79a040e9f8903",
+      "bytes": 1163
+    },
+    {
+      "path": ".codex/plugins/cache/context-mode/context-mode/1.0.169/skills/ctx-search/SKILL.md",
+      "sha256": "01fa13ff339912159f50aa5bc6d6d8f3c7291e8510616b01a4934ca78bb02c0c",
+      "bytes": 999
+    },
+    {
+      "path": ".codex/plugins/cache/context-mode/context-mode/1.0.169/skills/ctx-doctor/SKILL.md",
+      "sha256": "874de5d079a4df1e88b87715678f28296332645e600b464d5592725829d82e2c",
+      "bytes": 1050
+    },
+    {
+      "path": ".codex/plugins/cache/context-mode/context-mode/1.0.169/skills/ctx-stats/SKILL.md",
+      "sha256": "3babe498983749f769a39f3635be8685efb56a36c0fa2f520c53dbb81dda1da6",
+      "bytes": 1165
+    },
+    {
+      "path": ".codex/plugins/cache/context-mode/context-mode/1.0.169/skills/ctx-index/SKILL.md",
+      "sha256": "5e49548597a6496e8cdb9a901b66c11a7b1db0ebcd341d3ad3d10cd05f1cd385",
+      "bytes": 1310
+    },
+    {
+      "path": ".codex/plugins/cache/context-mode/context-mode/1.0.169/configs/antigravity-cli/skills/context-mode/SKILL.md",
+      "sha256": "0f1f85b5888c17810f919c4b044a50bd9f4ac26e0b573b130ca56dd25ecac231",
+      "bytes": 3398
+    },
+    {
+      "path": ".codex/plugins/cache/context-mode/context-mode/1.0.169/configs/copilot-cli/skills/context-mode/SKILL.md",
+      "sha256": "653fdbab00b19243805b8d9771725804d9d3ebfc0cf9d738d15fd6b2ca5d0564",
+      "bytes": 1722
+    },
+    {
+      "path": ".codex/plugins/cache/context-mode/context-mode/1.0.169/.claude/skills/context-mode-ops/SKILL.md",
+      "sha256": "a384cf729a728c619417d94a2d925d3c77caba4d716f177e86859301c9f86bbb",
+      "bytes": 24271
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/work-pets/0.1.6/skills/update-pet/SKILL.md",
+      "sha256": "c63c98d67b6ad781a72a8f9837ba1fb5e2d2a8054a2562e4025890a97d8a0e67",
+      "bytes": 4272
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/work-pets/0.1.6/skills/pets/SKILL.md",
+      "sha256": "1bf5d45fd6a6390aab777229293fb05cef7cf898aac882f8955e40c378e52fcd",
+      "bytes": 3552
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/work-pets/0.1.6/skills/create-pet/SKILL.md",
+      "sha256": "841354fb8116f8fdfd3b643b30828f5180196c594d3fed9b669b948b88892af1",
+      "bytes": 17353
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/google-drive/0.1.20/skills/google-docs/SKILL.md",
+      "sha256": "272fb227fb084a0edb435582703c432a0a11d930cb63891424d0cda30f880798",
+      "bytes": 7621
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/google-drive/0.1.20/skills/google-drive-comments/SKILL.md",
+      "sha256": "a3077375a8f7558b9e052c98047747b8a4a1a90a9a90b552009c28fcdadfe94a",
+      "bytes": 4315
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/google-drive/0.1.20/skills/google-sheets/SKILL.md",
+      "sha256": "1851109d8f2c182236d28db136fb161d30c85287e5bc4fa79cf137673184c58d",
+      "bytes": 9420
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/google-drive/0.1.20/skills/google-drive/SKILL.md",
+      "sha256": "dabae8a192c861b76cf7b5742bdf14f8ed35e67d8e6cacfd5f746ffbefd6da5c",
+      "bytes": 8383
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/google-drive/0.1.20/skills/google-slides/SKILL.md",
+      "sha256": "f85bd1d7080becf8c043a3646b6c3a53fbcd6d2a77c62a15112b8d89e01a4b83",
+      "bytes": 15959
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/sites/1.0.0/skills/sites/SKILL.md",
+      "sha256": "5a942cda3c1a22a94b71f24ace3e3489b6e5dd72b1ec9da69d17fd400031647a",
+      "bytes": 11890
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/plugin-management/0.1.0/skills/plugin-management/SKILL.md",
+      "sha256": "653841cc21205269f08b0ce135891e1518dac616a766bcfb0b57d788d3f68b10",
+      "bytes": 2983
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-strategy-memorandum/SKILL.md",
+      "sha256": "51d7882ac94e8e57b323394825728c33925af878806e37277217c2dc12a912e5",
+      "bytes": 1446
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-investment-committee-memo/SKILL.md",
+      "sha256": "68abd08cfe5e073e3c446a3f675f44c5bf98f57434dba679e8acd8a763379a8b",
+      "bytes": 1496
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-operating-review/SKILL.md",
+      "sha256": "6d63c5cd025ffe936e7bab5db3023672bbaec26af55c2bb8b057d38c202c9c32",
+      "bytes": 1483
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-financial-budget/SKILL.md",
+      "sha256": "c0b6b7a62a15597aaf2b1ec679e21da48f533b756127f0aef957cdfe9f3da738",
+      "bytes": 1486
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-operating-calendar/SKILL.md",
+      "sha256": "33bb660791a0b9a21628a42c34934932220203b6aabd84e98cb1b45327d0384c",
+      "bytes": 1500
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-project-kickoff/SKILL.md",
+      "sha256": "aa893ebd89e7c8d1db4261d01cc2b1add35d78d00785871ccaaa5fc8db783ec9",
+      "bytes": 1463
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-simple-dark-mode/SKILL.md",
+      "sha256": "b7c8d0c05f75878b9bc21e56a57c41ec1aa29700aca0a24822be0f9f1bd53207",
+      "bytes": 1478
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-design-report/SKILL.md",
+      "sha256": "563722f53854e606f8a9f87e37e72d7ef70a22d46d5836b8e4d6abfb1b79e9e0",
+      "bytes": 1437
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-legal-memorandum/SKILL.md",
+      "sha256": "51fb9d21baf6119c4ccb1903638a6bac0e859210de63460fffa7025d52e997e0",
+      "bytes": 1434
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-experiment-analysis/SKILL.md",
+      "sha256": "0b05effc47df0a14f8e0c3e3597e6722224747435546385d38a2cae279bd20b9",
+      "bytes": 1456
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-project-tracker/SKILL.md",
+      "sha256": "d97d5be20189b7f53dd269b6e1c5f694eaf53e5a72f6559fcb1578911b7cda82",
+      "bytes": 1484
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-system-design/SKILL.md",
+      "sha256": "87f7b7ed1b0d8410f5e5971cd7f7db9a4165e2f37069e97e52dbfb469b75a57c",
+      "bytes": 1445
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-three-statement-forecast/SKILL.md",
+      "sha256": "74f4a5cccec0107b861548b157e04c51d9b58ec13a990c86394b4c529b8ecf41",
+      "bytes": 1552
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-simple-light-mode/SKILL.md",
+      "sha256": "7c68430c6cf57b55b457d4735dbd1a46b889bef135a32222902dd0848b6e1752",
+      "bytes": 1487
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-team-alignment/SKILL.md",
+      "sha256": "26d7cafdcd1899a937b325c5d02ac57c162d45002153be33a934d35f81eb6110",
+      "bytes": 1473
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-business-review/SKILL.md",
+      "sha256": "27721fc1d67d1b41949caa75ac8f94f81952ff124406878af6524047929e60d2",
+      "bytes": 1475
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-market-trends-report/SKILL.md",
+      "sha256": "d58d019b89cb6f292ac3ab991d561489eef477ff53ce05fb024a0c936f5af26a",
+      "bytes": 1498
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-analytics-dashboard/SKILL.md",
+      "sha256": "cf5360fd8b197673bb237c52c603c97fa319c875c3dfa2cd8efff52d4422f513",
+      "bytes": 1497
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-sales-pipeline/SKILL.md",
+      "sha256": "15cfeeedf440021f16ed3f3ad8c7c1ef6d48898b9447741e223d2fb41cfc9800",
+      "bytes": 1482
+    },
+    {
+      "path": ".codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-minimal-letterhead/SKILL.md",
+      "sha256": "880ef094d4d0c89a7bde5ce9bbe4086625c186651e9e6efc8ba8bdd7cc77f9d5",
+      "bytes": 1470
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/brand-voice/SKILL.md",
+      "sha256": "9c23f871aa77a7d64d2a005fe0849a1380de2a4098d81ec73d13c468e556a59e",
+      "bytes": 3636
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/benchmark/SKILL.md",
+      "sha256": "879f43d7fade4d436a62bdd32714ceb52bde7060bcba1e45b7b864d3b209b98d",
+      "bytes": 2331
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/knowledge-ops/SKILL.md",
+      "sha256": "a1fecc085d516783759db77a9a907b2d60611cc56ba5470a2ea60e5fb57f34c2",
+      "bytes": 6740
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/django-security/SKILL.md",
+      "sha256": "d5d174690a16dca99798693f47b5df17478bfc5ff0f91684caf56dc1e9bef8b5",
+      "bytes": 15805
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/compose-multiplatform-patterns/SKILL.md",
+      "sha256": "c81cbd0422f70719f8a9da87c653b0b484d02747d1c54d3467d332ccbedcecc9",
+      "bytes": 8120
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/customer-billing-ops/SKILL.md",
+      "sha256": "5cad081b48466756f39cffe57584c5c8e378384181ebf157737cb2676cc73994",
+      "bytes": 4277
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/canary-watch/SKILL.md",
+      "sha256": "c00a9bcc1ba1f5ff79ffc39739556aff8d245ccb9ed661c9116d8c29ec4964cd",
+      "bytes": 2468
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/golang-patterns/SKILL.md",
+      "sha256": "f36a89926fab1e895e7e2e2522e4104e1d7b07452244f31ff09ef1eeb069495c",
+      "bytes": 14029
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/kotlin-exposed-patterns/SKILL.md",
+      "sha256": "e5c29d23513adba9f047ca31422be0c814678751e4501466de6f30a044cd163f",
+      "bytes": 22007
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/energy-procurement/SKILL.md",
+      "sha256": "327e576abe1137eef72f6a42c4e30324ca78429fa89a7f60e9ee906dae993aa3",
+      "bytes": 30077
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/django-patterns/SKILL.md",
+      "sha256": "267eb89f537a6626937d60fc732675f685b11209fa9025599c80e0f322e9a503",
+      "bytes": 21025
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/code-tour/SKILL.md",
+      "sha256": "94253ce76b0aa5064e859b6393d0c80cbaa002fa349598b8e43d3e27e747dcdb",
+      "bytes": 6716
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/ecc-tools-cost-audit/SKILL.md",
+      "sha256": "5cc4bb2dbf0a448dfb0a633f1bc1e3c1292e9bc599999c8fe848fda8d9d7f73c",
+      "bytes": 6484
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/ui-demo/SKILL.md",
+      "sha256": "b5b2bac1adbd3ffc0b34f589ff26b06ececc7d9f896c5a305b89aa834b0bb254",
+      "bytes": 15244
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/bun-runtime/SKILL.md",
+      "sha256": "2929d1f227962d86bfb2f0e45efd81590cfc90aeaad5b449f4630207e4e07204",
+      "bytes": 2596
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/laravel-security/SKILL.md",
+      "sha256": "bffcb2824e7d0c4f6cd7728aa0d64aa81508e40e3c367ecf1ba2876c40c15e05",
+      "bytes": 7442
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/architecture-decision-records/SKILL.md",
+      "sha256": "be3ce03e4ad61f5a652cfe27c666aad048d883ed00d3ef057664de8128cd0bfb",
+      "bytes": 7119
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/swift-concurrency-6-2/SKILL.md",
+      "sha256": "f12ca9feeed25834fc06f59a70c679629962a4653c8354ecd833b68403da652c",
+      "bytes": 8010
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/pytorch-patterns/SKILL.md",
+      "sha256": "22b76f559f17d4b0e44eda71d353065e5da181203d165546edb08c16cc362d85",
+      "bytes": 11659
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/python-testing/SKILL.md",
+      "sha256": "b304a8c503af32644f97a889c5545ee4f90e91980462ad4ce33fee3dea6f414f",
+      "bytes": 18862
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/x-api/SKILL.md",
+      "sha256": "eeee3fc92c629ceba838bbc77a3af6d31fe6833416d5e7e2e217ed6b90144bb9",
+      "bytes": 6458
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/kotlin-testing/SKILL.md",
+      "sha256": "46f9f7da6a6391038c11ea0c3d8ca8275077d83a3e651963c25a1f73b381e4f4",
+      "bytes": 20691
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/docker-patterns/SKILL.md",
+      "sha256": "6deb8e45b322481036cbf21c0ea61fb1427b0f47a01e675068ccdba93a1a2164",
+      "bytes": 8251
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/social-graph-ranker/SKILL.md",
+      "sha256": "6f02101110dab50dfea97019b43d84d039d88543cdc362aaf52c3bbd51f3c670",
+      "bytes": 4144
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/laravel-patterns/SKILL.md",
+      "sha256": "b69b40b57bbf9bb106ed07c6f1192be9fc30ba6c63bc51bfb86fc1fdc6cd5e0a",
+      "bytes": 10539
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/nanoclaw-repl/SKILL.md",
+      "sha256": "a917d56baef854638fd6a33c9d9ce4f819d3dd128286514ed28807d911935d27",
+      "bytes": 853
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/iterative-retrieval/SKILL.md",
+      "sha256": "1f8f1498c023961760ded33db22964645d23b100eeba531e3318a6072765997f",
+      "bytes": 6681
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/springboot-patterns/SKILL.md",
+      "sha256": "7ecbb9ce50282c9c1cf71e3e9245d077036c3f72bd589418d8dd573118faa0e5",
+      "bytes": 9919
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/agent-eval/SKILL.md",
+      "sha256": "200179d515f9961a469f30a4fa072b08d1527a3906ba46162b64a6011ce3c57d",
+      "bytes": 4526
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/postgres-patterns/SKILL.md",
+      "sha256": "2b07d5f7de1b68a93c8b25d093be2f0e9bfde11b8f488bd5433f0bac15415074",
+      "bytes": 3808
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/email-ops/SKILL.md",
+      "sha256": "0f48302235ffcbc341825f54d7d51ff11b0a93f2fc3d939d0151b98b2750b1e4",
+      "bytes": 3433
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/cpp-testing/SKILL.md",
+      "sha256": "84e58979240d0387d55dd5bf0d4ba9976733098e2f839f10b17251797eae7e50",
+      "bytes": 9163
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/team-builder/SKILL.md",
+      "sha256": "b2231d965f120e078e6b8e59d33575c9d5927d49ccc84c208c3e297031b78ce5",
+      "bytes": 7172
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/enterprise-agent-ops/SKILL.md",
+      "sha256": "27edc796df2bf30b611b05ca443434bf65bfc6fde18c94cd16ec41357f4c8ac5",
+      "bytes": 1204
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/clickhouse-io/SKILL.md",
+      "sha256": "9d5612f3bba35801bba1a24259129c625331db5c3e5056e4957fe4d15dde092c",
+      "bytes": 10429
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/videodb/SKILL.md",
+      "sha256": "85e9391e62346721a6248c952ff196e966f2907991a56e98b7d760585893b263",
+      "bytes": 14131
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/autonomous-loops/SKILL.md",
+      "sha256": "25431f497ec2b2b449ad280070e5f27566c06c2f39d9e1538996f92deee3d2f4",
+      "bytes": 24726
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/liquid-glass-design/SKILL.md",
+      "sha256": "024aa207eb3d4d31d868954a7352a40b78c61f2fd007ab8b452afb6217070f84",
+      "bytes": 9045
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/springboot-security/SKILL.md",
+      "sha256": "7bfabd0a87dd3abda4af572e913a84bd2470a876490799d3bf024e22a6870885",
+      "bytes": 8019
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/connections-optimizer/SKILL.md",
+      "sha256": "ca898570a254878ae2dd81dc6a160095c38c126f77e71131a675abd4419d3692",
+      "bytes": 5465
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/swift-actor-persistence/SKILL.md",
+      "sha256": "dddfd2f5da0c3fa674dfdd9c54abecb004be1259cb2a892b38dd703f02fbb6aa",
+      "bytes": 4798
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/council/SKILL.md",
+      "sha256": "fd578d63aace6efb41f311a8692cb0f75e866ff9b774cadcdd4bec2dc9992053",
+      "bytes": 6346
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/coding-standards/SKILL.md",
+      "sha256": "f856f758c97fb62ddbfbd75d4570e03bf4ed04c258d13756fecdb313a04cc8d9",
+      "bytes": 11805
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/csharp-testing/SKILL.md",
+      "sha256": "3b4058cc7964a234eb0a7db985e9c5e8e0de8cacfe2abc8693be0fb171f85d04",
+      "bytes": 8619
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/lead-intelligence/SKILL.md",
+      "sha256": "784d1f1d730366625ac949e6a039e852c4385f13be8152e743d58014575fd8dd",
+      "bytes": 11765
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/mcp-server-patterns/SKILL.md",
+      "sha256": "8da7edb0647f1015c5d70951d66a8f9dd2108726eb1cf9949ff2874849c4a880",
+      "bytes": 3867
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/eval-harness/SKILL.md",
+      "sha256": "0b1933f5532df4bcc750d8799b7b33037e66c5d41f87d2953065868d08981926",
+      "bytes": 6494
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/healthcare-emr-patterns/SKILL.md",
+      "sha256": "d7399a6243565f233a89feaad47db924bee20271acbcb37608868dca3370997d",
+      "bytes": 6613
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/returns-reverse-logistics/SKILL.md",
+      "sha256": "93f2bab5f391615e44f3732acf1bdc043d42cd538df819eea92cd4f31def1ab1",
+      "bytes": 24699
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/api-connector-builder/SKILL.md",
+      "sha256": "969ff3c71153a5f859787d3216d85af500842029fb63303a6bc833a0480b2ed5",
+      "bytes": 2651
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/cost-aware-llm-pipeline/SKILL.md",
+      "sha256": "09eb41fdfa081cd09d3843449275d80ae1c56938a459061d4d3faac3b13012cd",
+      "bytes": 5718
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/nextjs-turbopack/SKILL.md",
+      "sha256": "f65da15aabeb9dca7ae08525739e72ab16e79a78ff4004f7cab6ad2de1c2a79b",
+      "bytes": 2162
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/rules-distill/SKILL.md",
+      "sha256": "5c457a1789f7312436656536d0799008850c9cf5206c031d399cba64f76fa488",
+      "bytes": 9479
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/investor-outreach/SKILL.md",
+      "sha256": "ab71ee37a1ff5f9b7f27908d33fc47f03e7897e6c87be3f8d7c0e4a8d73fefdd",
+      "bytes": 2643
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/opensource-pipeline/SKILL.md",
+      "sha256": "c29b1a730280c58691c9fde697569dc3333f50ac17227e1184bc3f0b7abbb0ec",
+      "bytes": 6974
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/dashboard-builder/SKILL.md",
+      "sha256": "d5e41e802489466ff316bb408addb7efc6f9edbe338ce10c3080300241310407",
+      "bytes": 2345
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/git-workflow/SKILL.md",
+      "sha256": "a67d04fc9f1dde4a249bf19a1ecb064f048410083d7dd232e7c2b733db43407a",
+      "bytes": 15057
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/security-bounty-hunter/SKILL.md",
+      "sha256": "353662b7f52b2339c8dd2c8cb63b65916727622760c2419759d7d29a0d213869",
+      "bytes": 3533
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/prompt-optimizer/SKILL.md",
+      "sha256": "645df8819e848ddc131b7c61e87a99bdab15f2098a83a6dcabf44e155846e293",
+      "bytes": 16228
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/claude-api/SKILL.md",
+      "sha256": "b708d716177edb76a986c20215c20b64d91f5d57a078ae0d879459a44499e202",
+      "bytes": 8544
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/agent-harness-construction/SKILL.md",
+      "sha256": "8da8d0cd5ab9bcdfc3885818de04fbb7de18446b282138bb1b39b6863f335020",
+      "bytes": 2000
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/remotion-video-creation/SKILL.md",
+      "sha256": "94b0e5591d26670c3c3a98b993140354296918b1f103dc489e0dbb413fb6803a",
+      "bytes": 3538
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/customs-trade-compliance/SKILL.md",
+      "sha256": "32e74639267e55de5525a2d368d1edef5f2aea09499a8d5fa7d3010fcc75568a",
+      "bytes": 29045
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/market-research/SKILL.md",
+      "sha256": "7ef3fa13d6272fd295eeb2aca9f6a2f09f6a8270cf33b0675fc5a0018cf6e406",
+      "bytes": 2226
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/hexagonal-architecture/SKILL.md",
+      "sha256": "be71634ceb98c2ffa0331f54cfeb958ffe2693da6d5c7fbc466964b5df05a737",
+      "bytes": 11393
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/nuxt4-patterns/SKILL.md",
+      "sha256": "a5282f46c6738b1d83067ee77a5a251bfc22da7735c7b7442acc15f20d2e8659",
+      "bytes": 4642
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/data-scraper-agent/SKILL.md",
+      "sha256": "cf0e128c18d212b086645136b1708f2afe2607d1b811783dc965dc679f2a8361",
+      "bytes": 24072
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/deep-research/SKILL.md",
+      "sha256": "2d631427fc9aba27a318735f930bdb49f5c6ce416506340025eac01648f1df09",
+      "bytes": 4582
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/healthcare-eval-harness/SKILL.md",
+      "sha256": "5a557e4cbedf94ef3de77891541a01dad668097712c3fcc5b6ca6fbacad3e01e",
+      "bytes": 7707
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/exa-search/SKILL.md",
+      "sha256": "b802dedcf7a5cc5ef2dea7d3551030c705e4fe371afe052cf3e06e1d618ce0c0",
+      "bytes": 3386
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/terminal-ops/SKILL.md",
+      "sha256": "ed228e078c880e92727731fc0e72b2a80459a42d2fc6a1603a1277f6f5b9f102",
+      "bytes": 2985
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/token-budget-advisor/SKILL.md",
+      "sha256": "c87bfe27ebd13ed12715967ac3a5e57f908147469058b79a7667526f5098a709",
+      "bytes": 6105
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/article-writing/SKILL.md",
+      "sha256": "068e9aa2bc7e7e63b396a5df7c50b8b68fa338d3ad1f66012757cde6b41fb7bd",
+      "bytes": 2914
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/workspace-surface-audit/SKILL.md",
+      "sha256": "dddd3e1a1716f5224e3aac3f09b08104e6e2316d9c8c092d033b4b556b934ee4",
+      "bytes": 5151
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/autonomous-agent-harness/SKILL.md",
+      "sha256": "02f3282c6f2938f4862bb7b0915ed45bf4cd8b1c67c064df559b0b93d0c488e0",
+      "bytes": 10247
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/dmux-workflows/SKILL.md",
+      "sha256": "d82ed05f4713fc85612485e866dcb770126e0003b6ded65f178cf2f9c1a00db7",
+      "bytes": 6324
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/backend-patterns/SKILL.md",
+      "sha256": "952e95fd7e8d0b17f13835dde8067d7dd2abd019e6e17821d5ebf913113c589e",
+      "bytes": 13837
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/research-ops/SKILL.md",
+      "sha256": "f6006b8554c68f32858b2706b97df5ff132f00f45e93fa3d9ffd927b941be959",
+      "bytes": 3593
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/logistics-exception-management/SKILL.md",
+      "sha256": "a57faa527a53781d630118162c90f9d071f2cb09acdaea668c09eeaad4f25225",
+      "bytes": 16877
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/nodejs-keccak256/SKILL.md",
+      "sha256": "ad06dd6d6211c4c1f3870407bf2eae309f6a713f51ca8c2c00c2129e8b0c4cd2",
+      "bytes": 2845
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/api-design/SKILL.md",
+      "sha256": "d2b090c4319e030fddb576950400724ff12ccb285083a540b6afb62431185d25",
+      "bytes": 13110
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/github-ops/SKILL.md",
+      "sha256": "4028e3e0eba91b9f5458cb7c0e08fb768b4c011d8e50667be73be58cc6e66c3a",
+      "bytes": 4627
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/google-workspace-ops/SKILL.md",
+      "sha256": "b9493e95155c0df4104835b8e185e81974484632a8bf4af520bc5fdc7de70a6f",
+      "bytes": 2724
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/nutrient-document-processing/SKILL.md",
+      "sha256": "bf680ac62b6881b4468d075178b9e8332c62c3e4618a64b82b64742fbd7ded65",
+      "bytes": 5890
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/nestjs-patterns/SKILL.md",
+      "sha256": "08303876620e2ad7c987c5b91561c9fbc132b71d905096f775d23eeaa5dec386",
+      "bytes": 6408
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/production-scheduling/SKILL.md",
+      "sha256": "07508043c83606a8edc01217a1b4194dfe204952935c73b2ed5b55df2e67e456",
+      "bytes": 28573
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/kotlin-patterns/SKILL.md",
+      "sha256": "b98d254f9f0c1af600fa9b096c015981ffa2b3ebe651893ad09c56c8fb8aa5e9",
+      "bytes": 18842
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/jira-integration/SKILL.md",
+      "sha256": "50299acfaa820ba250aa5c376e80c6784541a66816351c859a4087f3f43fb213",
+      "bytes": 8968
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/hipaa-compliance/SKILL.md",
+      "sha256": "b234f67dea6f67310a27704a1358d7ed191e393d385a9a9b1a65ccc57b7844cd",
+      "bytes": 3617
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/inventory-demand-planning/SKILL.md",
+      "sha256": "60114c60db6a6153eafc667c4386e001ddbd06164480d86ee16887dfa10fbe54",
+      "bytes": 24508
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/documentation-lookup/SKILL.md",
+      "sha256": "89cc655f72a5e3a947e88b7bae419c068f9ea34101b3fc9e7129184432b507cd",
+      "bytes": 4900
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/click-path-audit/SKILL.md",
+      "sha256": "9455e941c68046ed3e17d09d9048d4cd9d3c7c17b8b13b59230ee415ef2f3de4",
+      "bytes": 7963
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/healthcare-cdss-patterns/SKILL.md",
+      "sha256": "892b425b9ac77642bf94237882fc5762c3ea03f950c7d27faa6d355ee888f1a7",
+      "bytes": 9320
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/perl-testing/SKILL.md",
+      "sha256": "b9ea58b1e80df6332254e84d274b52eddd0eba28ea096eaf18149025ff2115f4",
+      "bytes": 11189
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/project-flow-ops/SKILL.md",
+      "sha256": "cbde44a04cf1668bca99580eb34a20afb466d7dc0bca39d4b8fd87b63495dd7f",
+      "bytes": 3133
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/laravel-tdd/SKILL.md",
+      "sha256": "09e0ee17c37b012fea4d7b8e7e2b894da749171f4e31537a6b6e5b9b192455f9",
+      "bytes": 7433
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/skill-comply/SKILL.md",
+      "sha256": "0861edfb6f0735e6344e9cd2d5458a4a4731f82c33b4c7e9117b6336f944c774",
+      "bytes": 2356
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/plankton-code-quality/SKILL.md",
+      "sha256": "e8dbe35029c890d9ec01cde3b499deec2e8c2a43c2821ad239b0a386838e4ecf",
+      "bytes": 7950
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/security-scan/SKILL.md",
+      "sha256": "6facddfa83c1c53eb02d21e0fc4cfe70d785b9fd5159ed91e918c47466bf12d8",
+      "bytes": 4469
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/rust-patterns/SKILL.md",
+      "sha256": "2c8a7b1110a7c8d9f659a26f34db3cb774c592ca89c928df6d71255aa3eaafc6",
+      "bytes": 13378
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/video-editing/SKILL.md",
+      "sha256": "ce3ab2e576e0863086453b78ca171e4a998f4d56d2b4c59fc530f920d88f5bf1",
+      "bytes": 9725
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/product-capability/SKILL.md",
+      "sha256": "80adddd72a5e4be4eed8200334f9038ab76499297212922b69ad6ff8adbbb275",
+      "bytes": 4424
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/carrier-relationship-management/SKILL.md",
+      "sha256": "0f38232b4769e11962dc77c269638eb4787492b0c1293a4971ac55e2a5b0bc6b",
+      "bytes": 23761
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/defi-amm-security/SKILL.md",
+      "sha256": "0d3fd55d95367c8ead82bb45eec6cf2e8c5c65874f5362be5f7bab213b3faa19",
+      "bytes": 4783
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/fal-ai-media/SKILL.md",
+      "sha256": "5aa3ff04a2f7ef2fcdb5735cf8597abaa2b0c6ad3060c0cee45c665a9af5b2f1",
+      "bytes": 6933
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/deployment-patterns/SKILL.md",
+      "sha256": "b2d18f90ea5f5b7e6c357c3ded7353fa2d23b04464eed4b81745b0c8340e31ba",
+      "bytes": 11000
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/laravel-plugin-discovery/SKILL.md",
+      "sha256": "29363db6147b5a86881990d0236ee659a1e0a0587e8e9f48610e6fa0459e93af",
+      "bytes": 6381
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/finance-billing-ops/SKILL.md",
+      "sha256": "c270d67c2f68e62584c78fd8d347fe4ef7c2e37391b163041ef6ffe7ce36ca49",
+      "bytes": 3819
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/claude-devfleet/SKILL.md",
+      "sha256": "3ae3f7bb4ae392afe4727ee7eee3d4c9e45b2c2e6c8d722191a95a347ed7dabb",
+      "bytes": 5817
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/e2e-testing/SKILL.md",
+      "sha256": "f84ae93c159bf6ecef5a60c9735dc82d96bc5f977ef52eb71678b66722acf684",
+      "bytes": 8065
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/visa-doc-translate/SKILL.md",
+      "sha256": "9c429c2c57789cc6631c9a9d244c40026d96b65f8a6c927e44abc152c463320a",
+      "bytes": 3859
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/agentic-engineering/SKILL.md",
+      "sha256": "c202c6bfe6c98a6842b2e2c99c0bf030d82200fccf1f9fdb0143d7b51f0a3d13",
+      "bytes": 1731
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/swift-protocol-di-testing/SKILL.md",
+      "sha256": "780bf7d46242c38b74af0a4d56ea368f288e8dd5132e1b64850614ed2cf20a61",
+      "bytes": 6007
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/repo-scan/SKILL.md",
+      "sha256": "679dba00be8d64db90d333ed8eccb93f1e641c9c5b2609c5591300620a1733da",
+      "bytes": 3610
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/content-hash-cache-pattern/SKILL.md",
+      "sha256": "cdef26f0fc59be4320d3b8acc75a1084c06d7f8b58d635de51cd98e1d4343dbc",
+      "bytes": 5604
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/safety-guard/SKILL.md",
+      "sha256": "50328f1aada59211d66cfb7b022b28ce06d470ca5ca9f54467268ac5444ee38a",
+      "bytes": 1933
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/evm-token-decimals/SKILL.md",
+      "sha256": "96093b14a1e90edde02bd120fdfaf4933e740c9a2f1bc7b44bd643fdb2e54448",
+      "bytes": 3847
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/jpa-patterns/SKILL.md",
+      "sha256": "5302c813a58deb5420e10c6dec4c5f0d036c278f2c494c8243a23326a994063e",
+      "bytes": 4548
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/continuous-learning/SKILL.md",
+      "sha256": "26541cc3108e85f244e5f71b3deda71f2d7c99b3e02ab233df1f5ddef66bcaf3",
+      "bytes": 3888
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/continuous-learning-v2/SKILL.md",
+      "sha256": "7629ed1a18ce078b57f22f407115a41a7f404aee73de17667ec5571b0001a8e4",
+      "bytes": 12548
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/llm-trading-agent-security/SKILL.md",
+      "sha256": "509477236036ee0c6cb8c54f4834da8b5179549ff874ef9dee6e0ad58ca4555e",
+      "bytes": 4494
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/manim-video/SKILL.md",
+      "sha256": "9800d7b7212a14d84110cbdb086348ac9b34bb57c0b70a33a12e73e888931dfd",
+      "bytes": 2894
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/verification-loop/SKILL.md",
+      "sha256": "01a9ae310ad4426bb05660dda6cefdeaac9513417585c09c8bb1b94738649a78",
+      "bytes": 2491
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/perl-security/SKILL.md",
+      "sha256": "99cffd27aff013ab071716c7eb40f7c595dbf2165ad1825a7458122a4281bfdd",
+      "bytes": 13752
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/frontend-slides/SKILL.md",
+      "sha256": "bc890c0deeb766e78991d6de150fd981a70b3dac5507a4d20b43c1a210b1819d",
+      "bytes": 6547
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/tdd-workflow/SKILL.md",
+      "sha256": "934c453594ce68330888c70497f40f1454f7c1e7e5a07501a637ecb3c66d87b6",
+      "bytes": 13064
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/perl-patterns/SKILL.md",
+      "sha256": "7051a5b3b005f90faa6dac264510b42b54d6c0b69f2149c34ac57883489af3cd",
+      "bytes": 11525
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/cpp-coding-standards/SKILL.md",
+      "sha256": "70919980c635f66db649b7eb1e426fb2098754ed6c9db22f1a7eee0935227d35",
+      "bytes": 22279
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/springboot-verification/SKILL.md",
+      "sha256": "4895b880d86d5703f167f88ca376a55195b40c3b459ec228f5ec8f27bd1a704a",
+      "bytes": 5821
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/database-migrations/SKILL.md",
+      "sha256": "645290c5763d31649bd6c071245b53198cdaf4438d9aa091b6ee6bd3ab085fea",
+      "bytes": 11839
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/ai-regression-testing/SKILL.md",
+      "sha256": "e29260b01cad5684547130558d5a15b07b4a77f781e73fcabfde7902aaa5d085",
+      "bytes": 11533
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/content-engine/SKILL.md",
+      "sha256": "a64c6df93125b77c7199df086e4aedeecae0ea578d30e8c2ac73f9957688b52c",
+      "bytes": 4358
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/browser-qa/SKILL.md",
+      "sha256": "ec40c3b976429de3628f66bcbf6c1176b8525d508f38bd32c4d6c152a0c00145",
+      "bytes": 2614
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/dart-flutter-patterns/SKILL.md",
+      "sha256": "87354c75b8e880b961d4e6f8138404d9db2d5f278216f7122d8c017abc889002",
+      "bytes": 15908
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/unified-notifications-ops/SKILL.md",
+      "sha256": "d9c2d607662189c87934e563d62a21e77e39ea54cbdcd9117e2c726fbff65ce1",
+      "bytes": 5618
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/kotlin-coroutines-flows/SKILL.md",
+      "sha256": "aaac6a9031e4a7c72cf6c958c21f80941132527ed280af245b593ec3efa115c5",
+      "bytes": 7754
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/frontend-design/SKILL.md",
+      "sha256": "6b4d60566dd123d5598b7a16af5675b3a6a40f46b7c0fd805218d14758b03393",
+      "bytes": 3823
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/messages-ops/SKILL.md",
+      "sha256": "662aa73e5b2b309a2fb8436d718ce0d7b65bba1046b4bf5abccc436659a0142b",
+      "bytes": 2884
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/codebase-onboarding/SKILL.md",
+      "sha256": "716e42006634cc5c81a744f217452d2149bf768008df30500a349e3920d1e588",
+      "bytes": 8223
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/hookify-rules/SKILL.md",
+      "sha256": "b604608e30ac2b8f4f62dea3023efe2d3247b41a38c4156a6b6297173f2405a8",
+      "bytes": 3534
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/django-verification/SKILL.md",
+      "sha256": "72cd92f2e2440187ad171e2655cde8933aaa33411f42a3a6390dc88bedf53bcd",
+      "bytes": 11479
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/swiftui-patterns/SKILL.md",
+      "sha256": "c27f90145101dd77d64e9f9b70297c4167af26abb8a924f2a91326289bc3ec2c",
+      "bytes": 6939
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/agent-sort/SKILL.md",
+      "sha256": "51d5b461ebd92f5c6f26eca1bb07c46ad4978dfae876b4d122ce802871a66326",
+      "bytes": 5910
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/agent-payment-x402/SKILL.md",
+      "sha256": "1477c93f4a9d570edef738e8ce192bb6c4a2efc6e45d927fd9612cbe49a20a23",
+      "bytes": 7256
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/crosspost/SKILL.md",
+      "sha256": "4c130ad682003589622dccae004f6180a472648179919ec23677aef1b743b5a4",
+      "bytes": 3435
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/ck/SKILL.md",
+      "sha256": "b0eecbd9841e8f0ab2fd8d91ebede698c66b1bf3ab6b235417ae1ee53b5e2aa1",
+      "bytes": 4817
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/product-lens/SKILL.md",
+      "sha256": "8eaea4af3b14018b4c8ef180419556b9cab4a8b931133dfdaedc70c787b56165",
+      "bytes": 3090
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/seo/SKILL.md",
+      "sha256": "3e560c9da02ca529eda939bd3634635288a252ada6be18c16ad527bb8fab851e",
+      "bytes": 4308
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/healthcare-phi-compliance/SKILL.md",
+      "sha256": "1d053ab76ccaa06eb38546c73fedbab9ea1d293a3a0c4dc74d1a4d4db09dadb0",
+      "bytes": 5561
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/gan-style-harness/SKILL.md",
+      "sha256": "2ce1e3d2579e1526d31c841bc9ebf367fa858430a9fc792f2f219fcc2533c454",
+      "bytes": 12166
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/java-coding-standards/SKILL.md",
+      "sha256": "687d56b0001f4588227e80e048d9d5605269f3bd7a31f6ced79b04b7379255e7",
+      "bytes": 3872
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/santa-method/SKILL.md",
+      "sha256": "d70951d3b0ddc78b7fdd520f2df867b9fd2f4cff3563dc69f94e28a35794a4c2",
+      "bytes": 12781
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/openclaw-persona-forge/SKILL.md",
+      "sha256": "d5336315147c9d3de4705b595d9a0de0398273293b1ac35579f170842d984183",
+      "bytes": 12410
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/kotlin-ktor-patterns/SKILL.md",
+      "sha256": "71982b984b919891b2a33513feb69f3f3f69d47fde16d8e7e5373cba49e6289a",
+      "bytes": 19435
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/django-tdd/SKILL.md",
+      "sha256": "99ef0936053afecf9f1ebbca687cd4232f4baa5f491878d5157c70344f237cd6",
+      "bytes": 20922
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/frontend-patterns/SKILL.md",
+      "sha256": "dd04a1c02503036ee7f4d649c9b7b75d2e6954a94d6f464faedfa992701d1978",
+      "bytes": 14773
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/ai-first-engineering/SKILL.md",
+      "sha256": "41239a1d15ef590efe9836f686a07697586acf8b6a2f3248b8cb55322484c6a9",
+      "bytes": 1336
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/laravel-verification/SKILL.md",
+      "sha256": "c5e660f538350a833ac450ef97c652835d2d6fe8e97105db231f44c77cc34b28",
+      "bytes": 4250
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/automation-audit-ops/SKILL.md",
+      "sha256": "cb4f49604a9dd0eaebe2104e94aa160477f9af81071f7f8726c46128a4b0ecb7",
+      "bytes": 4155
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/design-system/SKILL.md",
+      "sha256": "48259261aa52c6f99f92c8dc9d981d5ca312d7e499b2caf67788e6d0569bb4f2",
+      "bytes": 2480
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/skill-stocktake/SKILL.md",
+      "sha256": "c03bfae29e91ada17e818a058a6489e19e64dcc52179d65885c40e7afc25d1cc",
+      "bytes": 7785
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/ralphinho-rfc-pipeline/SKILL.md",
+      "sha256": "3564f14e56b1af6019bbf59a7162136f4971f9884243fcb67d1229d039e3f19f",
+      "bytes": 1522
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/dotnet-patterns/SKILL.md",
+      "sha256": "70a349cda271e9f7e6cc0f0e6bc8ff3ec489fa0e153edfb420998f1ec37937a2",
+      "bytes": 9220
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/rust-testing/SKILL.md",
+      "sha256": "e55dc89ab64a49f9cec0d6d15b14a21f5c096f342e0046799f47b7fa2d22e770",
+      "bytes": 11699
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/search-first/SKILL.md",
+      "sha256": "752b24a8a06b3df1ce35598a789af92a72b61ecbb3c73e69d9af38708015d903",
+      "bytes": 6686
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/springboot-tdd/SKILL.md",
+      "sha256": "67d3d67c8f9d18109979944c028d8c0e1a219c0366ef96c95befd6fb3a0856d4",
+      "bytes": 3774
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/python-patterns/SKILL.md",
+      "sha256": "df0c0abbbd0e6a01811d1b1d10d8fa7a8a19ce73afdc9432d24843f62649cdd2",
+      "bytes": 16748
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/context-budget/SKILL.md",
+      "sha256": "85b32e7dd4ddb8f936a7f8c880df0ceff0954e55e93ac88095e4415b52ccb95a",
+      "bytes": 5695
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/security-review/SKILL.md",
+      "sha256": "8cd029a9bdd8fdf35425039d41e896e343bf75063c4540365e3773c1e3d4009d",
+      "bytes": 12234
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/android-clean-architecture/SKILL.md",
+      "sha256": "b3f84e98979fb517a4ba6e2ee44d5dd6045133285a51bbc2c892f165fb492563",
+      "bytes": 8794
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/blueprint/SKILL.md",
+      "sha256": "f74f4f312e2cca732e3764f618caebcc43aea3e62b0a59cccca041941d7302d9",
+      "bytes": 5344
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/quality-nonconformance/SKILL.md",
+      "sha256": "5cc141c785c8b6116f0d414239658dbfdee2d0f59687bdf1cd7e64c1e83dcd27",
+      "bytes": 30387
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/investor-materials/SKILL.md",
+      "sha256": "0541ac8ede8d39c59a646834481d0de86312e598331b86dc7027ece0def3c193",
+      "bytes": 2723
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/configure-ecc/SKILL.md",
+      "sha256": "2fa11f53ef23f4668e82c688360fa9e74c8bcc32aac9ef4d560eed87ed0dacb8",
+      "bytes": 15798
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/strategic-compact/SKILL.md",
+      "sha256": "c8e861a39fb84968aefa82783c1b25e61d1b625c29c0f5b2bb301f4652c93e9d",
+      "bytes": 5281
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/continuous-agent-loop/SKILL.md",
+      "sha256": "b557889be2db327a966a30410825f6a461b5583a29eb009b9123e6ca3f766c12",
+      "bytes": 1083
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/golang-testing/SKILL.md",
+      "sha256": "2da1afcd9df6529392653cd450edc40eb8bbc0b073f3eda17a510f4b89411c1b",
+      "bytes": 16638
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/regex-vs-llm-structured-text/SKILL.md",
+      "sha256": "1f4338a9d8eee84bf9236e1377aae2d44fc067e10d7eb923bebe06d6c006d26f",
+      "bytes": 6481
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/flutter-dart-code-review/SKILL.md",
+      "sha256": "908b324fd2514ff0d842f20e7a8aeab6b6335f5393135d68464f267709ef8553",
+      "bytes": 23089
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/skills/foundation-models-on-device/SKILL.md",
+      "sha256": "8efee7e392b39990e4ed58d85ac0783c1cbaac8e1cd87e7a4ef502f15987963e",
+      "bytes": 8176
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.kiro/skills/golang-patterns/SKILL.md",
+      "sha256": "835e7727ad6806627ed6623a23258111157619d66aca7c56e2e7a31189e6bc66",
+      "bytes": 4589
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.kiro/skills/python-testing/SKILL.md",
+      "sha256": "9961c5536f090c3aa005a5441bcc6be2ad840101f1390295f62c2a6278cf844a",
+      "bytes": 10801
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.kiro/skills/docker-patterns/SKILL.md",
+      "sha256": "e202168a7af5dc0c3b68b6815870ed4a718ee5670d667e6fb3dbc009924985b0",
+      "bytes": 8598
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.kiro/skills/postgres-patterns/SKILL.md",
+      "sha256": "d8735f5874431395c309c354f253d36e09a167f8a3318417a13e5760f68443ee",
+      "bytes": 4168
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.kiro/skills/coding-standards/SKILL.md",
+      "sha256": "339d4a1ee95f1e6f5c7cf4dd125e661ca84301ca1189c72c4cdc9746413aecec",
+      "bytes": 11821
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.kiro/skills/backend-patterns/SKILL.md",
+      "sha256": "86ecf9802b5232d9a13471b2f73eb9eb0922235d4d1a04b00ff4a505b173321d",
+      "bytes": 13851
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.kiro/skills/api-design/SKILL.md",
+      "sha256": "1de8038c422730c7ad1372cf733c39e44f5d62a110c75b0ed1000c141ca480fe",
+      "bytes": 13126
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.kiro/skills/deployment-patterns/SKILL.md",
+      "sha256": "5eadf086650586b43ea83f1b55b017618b0f610d4f297a8dd1db41abc554408d",
+      "bytes": 11306
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.kiro/skills/e2e-testing/SKILL.md",
+      "sha256": "7b177f8bf4a0981bcada3456d327ac09ceaab97997efc0040b7104e4a3798947",
+      "bytes": 8081
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.kiro/skills/agentic-engineering/SKILL.md",
+      "sha256": "f2d7427f30ae579c7f2179b8ea2c9e7632f339c3d430826d6ea8d65b338b7e0a",
+      "bytes": 3962
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.kiro/skills/verification-loop/SKILL.md",
+      "sha256": "ab0065d19700869a3653cb05c2bf0effa5bad3b0db334525e12e58ac418b32de",
+      "bytes": 2491
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.kiro/skills/tdd-workflow/SKILL.md",
+      "sha256": "25ba83a8042f33aecc109de94628e52b44f9cffe3e876f836f780f5913bb3c73",
+      "bytes": 9822
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.kiro/skills/database-migrations/SKILL.md",
+      "sha256": "1f02085fdd98f60ba93d3d2445a462c194e107435aba2b63bca9628bc406e43c",
+      "bytes": 9767
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.kiro/skills/frontend-patterns/SKILL.md",
+      "sha256": "66582face980b301de0121b7a55efe25910713276ab101d41e2adf6553d38b91",
+      "bytes": 14789
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.kiro/skills/search-first/SKILL.md",
+      "sha256": "bf267b544d5ecc8b37fe5457e764fe6498f9290250e1424e9c4d4075b9dae4e2",
+      "bytes": 6988
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.kiro/skills/python-patterns/SKILL.md",
+      "sha256": "1164126bda98a50da5063cd36fa98f8a0b4aea2bcdf033c6b45b594931150837",
+      "bytes": 9467
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.kiro/skills/security-review/SKILL.md",
+      "sha256": "785b1c2de178f3f3a926d062075487cd5a4159b4529bd85f2e893d4ea2fbe053",
+      "bytes": 12250
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.kiro/skills/golang-testing/SKILL.md",
+      "sha256": "9a73747cc1bf43d24d836f5602e7ffdb0280539aa6bc5cb090eaa47dc6d071ba",
+      "bytes": 6510
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/golang-patterns/SKILL.md",
+      "sha256": "451344771cb77c08e9b5ba5d3dffd5fd483265a1a2121a6eb028db8909608150",
+      "bytes": 14727
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/django-patterns/SKILL.md",
+      "sha256": "e3831fd8beb1fa6de95d7797420f0af1dd8d28c2bf3dd2cae90b4d4b825f04c9",
+      "bytes": 21450
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/laravel-security/SKILL.md",
+      "sha256": "6d458a250783b022c5e0ba3c75c2ac2267c2060a537927d12d1fcb89eaef809f",
+      "bytes": 8354
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/python-testing/SKILL.md",
+      "sha256": "64e99cd70731b800d04ed06eeca6d4220576d6c757fb57896bf1a28e00c21b50",
+      "bytes": 20007
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/kotlin-testing/SKILL.md",
+      "sha256": "0d693e3a42bce446ab9bf3c51a90149d1004f00f51cd5f504d3177df185a8fed",
+      "bytes": 15187
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/docker-patterns/SKILL.md",
+      "sha256": "6d5f861235ee662e0ecdf0f56ba7889de64d3bee32b3be6bc6b94225523e1d06",
+      "bytes": 8772
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/laravel-patterns/SKILL.md",
+      "sha256": "81587b7fb2d3b1775e3d3ba656b70b51cb1f36ae9df488be0a0e30458dbea791",
+      "bytes": 11285
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/springboot-patterns/SKILL.md",
+      "sha256": "a2a48b682cd3746f4ccaf62ea894cf20f2738bc346ccf5c643983064bf16f0c8",
+      "bytes": 10427
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/postgres-patterns/SKILL.md",
+      "sha256": "56477afde6aa0e4398a257e096aa4ab424c49e23ed9cbb17aab68633a9759b87",
+      "bytes": 4040
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/springboot-security/SKILL.md",
+      "sha256": "26386fef92b3be0c221286e2392350057c1cd9a11e11b904655e962792e33f59",
+      "bytes": 8729
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/coding-standards/SKILL.md",
+      "sha256": "af3d7c37c0bb66b056fc99d5386259b3ddc7519d35c5fd24d22141aa49347c7b",
+      "bytes": 12653
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/eval-harness/SKILL.md",
+      "sha256": "ca7d8488f3ae40e0754e39743e9d8cf19afd02b99d3013c22ce0b2c6081233e2",
+      "bytes": 7389
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/nextjs-turbopack/SKILL.md",
+      "sha256": "3e18e83222cfe0cdaefd85aab99add2e8097589c954c68ec1483190ac9867979",
+      "bytes": 2703
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/backend-patterns/SKILL.md",
+      "sha256": "1d7ac326064db15adc1cd7521d69126f33f5b5eb6a933269fdd97265b4bcb4b2",
+      "bytes": 14151
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/api-design/SKILL.md",
+      "sha256": "cb6e3366c2470310568d0a1fae9071d17ede47802d3ec1370346079e15f1637e",
+      "bytes": 14006
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/kotlin-patterns/SKILL.md",
+      "sha256": "b21d77a1dabadf80841db28490208d07e4912b1ad5fd6074f8296547c11618ae",
+      "bytes": 15363
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/laravel-tdd/SKILL.md",
+      "sha256": "7a82f9a7354a1a81e4683fef4d6f6c55abadc9a6b05d28cbfc08b4f91f3d7aae",
+      "bytes": 7968
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/rust-patterns/SKILL.md",
+      "sha256": "5f8c2fb747979a4042ebe57de4c07e0ea6ca8ad43a70d11c3be25f421cc15ff3",
+      "bytes": 14304
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/deployment-patterns/SKILL.md",
+      "sha256": "0e723faa061339aaba8ab471fa36f1fb63f01ba8b710fc979e6418735e59eb73",
+      "bytes": 11895
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/e2e-testing/SKILL.md",
+      "sha256": "4ec6e4e2302b466dd6725646e15b8df7173e07db07b9bebeaf5119ff25aeaa16",
+      "bytes": 8233
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/jpa-patterns/SKILL.md",
+      "sha256": "88d95875af626af6de71f1fd9450debd43dad5f07c8d915a93bee3835ba642a8",
+      "bytes": 4851
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/continuous-learning/SKILL.md",
+      "sha256": "05bf2970af629879a3f6e6f2fed29477ac0e6dcf4b41d59c37001e4e8c9da0ea",
+      "bytes": 4054
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/continuous-learning-v2/SKILL.md",
+      "sha256": "85df6ab6c7cd7d61ea91d6f1b95a36a818b8f3576ae80de7fc176a5510209d1e",
+      "bytes": 13482
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/verification-loop/SKILL.md",
+      "sha256": "5b64ea68b0025444bbc6043f1026c7d9c4f6d8133fe6efd701a556a8ef7e8987",
+      "bytes": 2779
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/tdd-workflow/SKILL.md",
+      "sha256": "1f1042839bf45176afd6253815615b16844da0a0cfc45ba066dc3f75db7662df",
+      "bytes": 10786
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/springboot-verification/SKILL.md",
+      "sha256": "a12b2061654bc48229ab1a8128f1f3b6ec111970f1b875a29d51e77a31534e53",
+      "bytes": 6193
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/database-migrations/SKILL.md",
+      "sha256": "c82a2e39ae76d534160d3b39bbca3752e9689bacd4bc1d95583cd83ccbed6146",
+      "bytes": 9898
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/frontend-patterns/SKILL.md",
+      "sha256": "806d5bd7f692cfd639034e7b88e31624a9d8ccdba231b2697ef195c130daf760",
+      "bytes": 15029
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/laravel-verification/SKILL.md",
+      "sha256": "c51c5ad2e66c0d7493813b20925c1409c759d234c79bd75f86dd165edd1adb1c",
+      "bytes": 4770
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/rust-testing/SKILL.md",
+      "sha256": "3092a8462c348030feaf50a074c509b0efa94439b4a8b57b80a64447d01db835",
+      "bytes": 12239
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/springboot-tdd/SKILL.md",
+      "sha256": "87d4d490412b842c240e835618ed0b2f3f2741cd1138ad7f231a77cd9869830d",
+      "bytes": 4009
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/python-patterns/SKILL.md",
+      "sha256": "34d006d836d7b90fd8232a266f0e3701fb144e7735105f544500ad827485ef3f",
+      "bytes": 17496
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/security-review/SKILL.md",
+      "sha256": "34f761b36d40bb5cbcad5787f84e434ee14d9999214db3de100af6818decbb19",
+      "bytes": 13110
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/tr/skills/golang-testing/SKILL.md",
+      "sha256": "59e3749fc1d77703a2dc4b16956b6a03675d828d56140bc743f205b24a7b1022",
+      "bytes": 17350
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ko-KR/skills/golang-patterns/SKILL.md",
+      "sha256": "01fc06cca6a8364915c3a4191d6a94f7b446beb6cc8572605bf6751205c3be0b",
+      "bytes": 14359
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ko-KR/skills/iterative-retrieval/SKILL.md",
+      "sha256": "02c814b76ea6c1c671fb8f93c11c070dd30318abd2c292c984ee20208e1b4f47",
+      "bytes": 7144
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ko-KR/skills/postgres-patterns/SKILL.md",
+      "sha256": "a306a75b9e7e74ebf47d76424258b0258baac38e61cf481e69945e0526d7e6fb",
+      "bytes": 3945
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ko-KR/skills/clickhouse-io/SKILL.md",
+      "sha256": "1e04dcbd3b924abbcb862f693d83d1852f0336387fa51056c5535f6cfdfdffe0",
+      "bytes": 10781
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ko-KR/skills/coding-standards/SKILL.md",
+      "sha256": "59b780bf2e9340246ad32eeb15b8e64c90f30db92e8192e28d8aca2ac95e90e2",
+      "bytes": 12068
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ko-KR/skills/eval-harness/SKILL.md",
+      "sha256": "2555f80e6fa114e712090d2ff6815b36866018ddc7e92510ac81fdd4cf52cc22",
+      "bytes": 6790
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ko-KR/skills/backend-patterns/SKILL.md",
+      "sha256": "67a6c2f05d302cc46a4600257903693cfe83eff4d75c38dd2f10c6c84859c29b",
+      "bytes": 14142
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ko-KR/skills/continuous-learning/SKILL.md",
+      "sha256": "5233eb990a5fbc9bf1b8dc276514fecc6fe0a0852943e6258a7d908534cf8bfb",
+      "bytes": 4487
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ko-KR/skills/continuous-learning-v2/SKILL.md",
+      "sha256": "f60428ff276ce3c10108774732f2ae9ccb174f56d4a0424518c4648086d67588",
+      "bytes": 13565
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ko-KR/skills/verification-loop/SKILL.md",
+      "sha256": "f6b01f277553923cc1114df715d0b36b164fd2747633b308ce6ce5741c5fda1f",
+      "bytes": 2727
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ko-KR/skills/tdd-workflow/SKILL.md",
+      "sha256": "765f2d31d1ca956bcf2c0f9a53b4af168df96cd7d04ff2c6d9c6b5a450c16a09",
+      "bytes": 10472
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ko-KR/skills/frontend-patterns/SKILL.md",
+      "sha256": "d16c659144bdb9e159debcbae5a2627ee9a5fe8349fb59503c9375cff2d0bbd4",
+      "bytes": 15250
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ko-KR/skills/security-review/SKILL.md",
+      "sha256": "e6b3456b77dddce0416ecb2dd969cba58a69b04421a7d433d0a445a3dd21f285",
+      "bytes": 13299
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ko-KR/skills/strategic-compact/SKILL.md",
+      "sha256": "1776761738d0652ac781adadf44051519682ec53ea14402900805575b7e5a81e",
+      "bytes": 4569
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ko-KR/skills/golang-testing/SKILL.md",
+      "sha256": "823753008cedf8b0f18d455d925cefbc4faf257c91f622c756d80dbe82d5568d",
+      "bytes": 17082
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-TW/skills/golang-patterns/SKILL.md",
+      "sha256": "41f32e01b14f125f9c5bb7c1412966b8b711f40767cb52b08ebfa7428f3da3d8",
+      "bytes": 13575
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-TW/skills/project-guidelines-example/SKILL.md",
+      "sha256": "03fb6737ec9b94014762afc60ad01f7e45e78344af1dfb616ff811ef127735e8",
+      "bytes": 9540
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-TW/skills/iterative-retrieval/SKILL.md",
+      "sha256": "b8622df221c8b391ed85f83a7502990729e63afc5d5b32f674cd863fa1e53b94",
+      "bytes": 6178
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-TW/skills/postgres-patterns/SKILL.md",
+      "sha256": "73373422de566c0fe0d2aa79efd4d31b50d77faec61496e88eb60d7314791262",
+      "bytes": 3716
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-TW/skills/clickhouse-io/SKILL.md",
+      "sha256": "187469bb291b19f1e4c53379eb4ecba411eecb80452c183f709f2ca18aaa8961",
+      "bytes": 9653
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-TW/skills/coding-standards/SKILL.md",
+      "sha256": "3212dd3e4abc6d2198c900d63a2620b7fa7105af319d5d7f04c97ead29f5f5f6",
+      "bytes": 11409
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-TW/skills/eval-harness/SKILL.md",
+      "sha256": "4333f5558ca978c117e7139f2477dd560dc5f28f46345410c5bee744a0d478ff",
+      "bytes": 5000
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-TW/skills/backend-patterns/SKILL.md",
+      "sha256": "e2a196374d32a7a9d6ec76847849de75578f02016c5dca4cedce3df3aebf77ea",
+      "bytes": 13307
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-TW/skills/continuous-learning/SKILL.md",
+      "sha256": "9be29dbae34d25ca19a3e77d6102085de8992a751a0d7975620de59bb1f9eab3",
+      "bytes": 3171
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-TW/skills/continuous-learning-v2/SKILL.md",
+      "sha256": "e092de34d910610e8fc28e59347b90d35ff6a2e8629b41fd653c6b6d6a130690",
+      "bytes": 7840
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-TW/skills/verification-loop/SKILL.md",
+      "sha256": "32db6f67feecbd020b1bb60b84c4405aa1736bf72947b051bafd075ff77f6743",
+      "bytes": 2297
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-TW/skills/tdd-workflow/SKILL.md",
+      "sha256": "767966d533da82515756e575f0b36a49cfe5cade79dd41e4497873dd4677a3b1",
+      "bytes": 9529
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-TW/skills/frontend-patterns/SKILL.md",
+      "sha256": "31e984624575589486148df3c82e9fe7bd03f3faf639d8856ffac812d2165096",
+      "bytes": 14176
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-TW/skills/security-review/SKILL.md",
+      "sha256": "c71f82548061c851eb236e04cc13aca9c10d469daac8a5d0c2fcfa87dad8974b",
+      "bytes": 11688
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-TW/skills/strategic-compact/SKILL.md",
+      "sha256": "5361c102d92221e559fe65e81be488bfe0093d9862876ec73577c9b4ba4ed5c0",
+      "bytes": 1879
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-TW/skills/golang-testing/SKILL.md",
+      "sha256": "e01c20058083180b7bb4f0c24eb4555d465744a0167f40ecc828aeaec68102e0",
+      "bytes": 16305
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/django-security/SKILL.md",
+      "sha256": "93c96a19af12d8231ce8491c9638a0dead9577a4a06416ed247d96d45d0fb4d0",
+      "bytes": 15572
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/compose-multiplatform-patterns/SKILL.md",
+      "sha256": "4b915648f7a6e84420993bab81e3a9cf3c5c75b08c0941ce9c2905538419051b",
+      "bytes": 8046
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/golang-patterns/SKILL.md",
+      "sha256": "2b8742dc6c2015087fcbc45526b4a36fc904b39525d97b834d5c0097693615b5",
+      "bytes": 13735
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/kotlin-exposed-patterns/SKILL.md",
+      "sha256": "94c6b78934fe1dca9685b34bda0559ce8ddb52c14e6f2551cbb3c123cdecf37f",
+      "bytes": 21741
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/energy-procurement/SKILL.md",
+      "sha256": "8eaa15e034dd3ef3ac4e0772fd48dad5a4fd522b34819a2722fcda6fe41446ce",
+      "bytes": 25486
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/django-patterns/SKILL.md",
+      "sha256": "226df2e04040dd7d7d0a8e81c5b46ad767fe10206edc86f856d2f43f0692e9ad",
+      "bytes": 20837
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/bun-runtime/SKILL.md",
+      "sha256": "979e540af73e82800ab62c2623f4784fd46a46bf847ec60d9f0091d94afe6d65",
+      "bytes": 2785
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/laravel-security/SKILL.md",
+      "sha256": "c07aa2611b663bc496d630ede0e05978ea7b3934e5e08bdfea01ef3cd463915f",
+      "bytes": 7323
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/architecture-decision-records/SKILL.md",
+      "sha256": "509713ba6e24caeb7d9581d83f45212699d9135e40569a19eef265e1c6800348",
+      "bytes": 6635
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/swift-concurrency-6-2/SKILL.md",
+      "sha256": "e4eaf24f90e69a8f38b403ecacc64ee5d1f970bad3760736fc5791688d089ee8",
+      "bytes": 7862
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/pytorch-patterns/SKILL.md",
+      "sha256": "1c0c811302c8ece652885e23d7570cce04135e68005fd824130320dcaa469585",
+      "bytes": 11473
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/python-testing/SKILL.md",
+      "sha256": "f922acc81bef140245ae89e5c2c445dc224137f86b0290dacb4c92d279227e69",
+      "bytes": 18629
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/x-api/SKILL.md",
+      "sha256": "e6090a1e3c54750f4e1ed4979a838e6b6cb0b52f62d02e9ad440d47b926451cc",
+      "bytes": 5468
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/kotlin-testing/SKILL.md",
+      "sha256": "4686e383ce42c81054934b02fc6ec6ca14395a1982921dea4fa10712e4b4e2a1",
+      "bytes": 20597
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/docker-patterns/SKILL.md",
+      "sha256": "74200ce2d49fec3417ea27290ab2fb0975cea4a92eaae267e3136ddb2bcb7e28",
+      "bytes": 8159
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/laravel-patterns/SKILL.md",
+      "sha256": "61b29006b77bb2ead407b0394612ca0e3c26e87a4a32a819928c217990134b11",
+      "bytes": 10397
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/nanoclaw-repl/SKILL.md",
+      "sha256": "c67c1b7c13ae69fbc729baf970081f31b297fa1193a5e881b2914d4c6cc54191",
+      "bytes": 889
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/iterative-retrieval/SKILL.md",
+      "sha256": "2e02416be579ce32aa16345f5a4b27c1e1a9f4ab12a20620143c7ed3b4139022",
+      "bytes": 6584
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/springboot-patterns/SKILL.md",
+      "sha256": "186be834e464fcabaf01caa29fad446591368e89bfe127f8329a6fa68133010f",
+      "bytes": 9772
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/agent-eval/SKILL.md",
+      "sha256": "a9bd303c4176f4909e8d3ee779ca92febb58bbf52acd5c805114e25f6d0c558a",
+      "bytes": 4652
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/postgres-patterns/SKILL.md",
+      "sha256": "73cdd50c4d01855ae09c3456c6cd8b8444540a073c747a301dfe3107e44cbd14",
+      "bytes": 3780
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/cpp-testing/SKILL.md",
+      "sha256": "7b15f0c64107ffade356ed84423990d7b9f26af2e449ba312067f0d372e24c0d",
+      "bytes": 9171
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/team-builder/SKILL.md",
+      "sha256": "1fa838e605c8b6dba14e437ce90c8870d8c8fd684b53468ac3d86b12faf3859f",
+      "bytes": 6445
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/enterprise-agent-ops/SKILL.md",
+      "sha256": "2547103466926819771a302b8b69436858efeafe760ac505d8f304f73c911ce8",
+      "bytes": 1175
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/clickhouse-io/SKILL.md",
+      "sha256": "c8b731c55a1fb5b9e52f2280c2e06a05a989c9afd2b98f4f8bc339d0c07566b8",
+      "bytes": 10060
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/videodb/SKILL.md",
+      "sha256": "8854cbffa4a5447b3e86b66e71f7ff2a7850738cd69c1b7098bf508edf9ca53d",
+      "bytes": 13985
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/autonomous-loops/SKILL.md",
+      "sha256": "ec18be9827d0f2b818dfc695e0ef4de105f867c5c9b905b3b07a4b6ef22b2d32",
+      "bytes": 24648
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/liquid-glass-design/SKILL.md",
+      "sha256": "edceabe090f221e8ea66f7aaa8ef93e10186c4bc96205d7cb73f6900fa2d81bd",
+      "bytes": 8814
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/springboot-security/SKILL.md",
+      "sha256": "1f82468e04e4fef7d82a68a241dfc5785712277d02fad3fb999164fd35f23f65",
+      "bytes": 7980
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/swift-actor-persistence/SKILL.md",
+      "sha256": "41cbee87c864c30348a160910f451f708bed2c47307ba54b98cb7977606a661f",
+      "bytes": 4747
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/coding-standards/SKILL.md",
+      "sha256": "a7c34a238305eade0b688d6ce185a4f4820fc30a4bb97d34cb9e43e910f2d85e",
+      "bytes": 11626
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/mcp-server-patterns/SKILL.md",
+      "sha256": "79cf956ca96fc3344fbeb288707b3f60997f8baa28237f70b6c0f58fae4d1b6d",
+      "bytes": 3881
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/eval-harness/SKILL.md",
+      "sha256": "0eb45792738403ac189492e196342b81466769000d587c6fee93a326290834e4",
+      "bytes": 6395
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/returns-reverse-logistics/SKILL.md",
+      "sha256": "623feaaa7e0a6f84e6b5e15b6e2605f1b414d52b06bb752c17a45d3406948c7c",
+      "bytes": 22840
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/cost-aware-llm-pipeline/SKILL.md",
+      "sha256": "bc715e679153a4c1b9314d8574c8758e648652b55538a473aa080fc2a2a5e27f",
+      "bytes": 5703
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/nextjs-turbopack/SKILL.md",
+      "sha256": "6084ff19da8cb0145571c2a2e3db90b3b18c2d90feeee2dae015b87249afa424",
+      "bytes": 2366
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/rules-distill/SKILL.md",
+      "sha256": "f49399661e4f0244b116f7f70d8a4954cc7549716ce295561419fb4d1cc5debe",
+      "bytes": 9312
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/investor-outreach/SKILL.md",
+      "sha256": "b57c63faf6ac76a79210a8e102c79fb30efe06d30b5aaf09f2aa7b7edac4a6c0",
+      "bytes": 2154
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/prompt-optimizer/SKILL.md",
+      "sha256": "0310da3837850cf56a1f0d54ef19da9e98cc87e2bb3422ca9462e18069172780",
+      "bytes": 16199
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/claude-api/SKILL.md",
+      "sha256": "a42924e2267a0fd05ac98577064da9543d25523bec30cefd00f9281b9de65820",
+      "bytes": 8569
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/agent-harness-construction/SKILL.md",
+      "sha256": "866eea65549c97af4c1d85d36bd0e933e0804ccb5ad855ad46d6419801add57b",
+      "bytes": 1950
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/customs-trade-compliance/SKILL.md",
+      "sha256": "c168781f8c5e66b6a1cadae6cb12336afd6349317874b2edee50c6173287db2f",
+      "bytes": 25717
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/market-research/SKILL.md",
+      "sha256": "df40cbc582dedb4d3acfc4f78b53f41e8458fad2a4027f81321ebdd799fe87eb",
+      "bytes": 2034
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/nuxt4-patterns/SKILL.md",
+      "sha256": "011c032b91944a327388c709b75d7edbe6265a782eb1eb94016de5d8e594e930",
+      "bytes": 4668
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/data-scraper-agent/SKILL.md",
+      "sha256": "6901fd0c332eadf4763909307ff5e538605093c50b3506e5a5778745a24faa40",
+      "bytes": 24318
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/deep-research/SKILL.md",
+      "sha256": "9ec6d738c16021dfd53d1d160b895da578bdde4ab62bb0d70c605f9f71d2f151",
+      "bytes": 4519
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/exa-search/SKILL.md",
+      "sha256": "d884b1f233bdf6dfde6ec7dccc27d87848df8c6e074577cc7f89468df960ba92",
+      "bytes": 3399
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/article-writing/SKILL.md",
+      "sha256": "a06b98e18501b50cdf5d261f4c1801458e24c87e0cd11fb12cabc67bad742675",
+      "bytes": 2936
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/dmux-workflows/SKILL.md",
+      "sha256": "bcbfd73f195ca68065ef5456d621513ca540dda8944d8c5d18474923f175193a",
+      "bytes": 6240
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/backend-patterns/SKILL.md",
+      "sha256": "dc0eb1af74d6e303494c7449a0eecbe8fd742a5ce3c97037c3d95b2c6f8339e9",
+      "bytes": 13688
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/logistics-exception-management/SKILL.md",
+      "sha256": "bcb36af8a01bf741c81a23db6adae4e7a2c8a585c87dbe10607e96d88fd60241",
+      "bytes": 16186
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/api-design/SKILL.md",
+      "sha256": "6733723d14ffa638a8fdf3b1f90cb31a3108a6d6d42e9162c5080b97127cd70b",
+      "bytes": 13030
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/nutrient-document-processing/SKILL.md",
+      "sha256": "65da4ae1ac29b97f2262d7a51a7b882ed8eee9e875ee338ff9196127802d2b41",
+      "bytes": 5777
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/production-scheduling/SKILL.md",
+      "sha256": "a1ad55f39e24f2aba91e8c8b529190c757caa9ca2b26bbaccc71d9fd06138611",
+      "bytes": 25911
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/kotlin-patterns/SKILL.md",
+      "sha256": "ff3f4b87cd952126a1f9bc609c3162bccaad6bd0cd051ca9b2d19cc410fbb1a4",
+      "bytes": 18644
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/inventory-demand-planning/SKILL.md",
+      "sha256": "6433ace3d4b156f927650e0a54573814c0466456f325a1019937bb5e9ca0e18a",
+      "bytes": 22822
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/documentation-lookup/SKILL.md",
+      "sha256": "e07ad1a86197716f5665362a971680759ced580e8b0752444cec80a479922bcb",
+      "bytes": 4828
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/perl-testing/SKILL.md",
+      "sha256": "790fd69466f85f540a29f8f9bb4caf9ee68d230a1d7a7ff7b817bd6e33471460",
+      "bytes": 11220
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/laravel-tdd/SKILL.md",
+      "sha256": "9917e5a10693a44afdfd82d1ac8cf126c2f6d05fbb82c212862f364fec5ddba3",
+      "bytes": 7407
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/plankton-code-quality/SKILL.md",
+      "sha256": "901c3a8f3563b0d472a1dd1d949494c61d2b9ead7ebee0ec67101a036c2e5124",
+      "bytes": 8084
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/security-scan/SKILL.md",
+      "sha256": "297fe7c5af239b6f8a75b4a370ff457be2efd6c510ddf9f23df83c1d344990a6",
+      "bytes": 4420
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/rust-patterns/SKILL.md",
+      "sha256": "1f2772fbc8a3978637c4fde35a16c362c441cbd447e15400d6dc158b87eb5658",
+      "bytes": 13329
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/video-editing/SKILL.md",
+      "sha256": "8563f8cfba4592b0a5264f426e366430636c87d515a94df3746a03cc7ab7d1b6",
+      "bytes": 9588
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/carrier-relationship-management/SKILL.md",
+      "sha256": "6309a6f0cb9bfaec2a4970d3849dddcf4da2d8680c9d00932cfb6b1ec70bf6c7",
+      "bytes": 22956
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/fal-ai-media/SKILL.md",
+      "sha256": "2ce85237ab2988974c15feac026deebd8da0635a839ca2a39070cd5342dc1812",
+      "bytes": 6883
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/deployment-patterns/SKILL.md",
+      "sha256": "267d299228ee86933d5ac1386693c8eafd444364f41a0871ab2a336f5b47a633",
+      "bytes": 10778
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/claude-devfleet/SKILL.md",
+      "sha256": "7181187e5c9547d4300272a13a4038822f7ffca9092cc7912b726888449d8b4b",
+      "bytes": 5846
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/e2e-testing/SKILL.md",
+      "sha256": "963dabb1698c2f4499a0392646b842e24fd65587e85649108a38d3def9ff137e",
+      "bytes": 8020
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/visa-doc-translate/SKILL.md",
+      "sha256": "1376b324ced9cabde6cef0d11b3a32babec4c5f753ef0bf4b9b4b2eb31714ec0",
+      "bytes": 3483
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/agentic-engineering/SKILL.md",
+      "sha256": "e29b392fc716b63b0b63e1bc5b097b4c149a296195869f71a6396ae5488ad125",
+      "bytes": 1678
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/swift-protocol-di-testing/SKILL.md",
+      "sha256": "edeca9637950d0d028c2c19c128f5c144836d2b8dbb23639774f8eada10ebc18",
+      "bytes": 5818
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/content-hash-cache-pattern/SKILL.md",
+      "sha256": "4a588ebf75ac4b2fffffe32c6ed085a9f1df6a5dd5351abda0099a2f9b843580",
+      "bytes": 5621
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/jpa-patterns/SKILL.md",
+      "sha256": "70cfd0d2bba87b50c6d3361aa89e3a4a92e240a295bcc0bf53e5a49fbed1b9da",
+      "bytes": 4412
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/continuous-learning/SKILL.md",
+      "sha256": "8bae3b10385d9f13e7fe63f7fa6cc23bcec253b5c99e2f7b4f5301e90207ff1f",
+      "bytes": 3561
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/continuous-learning-v2/SKILL.md",
+      "sha256": "668fc8de1792837500994f80251fa1bfede65bf56c525fb04105f70e65dc3166",
+      "bytes": 12202
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/verification-loop/SKILL.md",
+      "sha256": "449c6b6085ae07ad1ec300e69191a040724c40a87158fa6a4e3b5ef376936fbe",
+      "bytes": 2494
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/perl-security/SKILL.md",
+      "sha256": "b2790980049efbd253dab1062c5b078fea60cd8856adfe2b69f45af3c7ddc8e0",
+      "bytes": 13659
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/frontend-slides/SKILL.md",
+      "sha256": "dbaf7ca6ac13196928978e5c23edbf91e9440a56a7299daf72a0a00950580fc7",
+      "bytes": 6492
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/tdd-workflow/SKILL.md",
+      "sha256": "3fc65c7d3a6196628ad387c315ee151b4b3c4eee29ee2809b1f4d1c1fe794dea",
+      "bytes": 9721
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/perl-patterns/SKILL.md",
+      "sha256": "4fef099c8d7b1e7246bfcf3bdf194068e15d221036e805bda2f9b5197aec6d8e",
+      "bytes": 11491
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/cpp-coding-standards/SKILL.md",
+      "sha256": "bdbd3a84cb388d737e31400aa43d812803833693cd738f39939389ec9af3b696",
+      "bytes": 21628
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/springboot-verification/SKILL.md",
+      "sha256": "107f64095103fd9818b57b58f48438aa6ef957c2d407a795cc0172a239cba8bd",
+      "bytes": 5880
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/database-migrations/SKILL.md",
+      "sha256": "293632329c927ea425989c37dbe38bacb6c09a0dff64d11e5ea74fd168f5f81e",
+      "bytes": 9317
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/ai-regression-testing/SKILL.md",
+      "sha256": "a358fb7d3e0ab4458be348c097bf90f921b30104d55656531a8cdcb7db33e334",
+      "bytes": 11526
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/content-engine/SKILL.md",
+      "sha256": "c05ae681bfb5b467f4c7a6a9893d010164f46b64510475ea476da20ddda8043b",
+      "bytes": 2718
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/browser-qa/SKILL.md",
+      "sha256": "5ac580d11939a10ebd76c27bc1674d424460435f896af4d250760b718369938b",
+      "bytes": 2460
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/kotlin-coroutines-flows/SKILL.md",
+      "sha256": "f3439df44250b215d03f291db7d08d4eacb711d5ad0ff5db21e65d0a9f597455",
+      "bytes": 7757
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/codebase-onboarding/SKILL.md",
+      "sha256": "eb07e6e065eba0dc15e8658cae91e4508a5a0839dfc06f3e4c3954c0d5ee51d5",
+      "bytes": 8065
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/django-verification/SKILL.md",
+      "sha256": "09bff830a5e37374ddd14b023a94b8b187d631a7757b93abf17a59938b9b3f1b",
+      "bytes": 11319
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/swiftui-patterns/SKILL.md",
+      "sha256": "fbd96b72264e8e47640e1dc89481cae58541986ec55e3bc670a54c4fce2d7303",
+      "bytes": 6940
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/crosspost/SKILL.md",
+      "sha256": "6641022b1a50e37d568a9f6dd3f7b79ee9897e1347a0c7b594bdc7065de53c9c",
+      "bytes": 5388
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/java-coding-standards/SKILL.md",
+      "sha256": "a0847ac06ecd6e579cfc4a2f649cf30f545145aaf4682794cf4d13913e80430a",
+      "bytes": 3817
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/kotlin-ktor-patterns/SKILL.md",
+      "sha256": "eac50711c4568c2f1bdd7260cb68629aa722f247baadd8d6ac0f0a7bcd13fc91",
+      "bytes": 19245
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/django-tdd/SKILL.md",
+      "sha256": "a5f34c4328dae0eb45611bd40c40a34765631c2372697289f090d482fcd8378b",
+      "bytes": 20847
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/frontend-patterns/SKILL.md",
+      "sha256": "845f0613f080d09ddc74fb1ae9479edf4b96767c770ea4c906e6f6636859d92d",
+      "bytes": 14548
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/ai-first-engineering/SKILL.md",
+      "sha256": "aa694f63af0d6ca1472c42c3d15e23e8656f29d8dddca0f79bef028d257ba7e6",
+      "bytes": 1210
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/laravel-verification/SKILL.md",
+      "sha256": "1b7dce0a4f5bd992459d362df2e604bda594920fd49badead132cb542eb3b6b3",
+      "bytes": 4333
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/skill-stocktake/SKILL.md",
+      "sha256": "7b7d97957131fb3fa71c4a4a29fb7f5fb6a19c55b240f168a0f13a6f71b374fe",
+      "bytes": 7638
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/ralphinho-rfc-pipeline/SKILL.md",
+      "sha256": "6ccb62d990dba9cfb642cf77d193f11718038bd5cdd883077d261076a86bd6b2",
+      "bytes": 1459
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/rust-testing/SKILL.md",
+      "sha256": "2e5d007851106e0374e6abad81f860067e6998f2e2ec94d56bacf9ae8767dcc9",
+      "bytes": 11641
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/search-first/SKILL.md",
+      "sha256": "23ebc2a7f31fd18577809bcf0771ad94a598f6c1cf08013e25af4fd405222627",
+      "bytes": 6679
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/springboot-tdd/SKILL.md",
+      "sha256": "f701171df5ec6c7951cce96fe7deac7a0361365b4e2f1dd37db330dba4a14db9",
+      "bytes": 3777
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/python-patterns/SKILL.md",
+      "sha256": "04a3124be07005173ead92ff34a562f48158c0a517c01a1466e481c1d0a1bcee",
+      "bytes": 16526
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/context-budget/SKILL.md",
+      "sha256": "d4b2dad70c7fe84dbd7c106de0ff7fda3b0a59f5356d15614c8edc52281a965c",
+      "bytes": 5632
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/security-review/SKILL.md",
+      "sha256": "2cea5d6ff52edb5bd6ed70335c272a6b8fd43350b2eece3ab04f85c396ff5c5a",
+      "bytes": 12072
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/android-clean-architecture/SKILL.md",
+      "sha256": "b275aabe40a16f7e267ec3a5e9d311f7fd1eba34d11037996ec0ebeb336e9a4f",
+      "bytes": 8605
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/blueprint/SKILL.md",
+      "sha256": "c6ee0b2bc2ab57bc701b3bb8d70f8ad94fd8fbe0da1e053fac7e76157ee51541",
+      "bytes": 5073
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/quality-nonconformance/SKILL.md",
+      "sha256": "87343c4e095e6e193edbc11a9981e2ac7501a71a6ee2d9c5a776d65482610d83",
+      "bytes": 27122
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/investor-materials/SKILL.md",
+      "sha256": "f3593ce732df071d0bf4348de4d4206b2117fc0bc34f2baecea2e726f8297820",
+      "bytes": 2508
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/configure-ecc/SKILL.md",
+      "sha256": "c32710e131649418106b050e876d0fcfeea94a476a6159812eea488eb28fb631",
+      "bytes": 15439
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/strategic-compact/SKILL.md",
+      "sha256": "c2f00aa26f92375ff2550f21c5a39138760df5cb808b9e955bcc003d44761c16",
+      "bytes": 5880
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/continuous-agent-loop/SKILL.md",
+      "sha256": "3af31789a063d9e7d099bac1d4353bf50d112551d9c2a64faa9fdd38183dd654",
+      "bytes": 1032
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/golang-testing/SKILL.md",
+      "sha256": "38e09dc9bb433a5f488f138d66bff3c217f4e9c5535a02b073f644ab35464984",
+      "bytes": 16541
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/regex-vs-llm-structured-text/SKILL.md",
+      "sha256": "d8a8aa938996fa58c950c3041874738eac360ccd65dd04226927453f33c4d1b7",
+      "bytes": 6592
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/flutter-dart-code-review/SKILL.md",
+      "sha256": "618a04d22aa2e4ad3c659b48182b5f934033aca51a3abc7c6dffc45b3d1566b9",
+      "bytes": 22410
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/zh-CN/skills/foundation-models-on-device/SKILL.md",
+      "sha256": "213bfc50aba9b5affefcbb6ba52602ef4d5a6b3656bb4b335e0e375319d76669",
+      "bytes": 8033
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/django-security/SKILL.md",
+      "sha256": "a53d129a947228cffd20b70c217b11d6eff54cfa0068fd9a9aea4826bb7da7d6",
+      "bytes": 17391
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/golang-patterns/SKILL.md",
+      "sha256": "275c5060fddd7af7222c2edfd4aeeb2ad43f36ea2a0c2b7da24366a3a6bc1d6a",
+      "bytes": 14971
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/django-patterns/SKILL.md",
+      "sha256": "062891c74150ee349045b9882f77cdd069cb65e3bbc8651d90303b2140fc1ca9",
+      "bytes": 22368
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/python-testing/SKILL.md",
+      "sha256": "e30ef63c23ae7b90074ecd20168d0f017067537b4d3e92d8def4b42be14319ef",
+      "bytes": 20251
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/project-guidelines-example/SKILL.md",
+      "sha256": "ec39a2cf6bc55ad6877c608894c5cb862ccbff3a6342cfbddf6a73aefdd247d8",
+      "bytes": 10700
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/iterative-retrieval/SKILL.md",
+      "sha256": "1e3ed553b3e019f52ec4594e810011ca7c2796a219909614df3746cd866c5fcb",
+      "bytes": 7315
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/springboot-patterns/SKILL.md",
+      "sha256": "e0dd4726e8baf27d74c0d0a2f5b3c82285f8912e4a0df526a2d1e533e7162ccd",
+      "bytes": 10575
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/postgres-patterns/SKILL.md",
+      "sha256": "26103ff6c1c005682d9de9a8174a56c86a26073758808449fb32eb64045d1f76",
+      "bytes": 4386
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/cpp-testing/SKILL.md",
+      "sha256": "f5e90ea6aa21b25f697a86dd17fc4abd7c0d141fa8e43a54d48f397eac813e3b",
+      "bytes": 11368
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/clickhouse-io/SKILL.md",
+      "sha256": "8e2828db03372f431b873f81e887541f4c599c49c58de79868f18e63b07321da",
+      "bytes": 10874
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/springboot-security/SKILL.md",
+      "sha256": "64e898daa0fac4a91b6eb063b64d545d337f7ce6eca00d0d8c1de7a3769bfa74",
+      "bytes": 4737
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/coding-standards/SKILL.md",
+      "sha256": "7e4e9a09f1999f96ab1ba26d5c8e9ef62a0d718ad96b0242fb86a360f36dc49d",
+      "bytes": 12378
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/eval-harness/SKILL.md",
+      "sha256": "c2c7988e4fa9838d077836486a18b4fe107d37be255ae5dde1ab4d0346aa6698",
+      "bytes": 6380
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/backend-patterns/SKILL.md",
+      "sha256": "29f98d97f714d10fd90468ff8b1c741cbd316129699ca746e4e9c497562edec4",
+      "bytes": 14356
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/nutrient-document-processing/SKILL.md",
+      "sha256": "f79f021aebe9870d53fa54f9e74b6fdfadd00787b87b00760c409dbd81f41a5a",
+      "bytes": 6605
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/security-scan/SKILL.md",
+      "sha256": "a45331c7cbe04ad3350d4f1cbb6ea51bd2b06f0a959bd51c528690ce859c02d5",
+      "bytes": 5720
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/jpa-patterns/SKILL.md",
+      "sha256": "53a207b13c7fa4bf0fea6c3c054be3c531255e8f84fb36d1502304d4a9edaa39",
+      "bytes": 4835
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/continuous-learning/SKILL.md",
+      "sha256": "5f0d591d7e5d1ba650675dc74f1a5b3d0d521bccb994512fb610d1a6f78e3bd3",
+      "bytes": 3984
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/continuous-learning-v2/SKILL.md",
+      "sha256": "ce3bff7d028fe8d2712cc1ede52379db0648524521afd34abb129c5be4029fb0",
+      "bytes": 10730
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/verification-loop/SKILL.md",
+      "sha256": "4cbae8a32a75a854b5caba460761282f60ec167fe5234beb0e4ad74da523ecde",
+      "bytes": 2858
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/tdd-workflow/SKILL.md",
+      "sha256": "d615ff5fe149a12803a0495c41a75025c21367aae180ede7fae945117505a8c0",
+      "bytes": 11438
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/springboot-verification/SKILL.md",
+      "sha256": "96920e376080d8aea7dfc06b3de2c1347e09f316e28fa5559be53d5f7fdf92c2",
+      "bytes": 2558
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/django-verification/SKILL.md",
+      "sha256": "92a32813b677c1694cb117b1bb26fba65c204389af7ae9dbb8240feada6dd3b8",
+      "bytes": 13479
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/java-coding-standards/SKILL.md",
+      "sha256": "9d4ed1c0f2948726c8b73ae28b23880ae5cf48006e320db0a145d9b3d0a2263a",
+      "bytes": 4211
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/django-tdd/SKILL.md",
+      "sha256": "680aef9218d91182ba2c41454c0d3fddb1efff03f37b195fd43775f7a180eb32",
+      "bytes": 22742
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/frontend-patterns/SKILL.md",
+      "sha256": "76c1c20e0a13f1089a58bd48ea6f8f8d24b1076868d02e3a83189e36d66b88ef",
+      "bytes": 14727
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/springboot-tdd/SKILL.md",
+      "sha256": "b7dbe8dcbafecffcc58750082ab298a263ccfb6a427b46f0a2e588497aff966f",
+      "bytes": 4231
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/python-patterns/SKILL.md",
+      "sha256": "ac34d293511a40bb8c38b02f36f5957c9ed607b661d849ed847c55510820e191",
+      "bytes": 17523
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/security-review/SKILL.md",
+      "sha256": "b233882c77e135da8d2b0d443cf30bc71c32088a1495b893854a130e93c20542",
+      "bytes": 13961
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/configure-ecc/SKILL.md",
+      "sha256": "70b1eef6f66b83e7f0153653bbf6beb621fbc009ae0b823aa8f5ef969af0ed11",
+      "bytes": 16405
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/strategic-compact/SKILL.md",
+      "sha256": "aa76227e319ee960efe44ace6c728734c651a024edaddfeae282e267a861c652",
+      "bytes": 2589
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/docs/ja-JP/skills/golang-testing/SKILL.md",
+      "sha256": "056a2e97218151a380b022d1bde7354f0e08c5172c437863d7f0c0b06e20271b",
+      "bytes": 21496
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.claude/skills/everything-claude-code/SKILL.md",
+      "sha256": "9a203e3828a390c597f01e0c97fa7c6f0e6ecd7e3a759da488c48a3f81ed18ed",
+      "bytes": 11180
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/brand-voice/SKILL.md",
+      "sha256": "9c23f871aa77a7d64d2a005fe0849a1380de2a4098d81ec73d13c468e556a59e",
+      "bytes": 3636
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/bun-runtime/SKILL.md",
+      "sha256": "2929d1f227962d86bfb2f0e45efd81590cfc90aeaad5b449f4630207e4e07204",
+      "bytes": 2596
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/x-api/SKILL.md",
+      "sha256": "eeee3fc92c629ceba838bbc77a3af6d31fe6833416d5e7e2e217ed6b90144bb9",
+      "bytes": 6458
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/everything-claude-code/SKILL.md",
+      "sha256": "f3d3984ea3d05a632379408dfe91974ab0c7d890e0a86115650b48b47274cbfc",
+      "bytes": 11348
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/coding-standards/SKILL.md",
+      "sha256": "f856f758c97fb62ddbfbd75d4570e03bf4ed04c258d13756fecdb313a04cc8d9",
+      "bytes": 11805
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/mcp-server-patterns/SKILL.md",
+      "sha256": "8da7edb0647f1015c5d70951d66a8f9dd2108726eb1cf9949ff2874849c4a880",
+      "bytes": 3867
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/eval-harness/SKILL.md",
+      "sha256": "0bc29828b0b20c57f1d0904fab2f046155aae9e6d9cf1d7587dd8776a8747f3d",
+      "bytes": 5515
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/nextjs-turbopack/SKILL.md",
+      "sha256": "f65da15aabeb9dca7ae08525739e72ab16e79a78ff4004f7cab6ad2de1c2a79b",
+      "bytes": 2162
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/investor-outreach/SKILL.md",
+      "sha256": "ab71ee37a1ff5f9b7f27908d33fc47f03e7897e6c87be3f8d7c0e4a8d73fefdd",
+      "bytes": 2643
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/claude-api/SKILL.md",
+      "sha256": "5092a3ce7e6bceb8f3ef2f0d12d292509183651c0f1b66fb56f514dba35a7525",
+      "bytes": 8493
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/market-research/SKILL.md",
+      "sha256": "7ef3fa13d6272fd295eeb2aca9f6a2f09f6a8270cf33b0675fc5a0018cf6e406",
+      "bytes": 2226
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/deep-research/SKILL.md",
+      "sha256": "2d631427fc9aba27a318735f930bdb49f5c6ce416506340025eac01648f1df09",
+      "bytes": 4582
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/exa-search/SKILL.md",
+      "sha256": "284d5c438457c4aeb1636e2b79cfa73c03c0365f4f698214a0a222991f893523",
+      "bytes": 4815
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/article-writing/SKILL.md",
+      "sha256": "068e9aa2bc7e7e63b396a5df7c50b8b68fa338d3ad1f66012757cde6b41fb7bd",
+      "bytes": 2914
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/dmux-workflows/SKILL.md",
+      "sha256": "06343029c1ae3b08f585a3d7826e782066e0ad3d1e0173cc98c969a380137e90",
+      "bytes": 4718
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/backend-patterns/SKILL.md",
+      "sha256": "952e95fd7e8d0b17f13835dde8067d7dd2abd019e6e17821d5ebf913113c589e",
+      "bytes": 13837
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/api-design/SKILL.md",
+      "sha256": "d2b090c4319e030fddb576950400724ff12ccb285083a540b6afb62431185d25",
+      "bytes": 13110
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/documentation-lookup/SKILL.md",
+      "sha256": "89cc655f72a5e3a947e88b7bae419c068f9ea34101b3fc9e7129184432b507cd",
+      "bytes": 4900
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/video-editing/SKILL.md",
+      "sha256": "daa74807d8a53d735392dedadafe2e91dbeba9266d57aa0691308dca106237ef",
+      "bytes": 9691
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/product-capability/SKILL.md",
+      "sha256": "80adddd72a5e4be4eed8200334f9038ab76499297212922b69ad6ff8adbbb275",
+      "bytes": 4424
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/fal-ai-media/SKILL.md",
+      "sha256": "86f110798171367784c0b83e45d8f4202fcc3d590e980c6ec7e82d0212fa7aff",
+      "bytes": 6856
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/e2e-testing/SKILL.md",
+      "sha256": "f84ae93c159bf6ecef5a60c9735dc82d96bc5f977ef52eb71678b66722acf684",
+      "bytes": 8065
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/verification-loop/SKILL.md",
+      "sha256": "01a9ae310ad4426bb05660dda6cefdeaac9513417585c09c8bb1b94738649a78",
+      "bytes": 2491
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/frontend-slides/SKILL.md",
+      "sha256": "da378954096f51844ab9214d6ae30f317d7f5373af41fbc7e989d20518adb9b8",
+      "bytes": 6558
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/tdd-workflow/SKILL.md",
+      "sha256": "63249998befbdbbf2f7d2f089c9cd7a9912f26ddc8fdf04ab1248c82614b43ac",
+      "bytes": 9787
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/content-engine/SKILL.md",
+      "sha256": "a64c6df93125b77c7199df086e4aedeecae0ea578d30e8c2ac73f9957688b52c",
+      "bytes": 4358
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/frontend-design/SKILL.md",
+      "sha256": "6b4d60566dd123d5598b7a16af5675b3a6a40f46b7c0fd805218d14758b03393",
+      "bytes": 3823
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/agent-sort/SKILL.md",
+      "sha256": "51d5b461ebd92f5c6f26eca1bb07c46ad4978dfae876b4d122ce802871a66326",
+      "bytes": 5910
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/crosspost/SKILL.md",
+      "sha256": "4c130ad682003589622dccae004f6180a472648179919ec23677aef1b743b5a4",
+      "bytes": 3435
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/frontend-patterns/SKILL.md",
+      "sha256": "dd04a1c02503036ee7f4d649c9b7b75d2e6954a94d6f464faedfa992701d1978",
+      "bytes": 14773
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/security-review/SKILL.md",
+      "sha256": "8cd029a9bdd8fdf35425039d41e896e343bf75063c4540365e3773c1e3d4009d",
+      "bytes": 12234
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/investor-materials/SKILL.md",
+      "sha256": "0541ac8ede8d39c59a646834481d0de86312e598331b86dc7027ece0def3c193",
+      "bytes": 2723
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.agents/skills/strategic-compact/SKILL.md",
+      "sha256": "c83c4c9d60d30d508bbd2bf0c6ffa724b5fdac679addd4828b268892dc39dc1b",
+      "bytes": 4043
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.cursor/skills/bun-runtime/SKILL.md",
+      "sha256": "2929d1f227962d86bfb2f0e45efd81590cfc90aeaad5b449f4630207e4e07204",
+      "bytes": 2596
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.cursor/skills/mcp-server-patterns/SKILL.md",
+      "sha256": "8da7edb0647f1015c5d70951d66a8f9dd2108726eb1cf9949ff2874849c4a880",
+      "bytes": 3867
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.cursor/skills/nextjs-turbopack/SKILL.md",
+      "sha256": "f65da15aabeb9dca7ae08525739e72ab16e79a78ff4004f7cab6ad2de1c2a79b",
+      "bytes": 2162
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.cursor/skills/investor-outreach/SKILL.md",
+      "sha256": "e1f6e1ac6d85381cdc7f8ae29ff60647f9de46b4c17ef452f7e343ae50749c55",
+      "bytes": 2140
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.cursor/skills/market-research/SKILL.md",
+      "sha256": "7ef3fa13d6272fd295eeb2aca9f6a2f09f6a8270cf33b0675fc5a0018cf6e406",
+      "bytes": 2226
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.cursor/skills/article-writing/SKILL.md",
+      "sha256": "6ab082c7850e8e46e471026ea388024b1b9a574d84eb210fcb7391c15aa6b51a",
+      "bytes": 3142
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.cursor/skills/documentation-lookup/SKILL.md",
+      "sha256": "89cc655f72a5e3a947e88b7bae419c068f9ea34101b3fc9e7129184432b507cd",
+      "bytes": 4900
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.cursor/skills/frontend-slides/SKILL.md",
+      "sha256": "da378954096f51844ab9214d6ae30f317d7f5373af41fbc7e989d20518adb9b8",
+      "bytes": 6558
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.cursor/skills/content-engine/SKILL.md",
+      "sha256": "057a610eab12e16bf447a46dd91de867ea450ce541fddc956d1abd55be5ec2cc",
+      "bytes": 2569
+    },
+    {
+      "path": ".claude/plugins/cache/everything-claude-code/everything-claude-code/1.10.0/.cursor/skills/investor-materials/SKILL.md",
+      "sha256": "0541ac8ede8d39c59a646834481d0de86312e598331b86dc7027ece0def3c193",
+      "bytes": 2723
+    },
+    {
+      "path": ".claude/plugins/cache/claude-context-mode/context-mode/0.9.16/skills/context-mode/SKILL.md",
+      "sha256": "4e71875f9378e22316159235520d58b63fc3bb70a84dcc7a64fc5e3957a74fd3",
+      "bytes": 15606
+    },
+    {
+      "path": ".claude/plugins/cache/claude-context-mode/context-mode/0.9.16/skills/upgrade/SKILL.md",
+      "sha256": "41ee3a929bca13b5f989bd2fd27501127effd812c9a0ff93050dd98bd6ef56bb",
+      "bytes": 1097
+    },
+    {
+      "path": ".claude/plugins/cache/claude-context-mode/context-mode/0.9.16/skills/doctor/SKILL.md",
+      "sha256": "44f69c9bd9dabddfbde2ed03f25a23eeda2d90475d599986407900cf2043ec3f",
+      "bytes": 1022
+    },
+    {
+      "path": ".claude/plugins/cache/claude-context-mode/context-mode/0.9.16/skills/stats/SKILL.md",
+      "sha256": "3040d4190b3cc381d483d12ade27af0ec77008a48ee8c19b7edca616992fbffe",
+      "bytes": 883
+    }
+  ],
+  "commands": {
+    "codex": "/opt/homebrew/bin/codex",
+    "claude": "/Users/iragonforce/.local/bin/claude",
+    "hermes": null,
+    "tmux": "/opt/homebrew/bin/tmux",
+    "nvim": "/opt/homebrew/bin/nvim",
+    "spf": "/opt/homebrew/bin/spf",
+    "btop": "/opt/homebrew/bin/btop"
+  },
+  "sessions": [
+    "main 0"
+  ],
+  "windows": [
+    "main:1 home zsh 1",
+    "main:2 nvim nvim 1",
+    "main:9 btop btop 1"
+  ]
+}

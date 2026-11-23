@@ -1,0 +1,8 @@
+[Unit]
+Description=Nexus host and Docker proxy bridge access controls
+After=docker.service vlans.service
+Wants=docker.service
+Before=nfs-server.service smbd.service
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/access-guard refresh

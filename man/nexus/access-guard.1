@@ -1,0 +1,22 @@
+.TH "NEXUS-ACCESS-GUARD" "1" "2026-11-06" "Homelab ops"
+.SH NAME
+access-guard \- Manage the existing guarded access change and rollback workflow.
+.SH SYNOPSIS
+.B access-guard
+[arguments]
+.SH DESCRIPTION
+Manage the existing guarded access change and rollback workflow.
+Established names and consumer paths are preserved. No hardware or service action was executed for documentation verification.
+.SH INTERFACE
+.SS /usr/local/sbin/access-guard
+Source: hosts/nexus/files/usr/local/sbin/access-guard
+.nf
+try:{'refresh':refresh,'install':install,'commit':commit,'rollback':rollback,'host':host}[sys.argv[1]]()
+.fi
+
+.SH DEPENDENCIES
+Use the interpreter in the source shebang and the existing host packages and services referenced in that source. Host configuration and private credentials remain on their original host.
+.SH OPERATIONS
+Before changing behavior, inspect inventory/audit-2026-11-06/nexus.json for recorded consumers and the source above for exact dependency paths. Never invoke a power, desktop, network, credential, notification, or storage operation merely to test it.
+.SH SOURCE
+Private iragonforce/ops repository. Consult docs/workflow.md for deployment, verification, rollback, and change records.

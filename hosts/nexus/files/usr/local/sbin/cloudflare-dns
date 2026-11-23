@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+# Reconcile the existing Cloudflare DNS configuration using private credentials. See cloudflare-dns(1) for source and integration details.
+"""Replace explicit AdGuard Docker DNS while preserving images, mounts and secrets."""
+
+if __name__ == "__main__":
+    import sys as _ops_sys
+    if _ops_sys.argv[1:] == ["--help"]:
+        print('Reconcile the existing Cloudflare DNS configuration using private credentials.\nUsage: cloudflare-dns \n\nSource: hosts/nexus/files/usr/local/sbin/cloudflare-dns in ~/ops\nSee man cloudflare-dns for the existing call sites and argument handling.')
+        raise SystemExit(0)
+import json, os, pathlib, shutil, subprocess, time, yaml
+os.umask(0o077)
+STATE=pathlib.Path('/var/lib/nexus-dns-20261013');STATE.mkdir(mode=0o700,exist_ok=True)
+ADGUARD={'192.168.3.2','fd00:3::2','100.96.255.81'}
+
+def run(*args):
+    p=subprocess.run(args,capture_output=True,text=True)
+    if p.returncode:
+        (STATE/'last-error.txt').write_text(p.stderr)
+        raise RuntimeError('Command failed; private error recorded: '+args[0])
+    return p.stdout
+
+def main():
+    rows=json.loads(run('docker','inspect',*run('docker','ps','-aq').split()))
+    before=STATE/'containers-before.json'
+    if not before.exists(): before.write_text(json.dumps(rows))
+    overrides=pathlib.Path('/var/lib/nexus-restoration/service-overrides.json')
+    if overrides.exists():
+        if not (STATE/'service-overrides.before.json').exists():shutil.copy2(overrides,STATE/'service-overrides.before.json')
+        ov=json.loads(overrides.read_text())
+    else:ov={}
+    targets=[]
+    for p in pathlib.Path('/srv/containers/compose').glob('*/compose.yaml'):
+        data=yaml.safe_load(p.read_text());changed=False
+        for service,body in data.get('services',{}).items():
+            dns=body.get('dns',[]);dns=[dns] if isinstance(dns,str) else dns
+            if not ADGUARD.intersection(dns):continue
+            old=next((x for x in rows if x['Name'].lstrip('/')==body.get('container_name',service)),None)
+            body['dns']=['1.1.1.1'];changed=True
+            if old:
+                ov.setdefault(old['Name'].lstrip('/'),{})['dns']=['1.1.1.1']
+                if old['State']['Running']:
+                    labels=old['Config'].get('Labels',{})
+                    assert labels.get('com.docker.compose.service')==service
+                    targets.append((p,service,labels['com.docker.compose.project'],old['Name'].lstrip('/')))
+        if changed:
+            b=STATE/'compose-before'/p.parent.name/'compose.yaml';b.parent.mkdir(parents=True,exist_ok=True)
+            if not b.exists():shutil.copy2(p,b)
+            p.write_text(yaml.safe_dump(data,sort_keys=False));p.chmod(0o600)
+    if overrides.exists():overrides.write_text(json.dumps(ov,indent=2)+'\n');overrides.chmod(0o600)
+    plan=STATE/'targets.json'
+    if plan.exists():targets=[(pathlib.Path(p),s,project,name) for p,s,project,name in json.loads(plan.read_text())]
+    else:plan.write_text(json.dumps([[str(p),s,project,name] for p,s,project,name in targets]))
+    # Set engine defaults for services without explicit DNS; no daemon restart needed.
+    daemon=pathlib.Path('/etc/docker/daemon.json');b=STATE/'daemon.before.json'
+    if not b.exists():shutil.copy2(daemon,b)
+    d=json.loads(daemon.read_text());d['dns']=['1.1.1.1'];daemon.write_text(json.dumps(d,indent=2)+'\n')
+    run('dockerd','--validate','--config-file',str(daemon))
+    run('systemctl','reload','docker')
+    completed=json.loads((STATE/'completed.json').read_text()) if (STATE/'completed.json').exists() else []
+    for p,service,project,name in targets:
+        current=json.loads(run('docker','inspect',name))[0]
+        if current['HostConfig']['Dns']==['1.1.1.1']:continue
+        print('Changing DNS:',name,flush=True)
+        run('docker','compose','--project-name',project,'-f',str(p),'up','-d','--no-deps','--pull','never',service)
+        current=json.loads(run('docker','inspect',name))[0]
+        assert current['State']['Running'] and current['HostConfig']['Dns']==['1.1.1.1']
+        original=next(x for x in json.loads(before.read_text()) if x['Name'].lstrip('/')==name)
+        assert current['Image']==original['Image'], 'Image changed unexpectedly'
+        assert set(current['Config']['Env'])==set(original['Config']['Env']), 'Environment changed unexpectedly'
+        def mounts(c):return sorted((m['Type'],m['Source'],m['Destination'],m['RW']) for m in c['Mounts'])
+        assert mounts(current)==mounts(original), 'Persistent mounts changed unexpectedly'
+        # Preserve live routing/access rules after container recreation.
+        run('/usr/local/sbin/container-routing','routes')
+        run('/usr/local/sbin/access-guard','refresh')
+        completed.append(name);(STATE/'completed.json').write_text(json.dumps(completed))
+    print('DNS rollout completed:',len(completed),'containers',flush=True)
+
+if __name__=='__main__':main()

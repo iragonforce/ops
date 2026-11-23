@@ -1,0 +1,15 @@
+#!/usr/bin/python3
+
+if __name__ == "__main__":
+    import sys as _ops_sys
+    if _ops_sys.argv[1:] == ["--help"]:
+        print('Handle Docker events for the existing container-network integration.\nUsage: docker-events \n\nSource: hosts/nexus/files/usr/local/sbin/docker-events in ~/ops\nSee man docker-events for the existing call sites and argument handling.')
+        raise SystemExit(0)
+# Handle Docker events for the existing container-network integration. See docker-events(1) for source and integration details.
+import subprocess,json,sys
+p=subprocess.Popen(['docker','events','--format','{{json .}}'],stdout=subprocess.PIPE,text=True)
+for line in p.stdout:
+ try:
+  d=json.loads(line);attrs=d.get('Actor',{}).get('Attributes',{});print(json.dumps({'type':d.get('Type'),'action':d.get('Action'),'name':attrs.get('name'),'image':attrs.get('image'),'exitCode':attrs.get('exitCode'),'time':d.get('time')}),flush=True)
+ except Exception:pass
+sys.exit(p.wait())

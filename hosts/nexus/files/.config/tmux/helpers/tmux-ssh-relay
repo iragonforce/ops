@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+# Run the retained tmux SSH relay integration. See tmux-ssh-relay(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Run the retained tmux SSH relay integration.
+Usage: tmux-ssh-relay  [ARGUMENT ...]
+
+Source: hosts/nexus/files/.config/tmux/helpers/tmux-ssh-relay in ~/ops
+See man tmux-ssh-relay for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+
+set -euo pipefail
+
+host="${1:?host required}"
+connect_target="${2:?connect target required}"
+session_name="${3:?session name required}"
+window_index="${4:?window index required}"
+
+control_dir="${XDG_CACHE_HOME:-$HOME/.cache}/tmux-managed/ssh"
+safe_host="${host//[^A-Za-z0-9_.-]/_}"
+safe_target="${connect_target//[^A-Za-z0-9_.-]/_}"
+control_path="${control_dir}/${safe_host}-${safe_target}.sock"
+
+host_name="$(hostname -s 2>/dev/null || printf 'unknown')"
+relay_chain="$(tmux show-options -v -t "$session_name" @relay_chain 2>/dev/null || true)"
+
+mkdir -p "$control_dir"
+
+ssh_base=(ssh)
+next_relay_chain="$host_name"
+
+if [[ -n "$relay_chain" ]]; then
+  next_relay_chain="${relay_chain},${host_name}"
+fi
+
+if [[ "$host_name" == "tensor" && "$host" == "qubit" ]]; then
+  ssh_base=(
+    ssh
+    -o StrictHostKeyChecking=no
+    -o UserKnownHostsFile=/dev/null
+    -o ServerAliveInterval=60
+    -o ServerAliveCountMax=3
+    -i "$HOME/.ssh/archcore"
+    -l iragonforce
+  )
+fi
+
+cleanup_control_socket() {
+  if [[ -S "$control_path" ]]; then
+    if ! "${ssh_base[@]}" -S "$control_path" -O check "$connect_target" >/dev/null 2>&1; then
+      rm -f "$control_path"
+    fi
+  fi
+}
+
+saved_prefix="$(tmux show-options -gv prefix 2>/dev/null || printf 'C-b')"
+saved_prefix2="$(tmux show-options -gv prefix2 2>/dev/null || true)"
+saved_window_name="$(tmux display-message -p -t "${session_name}:${window_index}" '#{window_name}' 2>/dev/null || printf '%s' "$host")"
+
+restore_prefixes() {
+  tmux set-option -g prefix "$saved_prefix" >/dev/null 2>&1 || true
+
+  if [[ -n "$saved_prefix2" ]]; then
+    tmux set-option -g prefix2 "$saved_prefix2" >/dev/null 2>&1 || true
+  else
+    tmux set-option -gu prefix2 >/dev/null 2>&1 || true
+  fi
+}
+
+restore_window_state() {
+  restore_prefixes
+
+  if [[ -n "$saved_window_name" ]]; then
+    tmux rename-window -t "${session_name}:${window_index}" "$saved_window_name" >/dev/null 2>&1 || true
+  fi
+
+  "$HOME/.local/bin/tmux-refresh-status" >/dev/null 2>&1 || true
+}
+
+trap restore_window_state EXIT INT TERM
+
+tmux rename-window -t "${session_name}:${window_index}" "$host" >/dev/null 2>&1 || true
+tmux set-window-option -t "${session_name}:${window_index}" -q @relay_window on
+tmux set-window-option -t "${session_name}:${window_index}" -q @relay_control inner
+tmux set-window-option -t "${session_name}:${window_index}" -q @relay_host "$host"
+tmux set-window-option -t "${session_name}:${window_index}" -q @relay_connect_target "$connect_target"
+tmux set-window-option -t "${session_name}:${window_index}" -q @relay_control_path "$control_path"
+"$HOME/.local/bin/tmux-relay-inner-status" on >/dev/null 2>&1 || true
+"$HOME/.local/bin/tmux-refresh-status"
+
+restore_prefixes
+cleanup_control_socket
+
+if ! "${ssh_base[@]}" \
+  -o ControlMaster=auto \
+  -o ControlPersist=yes \
+  -o ControlPath="$control_path" \
+  -o ConnectTimeout=5 \
+  -o ServerAliveInterval=60 \
+  -o ServerAliveCountMax=10 \
+  -o TCPKeepAlive=yes \
+  -o IPQoS=none \
+  -t \
+  "$connect_target" \
+  "export TMUX_AUTO_EXIT_ON_DETACH=0 TMUX_RELAY_CHAIN='$next_relay_chain'; exec ~/.local/bin/tmux-auto-start"; then
+  printf '%s is not available or the SSH session ended\n' "$host" >&2
+fi
+
+exit 0

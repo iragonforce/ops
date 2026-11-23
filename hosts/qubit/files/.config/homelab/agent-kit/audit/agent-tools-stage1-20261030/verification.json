@@ -1,0 +1,137 @@
+{
+  "date": "2026-10-30",
+  "sources": {
+    "obra/superpowers": {
+      "url": "https://github.com/obra/superpowers",
+      "revision": "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b"
+    },
+    "mattpocock/skills": {
+      "url": "https://github.com/mattpocock/skills",
+      "revision": "a496f5513d4a4cf889bc48e189e579f4b0bdf6aa"
+    },
+    "anthropics/skills": {
+      "url": "https://github.com/anthropics/skills",
+      "revision": "ca45fc496a3436251f191354091d557da31c15b5"
+    },
+    "punkpeye/awesome-mcp-servers": {
+      "url": "https://github.com/punkpeye/awesome-mcp-servers",
+      "revision": "f225f117f92626e6b7d5d2912746d9269e3d037b"
+    },
+    "modelcontextprotocol/servers": {
+      "url": "https://github.com/modelcontextprotocol/servers",
+      "revision": "194cc86e3ae6400958555bd4116849d822d69263"
+    },
+    "mem0ai/mem0": {
+      "url": "https://github.com/mem0ai/mem0",
+      "revision": "26cdefb46600c0fa5953c4b5ee5003c125539fc4"
+    },
+    "upstash/context7": {
+      "url": "https://github.com/upstash/context7",
+      "revision": "eabe36965ec69b2f3487c4eb329c448dd60b817c"
+    },
+    "DeusData/codebase-memory-mcp": {
+      "url": "https://github.com/DeusData/codebase-memory-mcp",
+      "revision": "a3831c979547d33adaa36998dca2b004d735fc84"
+    },
+    "microsoft/playwright-mcp": {
+      "url": "https://github.com/microsoft/playwright-mcp",
+      "revision": "0c4107acbecb75472b23c05c0e42471a0011874f"
+    },
+    "vercel-labs/skills": {
+      "url": "https://github.com/vercel-labs/skills",
+      "revision": "92a9a34ac3bf88e695e468b90c7bf32f163d32c8"
+    }
+  },
+  "packages": {
+    "node": "24.15.0",
+    "skills": "1.7.4",
+    "@playwright/mcp": "0.0.83",
+    "@upstash/context7-mcp": "4.4.4",
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "@modelcontextprotocol/server-memory": "2.0.1"
+  },
+  "checks": {
+    "codex_model": {
+      "native_calls": [
+        {
+          "server": "project_graph",
+          "tool": "search_nodes",
+          "status": "completed"
+        },
+        {
+          "server": "codebase_memory",
+          "tool": "search_graph",
+          "status": "completed"
+        },
+        {
+          "server": "context7",
+          "tool": "query-docs",
+          "status": "completed"
+        },
+        {
+          "server": "playwright",
+          "tool": "browser_navigate",
+          "status": "completed"
+        },
+        {
+          "server": "playwright",
+          "tool": "browser_snapshot",
+          "status": "completed"
+        },
+        {
+          "server": "playwright",
+          "tool": "browser_click",
+          "status": "completed"
+        },
+        {
+          "server": "playwright",
+          "tool": "browser_snapshot",
+          "status": "completed"
+        },
+        {
+          "server": "playwright",
+          "tool": "browser_close",
+          "status": "completed"
+        }
+      ],
+      "final": "- PASS \u2014 Installed verification-before-completion skill loaded and applied.\n- PASS \u2014 Context7 `/vercel/next.js/v15.1.8` returned `await params` documentation.\n- PASS \u2014 codebase_memory found `stage1-fixture.sample.add_numbers`, `sample.py:3\u20134`.\n- PASS \u2014 project_graph returned the `stage1-fixture` entity.\n- PASS \u2014 Playwright navigated, inspected, clicked \u201cCheck interaction,\u201d verified \u201cInteraction passed,\u201d and closed. One console error was reported; its cause was not inspected.",
+      "clarification_calls": 0
+    },
+    "context_mode": {
+      "native_calls": [
+        {
+          "server": "context-mode",
+          "tool": "ctx_execute",
+          "status": "completed"
+        },
+        {
+          "server": "context-mode",
+          "tool": "ctx_batch_execute",
+          "status": "completed"
+        }
+      ],
+      "final": "PASS \u2014 `ctx_execute` printed `stage1-context-ok`. `ctx_batch_execute` indexed the command output and retrieved the exact marker `stage1-index-ok`.",
+      "clarification_calls": 0
+    },
+    "hermes_model": {
+      "final": "PASS \u2014 Context7 returned Next.js v15.1.8 documentation showing `params` is awaited.\n\nPASS \u2014 codebase_memory found `stage1-fixture.sample.add_numbers` in `sample.py:3-4`.\n\nPASS \u2014 project_graph found the `stage1-fixture` verification entity.\n\nPASS \u2014 Playwright clicked \u201cCheck interaction\u201d; `#result` returned \u201cInteraction passed\u201d. The page was closed.\n\nsession_id: 20261030_001557_145f77\n",
+      "session_id": "20261030_001557_145f77"
+    },
+    "codex_model_settings_preserved": true,
+    "codex_mcp_names": [
+      "context7",
+      "codebase_memory",
+      "project_graph",
+      "playwright"
+    ],
+    "mem0": "SDK imports passed in host and container; service disabled: no local embedding model or production vector-store deployment",
+    "browser_socket": "active",
+    "codex_version": "codex-cli 0.166.0"
+  },
+  "cbm_release": {
+    "version": "v0.12.1",
+    "asset": "codebase-memory-mcp-linux-amd64-portable.tar.gz",
+    "sha256": "8c3d0341064301e78ecc84cf7348d4e2c6562a0f57448243ea560aaa34de36c1",
+    "source": "https://github.com/DeusData/codebase-memory-mcp/releases/download/v0.12.1/"
+  }
+}

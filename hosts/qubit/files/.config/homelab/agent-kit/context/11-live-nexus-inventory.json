@@ -1,0 +1,2470 @@
+{
+  "collected_at_utc": "2026-10-15T00:48:39.439193+00:00",
+  "scope": "Nexus metadata only; no environment, credentials, health-log contents, or application data",
+  "host": "nexus",
+  "tailscale_ipv4": "100.96.255.81",
+  "zpool_summary": "bulk\t18.2T\t2.39T\t15.8T\tONLINE\nfast\t1.81T\t624G\t1.20T\tONLINE",
+  "zpool_status": "all pools are healthy",
+  "nfs_exports": "/srv/nfs      \t192.168.1.4(sync,wdelay,hide,crossmnt,no_subtree_check,fsid=0,anonuid=1000,anongid=1000,sec=sys,ro,secure,root_squash,all_squash)\n/srv/nfs      \t192.168.1.102(sync,wdelay,hide,crossmnt,no_subtree_check,fsid=0,anonuid=1000,anongid=1000,sec=sys,ro,secure,root_squash,all_squash)\n/srv/nfs      \t192.168.1.3(sync,wdelay,hide,crossmnt,no_subtree_check,fsid=0,anonuid=1000,anongid=1000,sec=sys,ro,secure,root_squash,all_squash)\n/srv/nfs      \t100.103.67.56(sync,wdelay,hide,crossmnt,no_subtree_check,fsid=0,anonuid=1000,anongid=1000,sec=sys,ro,secure,root_squash,all_squash)\n/srv/nfs      \t100.114.178.50(sync,wdelay,hide,crossmnt,no_subtree_check,fsid=0,anonuid=1000,anongid=1000,sec=sys,ro,secure,root_squash,all_squash)\n/srv/nfs/media\t192.168.1.4(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/media\t192.168.1.102(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/media\t192.168.1.3(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/media\t100.103.67.56(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/media\t100.114.178.50(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/downloads\n\t\t192.168.1.4(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/downloads\n\t\t192.168.1.102(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/downloads\n\t\t192.168.1.3(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/downloads\n\t\t100.103.67.56(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/downloads\n\t\t100.114.178.50(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/documents\n\t\t192.168.1.4(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/documents\n\t\t192.168.1.102(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/documents\n\t\t192.168.1.3(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/documents\n\t\t100.103.67.56(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/documents\n\t\t100.114.178.50(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/projects\n\t\t192.168.1.4(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/projects\n\t\t192.168.1.102(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/projects\n\t\t192.168.1.3(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/projects\n\t\t100.103.67.56(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/projects\n\t\t100.114.178.50(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/bulk \t192.168.1.4(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/bulk \t192.168.1.102(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/bulk \t192.168.1.3(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/bulk \t100.103.67.56(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/bulk \t100.114.178.50(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast \t192.168.1.4(sync,wdelay,hide,crossmnt,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast \t192.168.1.102(sync,wdelay,hide,crossmnt,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast \t192.168.1.3(sync,wdelay,hide,crossmnt,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast \t100.103.67.56(sync,wdelay,hide,crossmnt,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast \t100.114.178.50(sync,wdelay,hide,crossmnt,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/documents\n\t\t192.168.1.4(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/documents\n\t\t192.168.1.102(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/documents\n\t\t192.168.1.3(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/documents\n\t\t100.103.67.56(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/documents\n\t\t100.114.178.50(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/project\n\t\t192.168.1.4(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/project\n\t\t192.168.1.102(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/project\n\t\t192.168.1.3(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/project\n\t\t100.103.67.56(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/project\n\t\t100.114.178.50(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/codebase\n\t\t192.168.1.4(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/codebase\n\t\t192.168.1.102(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/codebase\n\t\t192.168.1.3(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/codebase\n\t\t100.103.67.56(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/codebase\n\t\t100.114.178.50(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/3d-models\n\t\t192.168.1.4(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/3d-models\n\t\t192.168.1.102(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/3d-models\n\t\t192.168.1.3(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/3d-models\n\t\t100.103.67.56(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/3d-models\n\t\t100.114.178.50(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/screenshots\n\t\t192.168.1.4(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/screenshots\n\t\t192.168.1.102(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/screenshots\n\t\t192.168.1.3(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/screenshots\n\t\t100.103.67.56(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/screenshots\n\t\t100.114.178.50(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/claude-shared\n\t\t192.168.1.4(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/claude-shared\n\t\t192.168.1.102(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/claude-shared\n\t\t192.168.1.3(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/claude-shared\n\t\t100.103.67.56(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/claude-shared\n\t\t100.114.178.50(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/photos\n\t\t192.168.1.4(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/photos\n\t\t192.168.1.102(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/photos\n\t\t192.168.1.3(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/photos\n\t\t100.103.67.56(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/photos\n\t\t100.114.178.50(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/pics\n\t\t192.168.1.4(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/pics\n\t\t192.168.1.102(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/pics\n\t\t192.168.1.3(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/pics\n\t\t100.103.67.56(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/pics\n\t\t100.114.178.50(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/downloads\n\t\t192.168.1.4(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/downloads\n\t\t192.168.1.102(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/downloads\n\t\t192.168.1.3(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/downloads\n\t\t100.103.67.56(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/downloads\n\t\t100.114.178.50(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/obsidian-vault\n\t\t192.168.1.4(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/obsidian-vault\n\t\t192.168.1.102(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/obsidian-vault\n\t\t192.168.1.3(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/obsidian-vault\n\t\t100.103.67.56(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)\n/srv/nfs/fast/obsidian-vault\n\t\t100.114.178.50(sync,wdelay,hide,no_subtree_check,anonuid=1000,anongid=1000,sec=sys,rw,secure,root_squash,all_squash)",
+  "containers": [
+    {
+      "name": "3d-printer-mcp",
+      "image": "mcp/3d-printer@sha256:4e84ac2c7677dca1c7d494f6d82ac8d3c240f196de509ab8b307a1cea14fb83b",
+      "image_id": "sha256:4e84ac2c7677dca1c7d494f6d82ac8d3c240f196de509ab8b307a1cea14fb83b",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": null,
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-3d-printer-mcp",
+      "compose_service": "3d-printer-mcp",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.33",
+          "mac": "b2:18:24:06:66:37"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.29",
+          "mac": "26:0d:b5:5b:90:2b"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/mnt/bulk/data/projects/models",
+          "target": "/app/models",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/srv/containers/data/3d-printer-mcp/temp",
+          "target": "/app/temp",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {}
+    },
+    {
+      "name": "adguard-home",
+      "image": "adguard/adguardhome:v0.107.79@sha256:aba9e3bf0613be3ba3755e1fc311b126e2c24bec25e18b6483894a88283074f0",
+      "image_id": "sha256:aba9e3bf0613be3ba3755e1fc311b126e2c24bec25e18b6483894a88283074f0",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-infrastructure",
+      "compose_service": "adguard-home",
+      "networks": [
+        {
+          "name": "adguard-vlan",
+          "ipv4": "192.168.3.2",
+          "mac": "ca:c5:50:dd:ac:cd"
+        },
+        {
+          "name": "nexus-egress",
+          "ipv4": "172.30.240.2",
+          "mac": "aa:4a:73:f5:61:f7"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.17",
+          "mac": "2e:ac:0b:18:9d:05"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/adguard/home",
+          "target": "/opt/adguardhome/conf",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/adguard/workdir",
+          "target": "/opt/adguardhome/work",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "3000/tcp": null,
+        "3000/udp": null,
+        "443/tcp": null,
+        "443/udp": null,
+        "53/tcp": [
+          {
+            "HostIp": "100.96.255.81",
+            "HostPort": "53"
+          },
+          {
+            "HostIp": "192.168.1.2",
+            "HostPort": "53"
+          }
+        ],
+        "53/udp": [
+          {
+            "HostIp": "100.96.255.81",
+            "HostPort": "53"
+          },
+          {
+            "HostIp": "192.168.1.2",
+            "HostPort": "53"
+          }
+        ],
+        "5443/tcp": null,
+        "5443/udp": null,
+        "6060/tcp": null,
+        "67/udp": null,
+        "68/udp": null,
+        "80/tcp": null,
+        "853/tcp": null,
+        "853/udp": null
+      }
+    },
+    {
+      "name": "authentik-postgres",
+      "image": "postgres:18-trixie@sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336",
+      "image_id": "sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-infrastructure",
+      "compose_service": "authentik-postgres",
+      "networks": [
+        {
+          "name": "authentik_default",
+          "ipv4": "172.16.1.3",
+          "mac": "7e:6a:9e:fa:8d:94"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/authentik/postgres",
+          "target": "/var/lib/postgresql",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/authentik/postgres",
+          "target": "/var/lib/postgresql/data",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "5432/tcp": null
+      }
+    },
+    {
+      "name": "authentik-redis",
+      "image": "redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499",
+      "image_id": "sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": null,
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-infrastructure",
+      "compose_service": "authentik-redis",
+      "networks": [
+        {
+          "name": "authentik_default",
+          "ipv4": "172.16.1.2",
+          "mac": "5e:fc:67:a6:24:51"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/authentik-redis/recovered-volumes/7c6114478bd1a84ea624ba12a7a2e13d691ccf41912fa81df11f14a3c49a5676",
+          "target": "/data",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "6379/tcp": null
+      }
+    },
+    {
+      "name": "authentik-server",
+      "image": "ghcr.io/goauthentik/server:2026.8.3@sha256:ab9b4e8cc4ab3f8d1198d2db6aeea66bafea1963b3f2843589e0d163f97d9849",
+      "image_id": "sha256:ab9b4e8cc4ab3f8d1198d2db6aeea66bafea1963b3f2843589e0d163f97d9849",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-infrastructure",
+      "compose_service": "authentik-server",
+      "networks": [
+        {
+          "name": "authentik_default",
+          "ipv4": "172.16.1.4",
+          "mac": "6a:43:51:46:70:4a"
+        },
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.21",
+          "mac": "aa:8b:55:3c:07:76"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.20",
+          "mac": "7a:51:d5:c1:44:9d"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/authentik/certs",
+          "target": "/certs",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/authentik/data",
+          "target": "/data",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/authentik/templates",
+          "target": "/templates",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {}
+    },
+    {
+      "name": "authentik-worker",
+      "image": "ghcr.io/goauthentik/server:2026.8.3@sha256:ab9b4e8cc4ab3f8d1198d2db6aeea66bafea1963b3f2843589e0d163f97d9849",
+      "image_id": "sha256:ab9b4e8cc4ab3f8d1198d2db6aeea66bafea1963b3f2843589e0d163f97d9849",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-infrastructure",
+      "compose_service": "authentik-worker",
+      "networks": [
+        {
+          "name": "authentik_default",
+          "ipv4": "172.16.1.5",
+          "mac": "92:29:c9:39:0d:cc"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/authentik/certs",
+          "target": "/certs",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/authentik/data",
+          "target": "/data",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/authentik/templates",
+          "target": "/templates",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {}
+    },
+    {
+      "name": "baikal-baikal-1",
+      "image": "ckulka/baikal:0.10.1@sha256:658e9582f8d418392b4dfe7e816835b003694c8cb54ed0ba598eb5727b58fe22",
+      "image_id": "sha256:658e9582f8d418392b4dfe7e816835b003694c8cb54ed0ba598eb5727b58fe22",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-baikal-baikal-1",
+      "compose_service": "baikal-baikal-1",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.42",
+          "mac": "9e:d3:97:8b:c8:44"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.30",
+          "mac": "3e:f4:bc:1e:56:e8"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/baikal/data",
+          "target": "/var/www/baikal/Specific",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/baikal/config",
+          "target": "/var/www/baikal/config",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "443/tcp": null,
+        "80/tcp": null
+      }
+    },
+    {
+      "name": "bambustudio",
+      "image": "lscr.io/linuxserver/bambustudio:v02.08.04.57-ls174@sha256:056f90dada957824cec32f1a09eaec322a8b1af08e9d117cf5c4dadf89693aeb",
+      "image_id": "sha256:056f90dada957824cec32f1a09eaec322a8b1af08e9d117cf5c4dadf89693aeb",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-bambustudio",
+      "compose_service": "bambustudio",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.53",
+          "mac": "4a:4f:52:fd:45:6b"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.28",
+          "mac": "46:35:22:94:03:81"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/bambu-studio/config",
+          "target": "/config",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/mnt/bulk/data/projects/models",
+          "target": "/models",
+          "type": "bind",
+          "writable": false
+        }
+      ],
+      "published_ports": {
+        "3000/tcp": null,
+        "3001/tcp": null
+      }
+    },
+    {
+      "name": "bazarr",
+      "image": "ghcr.io/home-operations/bazarr:1.6.2@sha256:17dc1cff22e99694ffbfb06555526cb47a66b362b4d6c982f06b557f7caae2bb",
+      "image_id": "sha256:17dc1cff22e99694ffbfb06555526cb47a66b362b4d6c982f06b557f7caae2bb",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-media",
+      "compose_service": "bazarr",
+      "networks": [
+        {
+          "name": "pia-vlan",
+          "ipv4": "192.168.2.11",
+          "mac": "1a:33:1d:3d:62:af"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.7",
+          "mac": "02:72:b9:aa:1d:9c"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/bazarr/config",
+          "target": "/config",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/mnt/bulk/data/downloads/torrent",
+          "target": "/downloads",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/mnt/bulk/data/media/movies",
+          "target": "/media/movies",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/mnt/bulk/data/media/tv-shows",
+          "target": "/media/tv-shows",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {}
+    },
+    {
+      "name": "cadvisor",
+      "image": "ghcr.io/google/cadvisor:0.60.6@sha256:b8e7d1093144fd088f425ff003d75a4aa405de075db78dae3bc563730b1bd07a",
+      "image_id": "sha256:b8e7d1093144fd088f425ff003d75a4aa405de075db78dae3bc563730b1bd07a",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-monitoring",
+      "compose_service": "cadvisor",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.48",
+          "mac": "b2:b8:29:53:10:f5"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.40",
+          "mac": "62:65:5a:9e:0d:73"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/",
+          "target": "/rootfs",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/sys",
+          "target": "/sys",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/dev/disk",
+          "target": "/dev/disk",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/var/run",
+          "target": "/var/run",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/var/lib/docker",
+          "target": "/var/lib/docker",
+          "type": "bind",
+          "writable": false
+        }
+      ],
+      "published_ports": {
+        "8080/tcp": null
+      }
+    },
+    {
+      "name": "checkmk",
+      "image": "checkmk/check-mk-community:2.5.0-latest@sha256:9eb222d05fe03d751f70ac7d8022cc655637679ba1d38922ee408e4e25058c26",
+      "image_id": "sha256:9eb222d05fe03d751f70ac7d8022cc655637679ba1d38922ee408e4e25058c26",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-checkmk",
+      "compose_service": "checkmk",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.56",
+          "mac": "4a:0f:24:7c:6c:b8"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.46",
+          "mac": "ca:e0:aa:47:00:d2"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/checkmk/sites",
+          "target": "/omd/sites",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "5000/tcp": null,
+        "6557/tcp": null
+      }
+    },
+    {
+      "name": "cleanuparr",
+      "image": "ghcr.io/cleanuparr/cleanuparr:2.10.9@sha256:cfada3e5721451403a878ef67afb317692bb3afe277328b28ce4470bfba915d0",
+      "image_id": "sha256:cfada3e5721451403a878ef67afb317692bb3afe277328b28ce4470bfba915d0",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-media",
+      "compose_service": "cleanuparr",
+      "networks": [
+        {
+          "name": "pia-vlan",
+          "ipv4": "192.168.2.4",
+          "mac": "2a:dd:66:83:36:cb"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.8",
+          "mac": "ee:e4:09:71:ba:45"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/cleanuparr",
+          "target": "/config",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {}
+    },
+    {
+      "name": "cloudflared",
+      "image": "cloudflare/cloudflared:2026.10.0@sha256:9b49eed8f62806d5d45ddf59ecefb5710429598ea6d3fcccd2af938f621b2b07",
+      "image_id": "sha256:9b49eed8f62806d5d45ddf59ecefb5710429598ea6d3fcccd2af938f621b2b07",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": null,
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-infrastructure",
+      "compose_service": "cloudflared",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.22",
+          "mac": "7a:3a:f7:e3:9a:05"
+        },
+        {
+          "name": "nexus-egress",
+          "ipv4": "172.30.240.250",
+          "mac": "16:fb:75:d7:c4:af"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.3",
+          "mac": "82:b2:89:87:c2:96"
+        }
+      ],
+      "mounts": [],
+      "published_ports": {}
+    },
+    {
+      "name": "cups",
+      "image": "drpsychick/airprint-bridge:noble-20261001@sha256:b6dcc432ec13f459a82cbb123183b3787897f39b1cea4f9f36fdc989a46f5f2c",
+      "image_id": "sha256:b6dcc432ec13f459a82cbb123183b3787897f39b1cea4f9f36fdc989a46f5f2c",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-cups",
+      "compose_service": "cups",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.46",
+          "mac": "26:27:40:fe:84:c1"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.27",
+          "mac": "6a:09:04:7b:02:ba"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/cups/recovered-volumes/cups_cups-config",
+          "target": "/etc/cups",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/run/dbus/system_bus_socket",
+          "target": "/run/dbus/system_bus_socket",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {}
+    },
+    {
+      "name": "flaresolverr",
+      "image": "ghcr.io/flaresolverr/flaresolverr:v3.5.2@sha256:c80ae007ce2ccdcd217a12426e4f039ef763ff90738c808d38810c3e59323767",
+      "image_id": "sha256:c80ae007ce2ccdcd217a12426e4f039ef763ff90738c808d38810c3e59323767",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": null,
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-media",
+      "compose_service": "flaresolverr",
+      "networks": [
+        {
+          "name": "pia-vlan",
+          "ipv4": "192.168.2.9",
+          "mac": "3a:63:2a:97:37:9b"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.11",
+          "mac": "8e:fd:8e:de:3a:62"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/flaresolverr/recovered-volumes/7637752c0d21f45fad99d89bb44bfbf5fdd67e221acb0836931c756e6dd0b96f",
+          "target": "/config",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "8191/tcp": null,
+        "8192/tcp": null
+      }
+    },
+    {
+      "name": "glance",
+      "image": "glanceapp/glance:v0.8.6@sha256:9dfb09470b207dcb67ac715994bdb1929374ba3f9c0d7df7462c24adf10fd073",
+      "image_id": "sha256:9dfb09470b207dcb67ac715994bdb1929374ba3f9c0d7df7462c24adf10fd073",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-monitoring",
+      "compose_service": "glance",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.41",
+          "mac": "32:7b:70:b0:1c:14"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.43",
+          "mac": "6e:ff:5a:df:ee:0c"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/glance/config",
+          "target": "/app/config",
+          "type": "bind",
+          "writable": false
+        }
+      ],
+      "published_ports": {
+        "8080/tcp": null
+      }
+    },
+    {
+      "name": "glance-router",
+      "image": "python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "image_id": "sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-monitoring",
+      "compose_service": "glance-router",
+      "networks": [],
+      "mounts": [
+        {
+          "source": "/srv/containers/builds/glance-router",
+          "target": "/code",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/srv/containers/data/glance/config",
+          "target": "/config",
+          "type": "bind",
+          "writable": false
+        }
+      ],
+      "published_ports": {}
+    },
+    {
+      "name": "grafana",
+      "image": "grafana/grafana:13.2.3@sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572",
+      "image_id": "sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "2026-10-14T01:28:23.717421255Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-monitoring",
+      "compose_service": "grafana",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.6",
+          "mac": "2e:6d:c3:4b:78:16"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.42",
+          "mac": "d2:4d:2f:00:3b:33"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/grafana/provisioning",
+          "target": "/etc/grafana/provisioning",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/srv/containers/data/grafana/data",
+          "target": "/var/lib/grafana/data",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/grafana/plugins",
+          "target": "/var/lib/grafana/plugins",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "3000/tcp": null
+      }
+    },
+    {
+      "name": "hermes",
+      "image": "nousresearch/hermes-agent:v0.21.6@sha256:55e192fba0cd4fde61142abbff5adeacff40efdb482ccd0ff877924bd274f909",
+      "image_id": "sha256:55e192fba0cd4fde61142abbff5adeacff40efdb482ccd0ff877924bd274f909",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-hermes",
+      "compose_service": "hermes",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.55",
+          "mac": "ce:83:27:9f:17:24"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.34",
+          "mac": "8e:9e:ca:a8:33:ad"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/hermes/source-openclaw",
+          "target": "/openclaw",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/mnt/bulk",
+          "target": "/mnt/bulk",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/srv/containers/data",
+          "target": "/mnt/fast",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/hermes/source-openclaw/workspace",
+          "target": "/openclaw/workspace",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/srv/containers/data/hermes/data",
+          "target": "/opt/data",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/mnt/bulk/data",
+          "target": "/mnt/bulk/data",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/var/run/docker.sock",
+          "target": "/var/run/docker.sock",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/usr/bin/docker",
+          "target": "/usr/local/bin/docker",
+          "type": "bind",
+          "writable": false
+        }
+      ],
+      "published_ports": {}
+    },
+    {
+      "name": "home-assistant",
+      "image": "ghcr.io/home-assistant/home-assistant:2026.10.1@sha256:130241f28d01fa80dfa3b44f7d89781c188d8642ecab9024f079f19f9f82baa0",
+      "image_id": "sha256:130241f28d01fa80dfa3b44f7d89781c188d8642ecab9024f079f19f9f82baa0",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "2026-10-14T01:24:58.563017317Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-iot",
+      "compose_service": "home-assistant",
+      "networks": [
+        {
+          "name": "home-assistant_default",
+          "ipv4": "172.16.13.3",
+          "mac": "a2:e5:a6:16:33:ae"
+        },
+        {
+          "name": "iot-vlan",
+          "ipv4": "192.168.4.2",
+          "mac": "9e:42:94:8e:b8:9b"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.19",
+          "mac": "5e:66:d2:e6:92:8b"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/home-assistant/config",
+          "target": "/config",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {}
+    },
+    {
+      "name": "home-assistant-postgres",
+      "image": "postgres:18-trixie@sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336",
+      "image_id": "sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-iot",
+      "compose_service": "home-assistant-postgres",
+      "networks": [
+        {
+          "name": "home-assistant_default",
+          "ipv4": "172.16.13.2",
+          "mac": "f6:50:ac:45:e2:a2"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/home-assistant/postgres",
+          "target": "/var/lib/postgresql",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "5432/tcp": null
+      }
+    },
+    {
+      "name": "homelable-backend",
+      "image": "nexus/homelable-backend:20261011-repaired@sha256:61fff791466aa27f28c03db60452329b5eade736a1ec0940fb204d7a2092e14f",
+      "image_id": "sha256:61fff791466aa27f28c03db60452329b5eade736a1ec0940fb204d7a2092e14f",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-homelable",
+      "compose_service": "homelable-backend",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.51",
+          "mac": "5a:ad:7f:b0:f6:b8"
+        },
+        {
+          "name": "homelable_homelable_net",
+          "ipv4": "172.16.10.2",
+          "mac": "7e:58:71:4b:a6:49"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.37",
+          "mac": "ae:ed:93:17:8d:cc"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/homelable/data",
+          "target": "/app/data",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "8000/tcp": null
+      }
+    },
+    {
+      "name": "homelable-frontend",
+      "image": "nexus/homelable-frontend:20261011@sha256:c116bc258f5d4864df42b26b23dff7a9928fd4dc873dec312eba4f3bcb064b10",
+      "image_id": "sha256:c116bc258f5d4864df42b26b23dff7a9928fd4dc873dec312eba4f3bcb064b10",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-homelable",
+      "compose_service": "homelable-frontend",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.50",
+          "mac": "6e:96:a3:fb:1f:ba"
+        },
+        {
+          "name": "homelable_homelable_net",
+          "ipv4": "172.16.10.3",
+          "mac": "4e:24:b9:fc:a9:20"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.39",
+          "mac": "16:a8:b3:60:f2:d5"
+        }
+      ],
+      "mounts": [],
+      "published_ports": {
+        "80/tcp": null
+      }
+    },
+    {
+      "name": "jellyfin",
+      "image": "jellyfin/jellyfin:12.2@sha256:357724bf0ae27a672c7cbaa899db2d9abeb13dbd8657ccce750258a4c059d037",
+      "image_id": "sha256:357724bf0ae27a672c7cbaa899db2d9abeb13dbd8657ccce750258a4c059d037",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-media",
+      "compose_service": "jellyfin",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.7",
+          "mac": "d2:13:d7:de:75:75"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.9",
+          "mac": "86:a8:38:87:2a:91"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/jellyfin/cache",
+          "target": "/cache",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/jellyfin/config",
+          "target": "/config",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/jellyfin/ix-jellyfin_jellyfin-transcodes",
+          "target": "/cache/transcodes",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/jellyfin/ix-jellyfin_jellyfin-transcodes",
+          "target": "/config/transcodes",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/mnt/bulk/data/media/movies",
+          "target": "/media/movies",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/mnt/bulk/data/media/music",
+          "target": "/media/music",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/mnt/bulk/data/media/tv-shows",
+          "target": "/media/tv-shows",
+          "type": "bind",
+          "writable": false
+        }
+      ],
+      "published_ports": {
+        "8096/tcp": null
+      }
+    },
+    {
+      "name": "lidarr",
+      "image": "ghcr.io/home-operations/lidarr:3.1.2.4938@sha256:9df1e14c8e09745f23a36c0cc6adcf69665b379aae60e5a7cb9bda27961ef4e7",
+      "image_id": "sha256:9df1e14c8e09745f23a36c0cc6adcf69665b379aae60e5a7cb9bda27961ef4e7",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-media",
+      "compose_service": "lidarr",
+      "networks": [
+        {
+          "name": "pia-vlan",
+          "ipv4": "192.168.2.2",
+          "mac": "ae:18:92:f2:61:b8"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.12",
+          "mac": "c6:6b:db:a0:44:50"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/lidarr/config",
+          "target": "/config",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/mnt/bulk/data/downloads/torrent",
+          "target": "/downloads",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/mnt/bulk/data/media/music",
+          "target": "/media/music",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {}
+    },
+    {
+      "name": "makersvault-api",
+      "image": "nexus/makersvault-api:20261011@sha256:7dd5281797ae2afe081d8617cfe4f86575e24579e916a3f7ceb82d8423ff0a5b",
+      "image_id": "sha256:7dd5281797ae2afe081d8617cfe4f86575e24579e916a3f7ceb82d8423ff0a5b",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-makersvault",
+      "compose_service": "makersvault-api",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.8",
+          "mac": "ce:fa:d7:8f:ff:42"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.36",
+          "mac": "da:f1:b5:5d:6b:23"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/makersvault/data",
+          "target": "/data",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/mnt/bulk/data/projects/models",
+          "target": "/models",
+          "type": "bind",
+          "writable": false
+        }
+      ],
+      "published_ports": {
+        "8000/tcp": null
+      }
+    },
+    {
+      "name": "makersvault-web",
+      "image": "nexus/makersvault-web:20261011@sha256:ff7fa4b48a1b473a7049ce89acd70a32fe9112e015e11000b0d5b25d23706f38",
+      "image_id": "sha256:ff7fa4b48a1b473a7049ce89acd70a32fe9112e015e11000b0d5b25d23706f38",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-makersvault",
+      "compose_service": "makersvault-web",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.32",
+          "mac": "02:4e:42:30:e5:83"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.35",
+          "mac": "7e:a3:d0:fc:71:73"
+        }
+      ],
+      "mounts": [],
+      "published_ports": {
+        "5173/tcp": null
+      }
+    },
+    {
+      "name": "matter-server",
+      "image": "ghcr.io/home-assistant-libs/python-matter-server:stable@sha256:170aa093ce91c76cde4cc390918307590f0f5558fcec93f913af3cb019e6562a",
+      "image_id": "sha256:170aa093ce91c76cde4cc390918307590f0f5558fcec93f913af3cb019e6562a",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": null,
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-iot",
+      "compose_service": "matter-server",
+      "networks": [
+        {
+          "name": "iot-vlan",
+          "ipv4": "192.168.4.8",
+          "mac": "e6:bc:2a:2e:0a:5e"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.15",
+          "mac": "be:e2:bc:bd:cd:62"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/matter-server",
+          "target": "/data",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "5580/tcp": null
+      }
+    },
+    {
+      "name": "mcp-homelable",
+      "image": "nexus/mcp-homelable:20261011-repaired@sha256:1bfce12adeb6c413fd0ebf2b5ea91d10706d65fa4437ea9de0166a97a4d973fa",
+      "image_id": "sha256:1bfce12adeb6c413fd0ebf2b5ea91d10706d65fa4437ea9de0166a97a4d973fa",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-homelable",
+      "compose_service": "mcp-homelable",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.52",
+          "mac": "1a:56:34:41:d2:c3"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.38",
+          "mac": "ca:c4:60:4b:41:ad"
+        }
+      ],
+      "mounts": [],
+      "published_ports": {}
+    },
+    {
+      "name": "minecraft-bedrock",
+      "image": "itzg/minecraft-bedrock-server:2026.9.2@sha256:244e72a36a3e3d69c588cbeefe6d8f6f97c48869b801718a4023570654e3b3d9",
+      "image_id": "sha256:244e72a36a3e3d69c588cbeefe6d8f6f97c48869b801718a4023570654e3b3d9",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-minecraft-bedrock",
+      "compose_service": "minecraft-bedrock",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.5",
+          "mac": "46:33:fd:98:63:26"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.23",
+          "mac": "26:39:36:62:62:7b"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/minecraft-server",
+          "target": "/data",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "19132/tcp": null,
+        "19132/udp": null,
+        "19133/udp": null
+      }
+    },
+    {
+      "name": "mosquitto",
+      "image": "eclipse-mosquitto:2@sha256:38c0da4f2ef84284d47b3b3eeea1cb3bdeabe81ee10caf0cd5c5ff61ee3ea408",
+      "image_id": "sha256:38c0da4f2ef84284d47b3b3eeea1cb3bdeabe81ee10caf0cd5c5ff61ee3ea408",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": null,
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-iot",
+      "compose_service": "mosquitto",
+      "networks": [
+        {
+          "name": "iot-vlan",
+          "ipv4": "192.168.4.4",
+          "mac": "36:14:48:8d:dc:f8"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.5",
+          "mac": "9e:a7:48:e3:eb:e2"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/mosquitto/data",
+          "target": "/mosquitto/data",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/mosquitto/log",
+          "target": "/mosquitto/log",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/mosquitto/config/mosquitto.conf",
+          "target": "/mosquitto/config/mosquitto.conf",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "1883/tcp": null
+      }
+    },
+    {
+      "name": "n8n",
+      "image": "docker.n8n.io/n8nio/n8n:2.42.6@sha256:526daa38b68e923cc00c5280d18b4da5d489f115a73bdbf3b8e452b184197a9a",
+      "image_id": "sha256:526daa38b68e923cc00c5280d18b4da5d489f115a73bdbf3b8e452b184197a9a",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-n8n",
+      "compose_service": "n8n",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.23",
+          "mac": "f2:4e:74:68:29:14"
+        },
+        {
+          "name": "n8n_default",
+          "ipv4": "172.16.3.4",
+          "mac": "d6:e3:3b:f0:48:84"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.18",
+          "mac": "c6:c0:5c:7a:83:91"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/n8n/data",
+          "target": "/home/node/.n8n",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "5678/tcp": null
+      }
+    },
+    {
+      "name": "n8n-postgres",
+      "image": "postgres:18-trixie@sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336",
+      "image_id": "sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-n8n",
+      "compose_service": "n8n-postgres",
+      "networks": [
+        {
+          "name": "n8n_default",
+          "ipv4": "172.16.3.3",
+          "mac": "3a:f3:d2:f1:72:da"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/n8n/postgres",
+          "target": "/var/lib/postgresql",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "5432/tcp": null
+      }
+    },
+    {
+      "name": "n8n-redis",
+      "image": "valkey/valkey:9-alpine@sha256:48332870af354a799964c0012ae1194a0bf2bf894eb508f945810596dc2d8d11",
+      "image_id": "sha256:48332870af354a799964c0012ae1194a0bf2bf894eb508f945810596dc2d8d11",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": null,
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-n8n",
+      "compose_service": "n8n-redis",
+      "networks": [
+        {
+          "name": "n8n_default",
+          "ipv4": "172.16.3.2",
+          "mac": "aa:9e:3c:48:60:22"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/n8n/redis",
+          "target": "/bitnami/redis/data",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "6379/tcp": null
+      }
+    },
+    {
+      "name": "netbootxyz-netboot",
+      "image": "ghcr.io/netbootxyz/netbootxyz@sha256:1a12b38a290d8425d871ca48658c319671e03f8251345d4cbcd1f3328ca9d912",
+      "image_id": "sha256:1a12b38a290d8425d871ca48658c319671e03f8251345d4cbcd1f3328ca9d912",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-netbootxyz-netboot",
+      "compose_service": "netbootxyz-netboot",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.4",
+          "mac": "aa:ff:4b:db:82:04"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.24",
+          "mac": "5a:13:8b:29:53:23"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/netbootxyz/asset",
+          "target": "/assets",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/netbootxyz/config",
+          "target": "/config",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/netbootxyz/7913c921b1fda05889f3a039fec2285828d5690d1bbbcf2eff3c34fc838b77f8",
+          "target": "/var/log/nginx",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/netbootxyz/1d79015f3901f07db13b39e7178bdeb93ae761ae9abddc8bcf0b4104aed8d3f6",
+          "target": "/var/tmp/nginx",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "3000/tcp": null,
+        "69/udp": null,
+        "80/tcp": null
+      }
+    },
+    {
+      "name": "nginx-proxy-manager",
+      "image": "jc21/nginx-proxy-manager:2.16.0@sha256:4393e642e233e5efd5adeb7f10918d4aaea71c9ed875b94190273fc8e87f9594",
+      "image_id": "sha256:4393e642e233e5efd5adeb7f10918d4aaea71c9ed875b94190273fc8e87f9594",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "2026-10-14T03:07:11.719153427Z",
+      "health": null,
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-infrastructure",
+      "compose_service": "nginx-proxy-manager",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.20",
+          "mac": "32:b6:85:33:8a:af"
+        },
+        {
+          "name": "nexus-egress",
+          "ipv4": "172.30.240.251",
+          "mac": "f2:08:ef:12:03:b7"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.4",
+          "mac": "ae:cf:88:f0:75:c7"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/nginx/data",
+          "target": "/data",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/nginx/certificates",
+          "target": "/etc/letsencrypt",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "443/tcp": [
+          {
+            "HostIp": "100.96.255.81",
+            "HostPort": "443"
+          },
+          {
+            "HostIp": "192.168.1.2",
+            "HostPort": "443"
+          }
+        ],
+        "80/tcp": [
+          {
+            "HostIp": "100.96.255.81",
+            "HostPort": "80"
+          },
+          {
+            "HostIp": "192.168.1.2",
+            "HostPort": "80"
+          }
+        ],
+        "81/tcp": null
+      }
+    },
+    {
+      "name": "node-exporter",
+      "image": "prom/node-exporter:v1.12.1@sha256:1b4e4438faca4dd7e001dd445d161a4a2091b0fededa84093b3a8dfeae1f1be0",
+      "image_id": "sha256:1b4e4438faca4dd7e001dd445d161a4a2091b0fededa84093b3a8dfeae1f1be0",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": null,
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-monitoring",
+      "compose_service": "node-exporter",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.49",
+          "mac": "02:a7:da:b0:91:77"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.41",
+          "mac": "3e:38:d8:84:10:5f"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/",
+          "target": "/rootfs",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/srv/containers/data/node-exporter/textfile",
+          "target": "/textfile",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/proc",
+          "target": "/host/proc",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/sys",
+          "target": "/host/sys",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "9100/tcp": null
+      }
+    },
+    {
+      "name": "otbr",
+      "image": "openthread/otbr@sha256:dafdb152e9b0dae68b9da66deaf893e00643e9df340455f2d8f35259bd869efc",
+      "image_id": "sha256:dafdb152e9b0dae68b9da66deaf893e00643e9df340455f2d8f35259bd869efc",
+      "status": "exited",
+      "exit_code": 1,
+      "finished_at": "2026-10-14T20:45:32.372744192Z",
+      "health": null,
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-iot",
+      "compose_service": "otbr",
+      "networks": [
+        {
+          "name": "iot-vlan",
+          "ipv4": "",
+          "mac": ""
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "",
+          "mac": ""
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/iot-mqtt/otbr-settings",
+          "target": "/var/lib/thread",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/iot-mqtt/otbr-start.sh",
+          "target": "/usr/local/bin/otbr-start.sh",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/etc/nexus/secrets/iot/thread-dataset.env",
+          "target": "/usr/local/etc/thread-dataset.env",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/etc/nexus/secrets/iot/thread-dataset.hex",
+          "target": "/usr/local/etc/thread-dataset.hex",
+          "type": "bind",
+          "writable": false
+        }
+      ],
+      "published_ports": {}
+    },
+    {
+      "name": "portainer",
+      "image": "portainer/portainer-ce:2.45.2@sha256:03f94a406496dc84d37b552795fc424ccad8d0d7200353b6a82915f6e8f73ab0",
+      "image_id": "sha256:03f94a406496dc84d37b552795fc424ccad8d0d7200353b6a82915f6e8f73ab0",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": null,
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-portainer",
+      "compose_service": "portainer",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.25",
+          "mac": "2e:3d:f5:13:8e:df"
+        },
+        {
+          "name": "portainer_default",
+          "ipv4": "172.16.12.2",
+          "mac": "36:e0:1e:35:4b:7d"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.33",
+          "mac": "72:31:af:59:bb:49"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/portainer",
+          "target": "/data",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/var/run/docker.sock",
+          "target": "/var/run/docker.sock",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "8000/tcp": null,
+        "9000/tcp": null,
+        "9443/tcp": null
+      }
+    },
+    {
+      "name": "prometheus",
+      "image": "prom/prometheus:v3.13.4@sha256:87861b8cf91579109319ebc300f3f1060e6da9c05d6ae8ad15a20c879e84e32e",
+      "image_id": "sha256:87861b8cf91579109319ebc300f3f1060e6da9c05d6ae8ad15a20c879e84e32e",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-monitoring",
+      "compose_service": "prometheus",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.2",
+          "mac": "a2:e0:ea:84:57:d8"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.44",
+          "mac": "ce:68:5a:ed:6f:6c"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/prometheus/config",
+          "target": "/config",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/prometheus/data",
+          "target": "/data",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/prometheus/e25230218735fe9335d51c0d0f6e04bd0d29c433fe190b75a72b92e95fe7e0e5",
+          "target": "/prometheus",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "9090/tcp": null
+      }
+    },
+    {
+      "name": "prowlarr",
+      "image": "lscr.io/linuxserver/prowlarr:2.6.5.5623-ls163@sha256:f9151e5bc1025c6d0a630d503210cdcb6bb55a7cc098562609d96a408d838902",
+      "image_id": "sha256:f9151e5bc1025c6d0a630d503210cdcb6bb55a7cc098562609d96a408d838902",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-media",
+      "compose_service": "prowlarr",
+      "networks": [
+        {
+          "name": "pia-vlan",
+          "ipv4": "192.168.2.3",
+          "mac": "fa:56:05:3a:fe:4d"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.16",
+          "mac": "42:50:88:60:8b:6b"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/prowlarr/config",
+          "target": "/config",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "9696/tcp": null
+      }
+    },
+    {
+      "name": "qbittorrent",
+      "image": "ghcr.io/home-operations/qbittorrent:5.2.4@sha256:9307627e03981d5473aa31175ea76ed56ea3752333ca49d601b6af45e281e7ba",
+      "image_id": "sha256:9307627e03981d5473aa31175ea76ed56ea3752333ca49d601b6af45e281e7ba",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": null,
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-media",
+      "compose_service": "qbittorrent",
+      "networks": [
+        {
+          "name": "pia-vlan",
+          "ipv4": "192.168.2.10",
+          "mac": "96:78:87:2b:80:d2"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.45",
+          "mac": "36:5b:1c:6d:4c:d5"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/qbittorrent/config",
+          "target": "/config",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/mnt/bulk/data/downloads/torrent",
+          "target": "/downloads",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/qbittorrent/watch",
+          "target": "/watch",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {}
+    },
+    {
+      "name": "radarr",
+      "image": "lscr.io/linuxserver/radarr:6.4.4.10685-ls319@sha256:7dfd049e79c00b16fbc29c3f5d96a9e7b9e73a23930b4c5b3c4541d60b366814",
+      "image_id": "sha256:7dfd049e79c00b16fbc29c3f5d96a9e7b9e73a23930b4c5b3c4541d60b366814",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-media",
+      "compose_service": "radarr",
+      "networks": [
+        {
+          "name": "pia-vlan",
+          "ipv4": "192.168.2.5",
+          "mac": "a2:38:97:4b:b5:f2"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.14",
+          "mac": "66:61:27:73:f1:34"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/radarr/config",
+          "target": "/config",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/mnt/bulk/data/downloads/torrent",
+          "target": "/downloads",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/mnt/bulk/data/media/movies",
+          "target": "/media/movies",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "7878/tcp": null
+      }
+    },
+    {
+      "name": "seerr",
+      "image": "ghcr.io/seerr-team/seerr:v3.5.0@sha256:27602401178d54f1964442287b9f23f67a3fa2252645ee8065839ea1c3f69e45",
+      "image_id": "sha256:27602401178d54f1964442287b9f23f67a3fa2252645ee8065839ea1c3f69e45",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-media",
+      "compose_service": "seerr",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.45",
+          "mac": "6a:fe:3e:c0:69:6a"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.6",
+          "mac": "4e:71:98:c2:8d:cb"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/seerr/config",
+          "target": "/app/config",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "5055/tcp": null
+      }
+    },
+    {
+      "name": "sonarr",
+      "image": "lscr.io/linuxserver/sonarr:4.0.20.3014-ls327@sha256:dffc730adcb8b4f4342792fbb27fcad9c62fb8660523f2aeb082416980d7fe0c",
+      "image_id": "sha256:dffc730adcb8b4f4342792fbb27fcad9c62fb8660523f2aeb082416980d7fe0c",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-media",
+      "compose_service": "sonarr",
+      "networks": [
+        {
+          "name": "pia-vlan",
+          "ipv4": "192.168.2.6",
+          "mac": "32:cf:c1:35:e3:c5"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.10",
+          "mac": "aa:50:ec:af:b4:65"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/sonarr/config",
+          "target": "/config",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/mnt/bulk/data/downloads/torrent",
+          "target": "/downloads",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/mnt/bulk/data/media/tv-shows",
+          "target": "/media/tv-shows",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "8989/tcp": null
+      }
+    },
+    {
+      "name": "stirling-pdf",
+      "image": "stirlingtools/stirling-pdf:3.1.0@sha256:b5b9e400c086e5334a4947a0d7cd589808f743f29267d7f41c18200cf4bc48b4",
+      "image_id": "sha256:b5b9e400c086e5334a4947a0d7cd589808f743f29267d7f41c18200cf4bc48b4",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-stirling-pdf",
+      "compose_service": "stirling-pdf",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.44",
+          "mac": "86:e9:74:44:85:c6"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.31",
+          "mac": "c6:24:a3:36:7e:a9"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/stirling-pdf/config",
+          "target": "/configs",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/stirling-pdf/logs",
+          "target": "/logs",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/stirling-pdf/tessdata",
+          "target": "/usr/share/tessdata",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "8080/tcp": null
+      }
+    },
+    {
+      "name": "syncthing",
+      "image": "syncthing/syncthing:2.1.6@sha256:4d0281bdcb4ed9baf503d251d0544ddd856f49fce3f114056257ae172b7fb670",
+      "image_id": "sha256:4d0281bdcb4ed9baf503d251d0544ddd856f49fce3f114056257ae172b7fb670",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-syncthing",
+      "compose_service": "syncthing",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.9",
+          "mac": "b6:9c:57:48:29:50"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.25",
+          "mac": "9e:9b:a5:1e:cb:7c"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/3d-models",
+          "target": "/data/3d-models",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/documents",
+          "target": "/data/documents",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/downloads",
+          "target": "/data/downloads",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/obsidian",
+          "target": "/data/obsidian",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/project",
+          "target": "/data/project",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/screenshots",
+          "target": "/data/screnshots",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/syncthing/config",
+          "target": "/var/syncthing",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "21027/udp": null,
+        "22000/tcp": null,
+        "22000/udp": null,
+        "8384/tcp": null
+      }
+    },
+    {
+      "name": "tg-bot",
+      "image": "nexus/telegram-bot@sha256:957d8428aeddaf8a84dc9aae727ba602c5c9e95189a377320021f94b3867f8d0",
+      "image_id": "sha256:957d8428aeddaf8a84dc9aae727ba602c5c9e95189a377320021f94b3867f8d0",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-telegram",
+      "compose_service": "tg-bot",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.242",
+          "mac": "f2:21:fb:1c:36:03"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/builds/telegram-bot-logs",
+          "target": "/app/logs",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/var/run/docker.sock",
+          "target": "/var/run/docker.sock",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/usr/bin/docker",
+          "target": "/usr/local/bin/docker",
+          "type": "bind",
+          "writable": false
+        }
+      ],
+      "published_ports": {}
+    },
+    {
+      "name": "vert",
+      "image": "ghcr.io/vert-sh/vert@sha256:c604d357e44dce6020391b6bd8d20e4f5d35e3778ecf58bbccbd8fdc6792eaf4",
+      "image_id": "sha256:c604d357e44dce6020391b6bd8d20e4f5d35e3778ecf58bbccbd8fdc6792eaf4",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-vert",
+      "compose_service": "vert",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.3",
+          "mac": "ce:6b:bf:60:5b:dc"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.26",
+          "mac": "86:3b:47:3a:93:16"
+        }
+      ],
+      "mounts": [],
+      "published_ports": {
+        "80/tcp": null
+      }
+    },
+    {
+      "name": "vertd",
+      "image": "ghcr.io/vert-sh/vertd@sha256:492d17d1ce570e538a70efc3279c7208eb8b766889e8cedaa0aab93e29567a89",
+      "image_id": "sha256:492d17d1ce570e538a70efc3279c7208eb8b766889e8cedaa0aab93e29567a89",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-vertd",
+      "compose_service": "vertd",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.245",
+          "mac": "62:85:88:61:30:20"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.32",
+          "mac": "3a:cb:3e:af:5d:d8"
+        }
+      ],
+      "mounts": [],
+      "published_ports": {
+        "24153/tcp": null
+      }
+    },
+    {
+      "name": "vikunja",
+      "image": "vikunja/vikunja:2.7.0@sha256:e2204a1c1c6a81e833c2b3a5442be182ca2335b54c2e7e37578cc3fe12a27cfc",
+      "image_id": "sha256:e2204a1c1c6a81e833c2b3a5442be182ca2335b54c2e7e37578cc3fe12a27cfc",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": null,
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-vikunja",
+      "compose_service": "vikunja",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.43",
+          "mac": "0a:be:68:98:09:42"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.22",
+          "mac": "2e:e9:07:a1:3d:5f"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/vikunja/db",
+          "target": "/db",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/srv/containers/data/vikunja/files",
+          "target": "/app/vikunja/files",
+          "type": "bind",
+          "writable": true
+        }
+      ],
+      "published_ports": {
+        "3456/tcp": null
+      }
+    },
+    {
+      "name": "webhook-notify",
+      "image": "nexus/webhook-notify:20261011@sha256:27f84cbbd9964184c8f9bf0eea4ceb55faf6285876bb28fd4acd4efa7d05072f",
+      "image_id": "sha256:27f84cbbd9964184c8f9bf0eea4ceb55faf6285876bb28fd4acd4efa7d05072f",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": null,
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-webhook-notify",
+      "compose_service": "webhook-notify",
+      "networks": [
+        {
+          "name": "docker-vlan",
+          "ipv4": "192.168.5.24",
+          "mac": "3e:6c:4b:9a:a3:5a"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.21",
+          "mac": "6a:9f:31:a4:17:c0"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/webhook-notify/webhook-notify.py",
+          "target": "/app/webhook-notify.py",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/etc/nexus/secrets/webhook-notify/ssh_key",
+          "target": "/root/.ssh/id_ed25519_datacrafter",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/srv/containers/data/webhook-notify/known_hosts",
+          "target": "/root/.ssh/known_hosts",
+          "type": "bind",
+          "writable": false
+        }
+      ],
+      "published_ports": {}
+    },
+    {
+      "name": "zigbee2mqtt",
+      "image": "koenkk/zigbee2mqtt:2.14.2@sha256:addbfb08fcef2e4477de1535636118241e10d13e898fbe4d9faba8a4d7396311",
+      "image_id": "sha256:addbfb08fcef2e4477de1535636118241e10d13e898fbe4d9faba8a4d7396311",
+      "status": "running",
+      "exit_code": 0,
+      "finished_at": "0001-01-01T00:00:00Z",
+      "health": "healthy",
+      "restart_policy": "unless-stopped",
+      "compose_project": "nexus-iot",
+      "compose_service": "zigbee2mqtt",
+      "networks": [
+        {
+          "name": "iot-vlan",
+          "ipv4": "192.168.4.5",
+          "mac": "96:c2:4c:63:b4:17"
+        },
+        {
+          "name": "proxy-backend",
+          "ipv4": "172.16.11.2",
+          "mac": "12:88:1d:96:35:9c"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "/srv/containers/data/zigbee2mqtt/data",
+          "target": "/app/data",
+          "type": "bind",
+          "writable": true
+        },
+        {
+          "source": "/run/udev",
+          "target": "/run/udev",
+          "type": "bind",
+          "writable": false
+        },
+        {
+          "source": "/dev/serial/by-id",
+          "target": "/dev/serial/by-id",
+          "type": "bind",
+          "writable": false
+        }
+      ],
+      "published_ports": {
+        "8080/tcp": null
+      }
+    }
+  ],
+  "networks": [
+    {
+      "name": "adguard-vlan",
+      "driver": "macvlan",
+      "internal": false,
+      "ipam": [
+        {
+          "Subnet": "192.168.3.0/24",
+          "Gateway": "192.168.3.1",
+          "AuxiliaryAddresses": {
+            "nexus-host": "192.168.3.254"
+          }
+        },
+        {
+          "Subnet": "fd00:3::/64",
+          "Gateway": "fd00:3::1",
+          "AuxiliaryAddresses": {
+            "nexus-host-v6": "fd00:3::254"
+          }
+        }
+      ]
+    },
+    {
+      "name": "authentik_default",
+      "driver": "bridge",
+      "internal": true,
+      "ipam": [
+        {
+          "Subnet": "172.16.1.0/24",
+          "Gateway": "172.16.1.1"
+        }
+      ]
+    },
+    {
+      "name": "bridge",
+      "driver": "bridge",
+      "internal": false,
+      "ipam": [
+        {
+          "Subnet": "172.17.0.0/16",
+          "Gateway": "172.17.0.1"
+        }
+      ]
+    },
+    {
+      "name": "docker-vlan",
+      "driver": "macvlan",
+      "internal": false,
+      "ipam": [
+        {
+          "Subnet": "192.168.5.0/24",
+          "Gateway": "192.168.5.1",
+          "AuxiliaryAddresses": {
+            "nexus-host": "192.168.5.254"
+          }
+        }
+      ]
+    },
+    {
+      "name": "home-assistant_default",
+      "driver": "bridge",
+      "internal": true,
+      "ipam": [
+        {
+          "Subnet": "172.16.13.0/24",
+          "Gateway": "172.16.13.1"
+        }
+      ]
+    },
+    {
+      "name": "homelable_homelable_net",
+      "driver": "bridge",
+      "internal": true,
+      "ipam": [
+        {
+          "Subnet": "172.16.10.0/24",
+          "Gateway": "172.16.10.1"
+        }
+      ]
+    },
+    {
+      "name": "host",
+      "driver": "host",
+      "internal": false,
+      "ipam": null
+    },
+    {
+      "name": "iot-vlan",
+      "driver": "macvlan",
+      "internal": false,
+      "ipam": [
+        {
+          "Subnet": "192.168.4.0/24",
+          "Gateway": "192.168.4.1",
+          "AuxiliaryAddresses": {
+            "nexus-host": "192.168.4.254"
+          }
+        },
+        {
+          "Subnet": "fd00:4::/64",
+          "Gateway": "fd00:4::1",
+          "AuxiliaryAddresses": {
+            "nexus-host-v6": "fd00:4::254"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ix-nginx-proxy-manager_default",
+      "driver": "bridge",
+      "internal": true,
+      "ipam": [
+        {
+          "Subnet": "172.16.4.0/24",
+          "Gateway": "172.16.4.1"
+        }
+      ]
+    },
+    {
+      "name": "n8n_default",
+      "driver": "bridge",
+      "internal": true,
+      "ipam": [
+        {
+          "Subnet": "172.16.3.0/24",
+          "Gateway": "172.16.3.1"
+        }
+      ]
+    },
+    {
+      "name": "nexus-egress",
+      "driver": "bridge",
+      "internal": false,
+      "ipam": [
+        {
+          "Subnet": "172.30.240.0/24",
+          "Gateway": "172.30.240.1"
+        }
+      ]
+    },
+    {
+      "name": "none",
+      "driver": "null",
+      "internal": false,
+      "ipam": null
+    },
+    {
+      "name": "pia-vlan",
+      "driver": "macvlan",
+      "internal": false,
+      "ipam": [
+        {
+          "Subnet": "192.168.2.0/24",
+          "Gateway": "192.168.2.1",
+          "AuxiliaryAddresses": {
+            "nexus-host": "192.168.2.254"
+          }
+        }
+      ]
+    },
+    {
+      "name": "portainer_default",
+      "driver": "bridge",
+      "internal": true,
+      "ipam": [
+        {
+          "Subnet": "172.16.12.0/24",
+          "Gateway": "172.16.12.1"
+        }
+      ]
+    },
+    {
+      "name": "proxy-backend",
+      "driver": "bridge",
+      "internal": true,
+      "ipam": [
+        {
+          "Subnet": "172.16.11.0/24",
+          "Gateway": "172.16.11.1"
+        }
+      ]
+    }
+  ]
+}

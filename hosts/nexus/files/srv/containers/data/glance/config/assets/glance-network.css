@@ -1,0 +1,437 @@
+.homelab-network-bar{display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;max-width:1400px;margin:1.4rem auto;padding:1rem 1.5rem;border:1px solid var(--color-widget-content-border);border-radius:var(--border-radius);background:var(--color-widget-background)}
+.homelab-network-bar select{background:var(--color-background);color:var(--color-text-base);padding:.5rem 1rem;border:1px solid var(--color-text-subdue);border-radius:.4rem}
+.homelab-services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1rem;margin:1rem 0 2rem}
+.homelab-service{display:flex;flex-direction:column;gap:.55rem;padding:1.2rem;border:1px solid var(--color-widget-content-border);border-radius:var(--border-radius);min-width:0}
+.homelab-service-name{font-size:1.65rem;color:var(--color-text-highlight)}
+.homelab-service-url,.homelab-service-note,.homelab-check-note{color:var(--color-text-subdue);font-size:1.2rem;overflow-wrap:anywhere}
+.homelab-status{font-size:1.2rem}.status-up{color:#8dbb8b}.status-down{color:#e89090}.status-protected,.status-restricted{color:#e3c78c}.status-private,.status-unknown,.status-unpublished{color:var(--color-text-subdue)}
+a[aria-disabled=true]{opacity:.5;cursor:default}
+
+/* Three independent service access links. */
+.homelab-service-links {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .4rem;
+}
+.homelab-service-link {
+  display: block;
+  padding: .5rem .25rem;
+  border: 1px solid var(--color-widget-content-border);
+  border-radius: var(--border-radius);
+  text-align: center;
+  text-decoration: none;
+  font-size: 1.15rem;
+  overflow-wrap: anywhere;
+}
+.homelab-service-link.is-preferred {
+  border-color: var(--color-text-highlight);
+  font-weight: 600;
+}
+.homelab-service-link.is-missing {
+  opacity: .4;
+  cursor: default;
+}
+.homelab-internal {
+  margin: 1rem 0 2rem;
+}
+.homelab-internal summary {
+  cursor: pointer;
+  color: var(--color-text-subdue);
+  padding: .6rem 0;
+}
+
+
+/* Blinkwired visual refinement v1 */
+
+.homelab-network-bar {
+  max-width: 1320px;
+  border-radius: 12px;
+  padding: 12px 18px;
+}
+
+.homelab-services-grid {
+  grid-template-columns:
+    repeat(auto-fit, minmax(min(100%, 255px), 1fr));
+  gap: 14px;
+}
+
+.homelab-service {
+  background: var(--color-widget-background);
+  border: 1px solid var(--color-widget-content-border);
+  border-radius: 14px;
+  padding: 18px;
+  gap: 10px;
+  transition:
+    border-color .18s ease,
+    transform .18s ease,
+    box-shadow .18s ease;
+}
+
+.homelab-service:hover {
+  border-color: var(--color-text-subdue);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+}
+
+.homelab-service-name {
+  font-size: 1.55rem;
+  font-weight: 650;
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+.homelab-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 1.15rem;
+}
+
+.homelab-status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.homelab-service-links {
+  gap: 7px;
+  margin-top: 4px;
+}
+
+.homelab-service-link {
+  border-radius: 8px;
+  padding: 9px 4px;
+  transition: background .15s ease;
+}
+
+.homelab-service-link[href]:hover {
+  background: rgba(128, 128, 128, .12);
+}
+
+.homelab-internal summary {
+  padding: 12px 0;
+  font-weight: 500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .homelab-service,
+  .homelab-service-link {
+    transition: none;
+  }
+  .homelab-service:hover {
+    transform: none;
+  }
+}
+
+/* Blinkwired consistent card grid v2 */
+
+.homelab-services-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.homelab-service {
+  min-height: 145px;
+}
+
+@media (max-width: 1100px) {
+  .homelab-services-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .homelab-services-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .homelab-services-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+
+/* Blinkwired phase 3 visual refinement */
+
+/* Compact network selector inside desktop navigation. */
+.header .homelab-network-bar {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: none;
+  margin: 0 0 0 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  gap: 0;
+}
+
+.header .homelab-network-bar strong,
+.header .homelab-network-bar #homelab-network-label {
+  display: none;
+}
+
+.header .homelab-network-bar select {
+  max-width: 145px;
+  border-radius: 9px;
+  border: 1px solid var(--color-widget-content-border);
+  background: var(--color-widget-background);
+  color: var(--color-text-base);
+  padding: 8px 10px;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+/* Compact infrastructure overview. */
+.homelab-overview {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 6px 0 22px;
+}
+
+.homelab-overview-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  padding: 18px 20px;
+  border: 1px solid var(--color-widget-content-border);
+  border-radius: 14px;
+  background: var(--color-widget-background);
+}
+
+.homelab-overview-label {
+  font-size: 1.05rem;
+  letter-spacing: .09em;
+  font-weight: 650;
+  color: var(--color-text-subdue);
+}
+
+.homelab-overview-value {
+  font-size: 2rem;
+  line-height: 1.2;
+  color: var(--color-text-highlight);
+}
+
+.homelab-overview-detail {
+  font-size: 1.15rem;
+  color: var(--color-text-subdue);
+}
+
+/* Consistent identity and monogram on service cards. */
+.homelab-service-identity {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+
+.homelab-service-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: rgba(128, 128, 128, .13);
+  border: 1px solid var(--color-widget-content-border);
+  color: var(--color-text-highlight);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+
+.homelab-service-name {
+  min-width: 0;
+  font-size: 1.45rem;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+/* Distinguish endpoint states without using oversized labels. */
+.homelab-service .homelab-status {
+  align-self: flex-start;
+  width: fit-content;
+  border-radius: 999px;
+  background: rgba(128, 128, 128, .09);
+  padding: 5px 10px;
+  line-height: 1.4;
+}
+
+.homelab-service .homelab-service-links {
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+@media (max-width: 900px) {
+  .homelab-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .homelab-overview-tile {
+    padding: 14px 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .homelab-service,
+  .homelab-service-link {
+    transition: none;
+  }
+}
+
+
+/* Blinkwired phase 4 icons and metrics */
+
+.homelab-service-mark.has-icon {
+  background: transparent;
+  border-color: transparent;
+}
+
+.homelab-service-icon {
+  display: block;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.homelab-overview-detail {
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.homelab-overview-value {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 480px) {
+  .homelab-service-mark {
+    flex-basis: 34px;
+    width: 34px;
+    height: 34px;
+  }
+
+  .homelab-service-icon {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+
+/* Blinkwired Phase 5 — Git and infrastructure */
+
+/* Four compact overview tiles on desktop. */
+
+.homelab-overview {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.homelab-overview-tile {
+  min-height: 136px;
+}
+
+.homelab-overview-value {
+  font-size: clamp(1.6rem, 1.5vw, 2rem);
+  letter-spacing: -.02em;
+}
+
+/* Endpoint reachability distribution. */
+
+.homelab-endpoint-meter {
+  display: flex;
+  width: 100%;
+  height: 7px;
+  gap: 2px;
+  overflow: hidden;
+  border-radius: 999px;
+  margin-top: auto;
+  background: rgba(128, 128, 128, .1);
+}
+
+.homelab-meter-segment {
+  display: block;
+  min-width: 0;
+  height: 100%;
+}
+
+.homelab-meter-segment.meter-up {
+  background: #8dbb8b;
+}
+
+.homelab-meter-segment.meter-protected {
+  background: #e3c78c;
+}
+
+.homelab-meter-segment.meter-down {
+  background: #e89090;
+}
+
+.homelab-meter-segment.meter-other {
+  background: #777985;
+}
+
+/* Git source-of-truth tile. */
+
+.homelab-git-tile {
+  position: relative;
+}
+
+.homelab-git-link {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-top: auto;
+  padding: 7px 11px;
+
+  border: 1px solid var(--color-widget-content-border);
+  border-radius: 8px;
+
+  color: var(--color-text-highlight);
+  text-decoration: none;
+  font-size: 1.15rem;
+
+  transition:
+    background .15s ease,
+    border-color .15s ease;
+}
+
+.homelab-git-link:hover {
+  background: rgba(128, 128, 128, .12);
+  border-color: var(--color-text-subdue);
+}
+
+/* Improve contrast for the dark Cockpit logo. */
+
+.homelab-service-icon[src*="/cockpit.png"] {
+  filter: brightness(0) invert(.88);
+}
+
+/* Responsive dashboard. */
+
+@media (max-width: 1100px) {
+  .homelab-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .homelab-overview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .homelab-overview-tile {
+    min-height: 110px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .homelab-git-link {
+    transition: none;
+  }
+}

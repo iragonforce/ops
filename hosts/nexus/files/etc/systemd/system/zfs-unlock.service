@@ -1,0 +1,12 @@
+[Unit]
+Description=Unlock verified Nexus bulk pool
+Requires=zfs-import-cache.service
+After=zfs-import-cache.service
+Before=zfs-mount.service
+DefaultDependencies=no
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'test "$(/usr/sbin/zfs get -H -o value keystatus bulk)" = available || /usr/sbin/zfs load-key bulk'
+RemainAfterExit=yes
+[Install]
+RequiredBy=zfs-mount.service

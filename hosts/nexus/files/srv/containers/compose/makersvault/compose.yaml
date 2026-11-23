@@ -1,0 +1,95 @@
+name: makersvault
+services:
+  makersvault-api:
+    image: nexus/makersvault-api:20261011@sha256:7dd5281797ae2afe081d8617cfe4f86575e24579e916a3f7ceb82d8423ff0a5b
+    pull_policy: never
+    container_name: makersvault-api
+    restart: always
+    env_file:
+    - path: /etc/nexus/secrets/makersvault/makersvault-api.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/makersvault/data
+      target: /data
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/fast/3d-models
+      target: /models
+      read_only: true
+      bind:
+        create_host_path: false
+    shm_size: 67108864
+    mem_limit: 268435456
+    cpus: 0.25
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.8
+        gw_priority: 300
+        mac_address: ce:fa:d7:8f:ff:42
+      proxy-backend:
+        aliases:
+        - makersvault-api
+        ipv4_address: 172.16.11.36
+        mac_address: da:f1:b5:5d:6b:23
+    healthcheck:
+      test:
+      - CMD
+      - /usr/local/bin/python3
+      - -c
+      - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=4)
+      interval: 30s
+      timeout: 6s
+      retries: 5
+      start_period: 90s
+    dns:
+    - 1.1.1.1
+    memswap_limit: 536870912
+    pids_limit: 256
+  makersvault-web:
+    image: nexus/makersvault-web:20261011@sha256:ff7fa4b48a1b473a7049ce89acd70a32fe9112e015e11000b0d5b25d23706f38
+    pull_policy: never
+    container_name: makersvault-web
+    restart: always
+    env_file:
+    - path: /etc/nexus/secrets/makersvault/makersvault-web.env
+      format: raw
+    volumes: []
+    shm_size: 67108864
+    mem_limit: 268435456
+    cpus: 0.25
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.32
+        gw_priority: 300
+        mac_address: 02:4e:42:30:e5:83
+      proxy-backend:
+        aliases:
+        - makersvault-web
+        ipv4_address: 172.16.11.35
+        mac_address: 7e:a3:d0:fc:71:73
+    healthcheck:
+      test:
+      - CMD
+      - /usr/bin/wget
+      - -q
+      - -O
+      - /dev/null
+      - http://127.0.0.1:5173/
+      interval: 30s
+      timeout: 6s
+      retries: 5
+      start_period: 90s
+    dns:
+    - 1.1.1.1
+    memswap_limit: 536870912
+    pids_limit: 256
+networks:
+  docker-vlan:
+    external: true
+  proxy-backend:
+    external: true
+  nexus-egress:
+    external: true

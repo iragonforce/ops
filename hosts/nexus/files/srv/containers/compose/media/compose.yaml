@@ -1,0 +1,474 @@
+name: media
+services:
+  gluetun:
+    image: qmcgaw/gluetun:v3.41.3
+    container_name: gluetun
+    restart: always
+    cap_add:
+    - NET_ADMIN
+    devices:
+    - /dev/net/tun:/dev/net/tun
+    env_file:
+    - path: /srv/containers/data/gluetun-ontario/pf.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/gluetun-ontario
+      target: /gluetun
+      bind:
+        create_host_path: false
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      VPN_TYPE: wireguard
+      WIREGUARD_MTU: '1420'
+      VPN_PORT_FORWARDING: 'on'
+      VPN_PORT_FORWARDING_PROVIDER: private internet access
+      SERVER_NAMES: Server-12674-0a
+      VPN_PORT_FORWARDING_STATUS_FILE: /gluetun/forwarded_port
+      VPN_PORT_FORWARDING_UP_COMMAND: /bin/sh /gluetun/scripts/qb-up.sh {{PORT}} {{VPN_INTERFACE}}
+      VPN_PORT_FORWARDING_DOWN_COMMAND: /bin/sh /gluetun/scripts/qb-down.sh
+      FIREWALL_INPUT_PORTS: 30200,30001,30025,30071,30113,30046,30263,8191
+      FIREWALL_OUTBOUND_SUBNETS: 172.16.11.0/24
+    networks:
+      gluetun-egress:
+        gw_priority: 100
+      proxy-backend:
+        ipv4_address: 172.16.11.45
+        aliases:
+        - qbittorrent
+        - sonarr
+        - radarr
+        - lidarr
+        - prowlarr
+        - bazarr
+        - flaresolverr
+    mem_limit: 268435456
+    memswap_limit: 536870912
+    cpus: 0.5
+    pids_limit: 256
+  seerr:
+    image: ghcr.io/seerr-team/seerr:v3.5.0@sha256:27602401178d54f1964442287b9f23f67a3fa2252645ee8065839ea1c3f69e45
+    pull_policy: never
+    container_name: seerr
+    restart: always
+    env_file:
+    - path: /etc/nexus/secrets/media/seerr.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/seerr/config
+      target: /app/config
+      bind:
+        create_host_path: false
+    shm_size: 67108864
+    mem_limit: 536870912
+    cpus: 0.5
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.45
+        gw_priority: 300
+        mac_address: 6a:fe:3e:c0:69:6a
+      proxy-backend:
+        ipv4_address: 172.16.11.6
+        mac_address: 4e:71:98:c2:8d:cb
+        aliases:
+        - seerr
+    healthcheck:
+      test:
+      - CMD
+      - /usr/bin/wget
+      - -q
+      - -O
+      - /dev/null
+      - http://127.0.0.1:5055/
+      interval: 30s
+      timeout: 6s
+      retries: 5
+      start_period: 90s
+    dns:
+    - 1.1.1.1
+    memswap_limit: 1073741824
+    pids_limit: 256
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:4.0.20.3014-ls327@sha256:dffc730adcb8b4f4342792fbb27fcad9c62fb8660523f2aeb082416980d7fe0c
+    pull_policy: never
+    container_name: sonarr
+    restart: always
+    env_file:
+    - path: /etc/nexus/secrets/media/sonarr.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/sonarr/config
+      target: /config
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/bulk/data/downloads/torrent
+      target: /downloads
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/bulk/data/media/tv-shows
+      target: /media/tv-shows
+      bind:
+        create_host_path: false
+    shm_size: 67108864
+    mem_limit: 536870912
+    cpus: 0.5
+    network_mode: service:gluetun
+    depends_on:
+    - gluetun
+    healthcheck:
+      test:
+      - CMD
+      - /usr/bin/curl
+      - -fsS
+      - --max-time
+      - '4'
+      - http://127.0.0.1:30113/
+      interval: 30s
+      timeout: 6s
+      retries: 5
+      start_period: 90s
+    memswap_limit: 1073741824
+    pids_limit: 256
+  lidarr:
+    image: ghcr.io/home-operations/lidarr:3.1.2.4938@sha256:9df1e14c8e09745f23a36c0cc6adcf69665b379aae60e5a7cb9bda27961ef4e7
+    pull_policy: never
+    container_name: lidarr
+    restart: always
+    user: 568:568
+    env_file:
+    - path: /etc/nexus/secrets/media/lidarr.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/lidarr/config
+      target: /config
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/bulk/data/downloads/torrent
+      target: /downloads
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/bulk/data/media/music
+      target: /media/music
+      bind:
+        create_host_path: false
+    shm_size: 67108864
+    mem_limit: 536870912
+    cpus: 0.5
+    network_mode: service:gluetun
+    depends_on:
+    - gluetun
+    healthcheck:
+      test:
+      - CMD
+      - /usr/bin/curl
+      - -fsS
+      - --max-time
+      - '4'
+      - http://127.0.0.1:30071/
+      interval: 30s
+      timeout: 6s
+      retries: 5
+      start_period: 90s
+    memswap_limit: 1073741824
+    pids_limit: 256
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:2.6.5.5623-ls163@sha256:f9151e5bc1025c6d0a630d503210cdcb6bb55a7cc098562609d96a408d838902
+    pull_policy: never
+    container_name: prowlarr
+    restart: always
+    env_file:
+    - path: /etc/nexus/secrets/media/prowlarr.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/prowlarr/config
+      target: /config
+      bind:
+        create_host_path: false
+    shm_size: 67108864
+    mem_limit: 536870912
+    cpus: 0.5
+    network_mode: service:gluetun
+    depends_on:
+    - gluetun
+    healthcheck:
+      test:
+      - CMD
+      - /usr/bin/curl
+      - -fsS
+      - --max-time
+      - '4'
+      - http://127.0.0.1:30001/
+      interval: 30s
+      timeout: 6s
+      retries: 5
+      start_period: 90s
+    memswap_limit: 1073741824
+    pids_limit: 256
+  bazarr:
+    image: ghcr.io/home-operations/bazarr:1.6.2@sha256:17dc1cff22e99694ffbfb06555526cb47a66b362b4d6c982f06b557f7caae2bb
+    pull_policy: never
+    container_name: bazarr
+    restart: always
+    user: 568:568
+    entrypoint:
+    - /usr/local/bin/python
+    command:
+    - /app/bin/bazarr.py
+    - --no-update
+    - 'True'
+    - --config
+    - /config
+    - --port
+    - '30046'
+    env_file:
+    - path: /etc/nexus/secrets/media/bazarr.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/bazarr/config
+      target: /config
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/bulk/data/downloads/torrent
+      target: /downloads
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/bulk/data/media/movies
+      target: /media/movies
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/bulk/data/media/tv-shows
+      target: /media/tv-shows
+      bind:
+        create_host_path: false
+    shm_size: 67108864
+    group_add:
+    - '568'
+    network_mode: service:gluetun
+    depends_on:
+    - gluetun
+    healthcheck:
+      test:
+      - CMD
+      - /usr/bin/curl
+      - -fsS
+      - --max-time
+      - '4'
+      - http://127.0.0.1:30046/
+      interval: 30s
+      timeout: 6s
+      retries: 5
+      start_period: 90s
+    mem_limit: 805306368
+    memswap_limit: 1342177280
+    cpus: 1
+    pids_limit: 256
+  jellyfin:
+    image: jellyfin/jellyfin:12.2@sha256:357724bf0ae27a672c7cbaa899db2d9abeb13dbd8657ccce750258a4c059d037
+    pull_policy: never
+    container_name: jellyfin
+    restart: always
+    user: 568:568
+    env_file:
+    - path: /etc/nexus/secrets/media/jellyfin.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/jellyfin/cache
+      target: /cache
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/jellyfin/ix-jellyfin_jellyfin-transcodes
+      target: /cache/transcodes
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/jellyfin/config
+      target: /config
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/jellyfin/ix-jellyfin_jellyfin-transcodes
+      target: /config/transcodes
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/bulk/data/media/movies
+      target: /media/movies
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/bulk/data/media/music
+      target: /media/music
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/bulk/data/media/tv-shows
+      target: /media/tv-shows
+      read_only: true
+      bind:
+        create_host_path: false
+    shm_size: 67108864
+    mem_limit: 2147483648
+    cpus: 2.0
+    group_add:
+    - '107'
+    - '44'
+    - '992'
+    devices:
+    - /dev/dri/renderD128:/dev/dri/renderD128:rwm
+    - /dev/dri/card0:/dev/dri/card0:rwm
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.7
+        gw_priority: 300
+        mac_address: d2:13:d7:de:75:75
+      proxy-backend:
+        ipv4_address: 172.16.11.9
+        mac_address: 86:a8:38:87:2a:91
+        aliases:
+        - jellyfin
+    dns:
+    - 1.1.1.1
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - curl --noproxy "localhost" -Lk -fsS "$${HEALTHCHECK_URL}" || exit 1
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 10s
+    memswap_limit: 2684354560
+    pids_limit: 256
+  radarr:
+    image: lscr.io/linuxserver/radarr:6.4.4.10685-ls319@sha256:7dfd049e79c00b16fbc29c3f5d96a9e7b9e73a23930b4c5b3c4541d60b366814
+    pull_policy: never
+    container_name: radarr
+    restart: always
+    env_file:
+    - path: /etc/nexus/secrets/media/radarr.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/radarr/config
+      target: /config
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/bulk/data/downloads/torrent
+      target: /downloads
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/bulk/data/media/movies
+      target: /media/movies
+      bind:
+        create_host_path: false
+    shm_size: 67108864
+    mem_limit: 536870912
+    cpus: 0.5
+    network_mode: service:gluetun
+    depends_on:
+    - gluetun
+    healthcheck:
+      test:
+      - CMD
+      - /usr/bin/curl
+      - -fsS
+      - --max-time
+      - '4'
+      - http://127.0.0.1:30025/
+      interval: 30s
+      timeout: 6s
+      retries: 5
+      start_period: 90s
+    memswap_limit: 1073741824
+    pids_limit: 256
+  qbittorrent:
+    image: ghcr.io/home-operations/qbittorrent:5.2.4@sha256:9307627e03981d5473aa31175ea76ed56ea3752333ca49d601b6af45e281e7ba
+    pull_policy: never
+    stop_grace_period: 3m
+    container_name: qbittorrent
+    restart: always
+    env_file:
+    - path: /etc/nexus/secrets/media/qbittorrent.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/qbittorrent/config
+      target: /config
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/bulk/data/downloads/torrent
+      target: /downloads
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/qbittorrent/watch
+      target: /watch
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/fast/qbittorrent-incomplete
+      target: /incomplete
+      bind:
+        create_host_path: false
+    shm_size: 67108864
+    mem_limit: 2147483648
+    cpus: 4.0
+    network_mode: service:gluetun
+    depends_on:
+    - gluetun
+    memswap_limit: 2684354560
+    pids_limit: 256
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:v3.5.2@sha256:c80ae007ce2ccdcd217a12426e4f039ef763ff90738c808d38810c3e59323767
+    pull_policy: never
+    container_name: flaresolverr
+    restart: always
+    env_file:
+    - path: /etc/nexus/secrets/media/flaresolverr.env
+      format: raw
+    environment:
+      LANG: en-US
+    volumes:
+    - type: bind
+      source: /srv/containers/data/flaresolverr/recovered-volumes/7637752c0d21f45fad99d89bb44bfbf5fdd67e221acb0836931c756e6dd0b96f
+      target: /config
+      bind:
+        create_host_path: false
+    shm_size: 268435456
+    mem_limit: 2147483648
+    cpus: 1.0
+    network_mode: service:gluetun
+    depends_on:
+    - gluetun
+    memswap_limit: 2684354560
+    pids_limit: 1024
+networks:
+  docker-vlan:
+    external: true
+  proxy-backend:
+    external: true
+  nexus-egress:
+    external: true
+  pia-vlan:
+    external: true
+  gluetun-egress:
+    name: nexus-media_gluetun-egress
+    external: true

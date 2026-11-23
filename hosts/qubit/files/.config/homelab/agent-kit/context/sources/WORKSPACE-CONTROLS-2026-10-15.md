@@ -1,0 +1,11 @@
+# Tensor workspace controls — 2026-10-15
+
+Moved the separate plus control to the right of the workspace pill. Preserved icon/number hover behavior and standby monitor recovery.
+
+Added one lowest-free-ID allocator used for plus creation and fallback destinations when removing a workspace. It starts at 1, skips all existing workspace IDs, and always reserves 10. Closing workspace 10 through the strip is now a no-op, and ordinary workspace removal does not move other apps into btop's reserved workspace. Updated workspace 10 tooltip to describe the reservation.
+
+Inspected existing Hyprland rules: workspace 10 is persistent/default on DP-3, and class com.btop.term routes to `10 silent`. Existing desktop startup/resume helper restores workspace 10 to DP-3 and moves matching btop windows there. These rules/helpers did not need modification. This protects the strip's actions, startup and resume paths; it does not prohibit intentional manual Hyprland dispatcher changes outside those paths.
+
+Operational checks used the actual GTK strip and live Hyprland, not simulated responses. Briefly stopped only workspace-strip.service, instantiated its real widget tree, verified the plus is the final/right child, and emitted its actual clicked signal. With live IDs 1,2,3,5,10, it created workspace 4 on DP-5. Invoked the actual close-workspace-10 method and confirmed btop stayed unchanged. Restored original desktop focus, order file, and the center-strip service. All application address/workspace mappings before and after were identical. Temporary empty workspace 4 disappeared after returning to the original desktop. Final IDs: 1,2,3,5,10. Btop verified on workspace 10, whose live monitor is DP-3. Service remained active and rendered the original workspace set; installed source readback matches the staged fix. No full standby cycle or physical pointer validation was performed.
+
+Changed only Tensor `~/.config/waybar/workspace-strip.py`. Rollback: restore `~/.local/state/workspace-strip-controls-20261015/workspace-strip.py.before` to that path with executable mode and restart only workspace-strip.service. This backup restores the prior left-side plus and 6-up allocator. Operational helper/staged source remain in that private state directory, not the home root. No full kit deployment was performed.

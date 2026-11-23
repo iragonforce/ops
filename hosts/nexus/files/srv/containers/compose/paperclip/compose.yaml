@@ -1,0 +1,120 @@
+services:
+  paperclip:
+    profiles: ["retired-paperclip"]
+    image: ghcr.io/paperclipai/paperclip@sha256:1661b3dd3fdf7a9b59542d1ced464c3faf9dc8309798b4d15a9923ed32795307
+    container_name: paperclip
+    restart: unless-stopped
+    pids_limit: 2048
+    stop_grace_period: 90s
+    environment:
+      HOST: 0.0.0.0
+      NODE_EXTRA_CA_CERTS: /paperclip/certs/homelab-node-extra.crt
+      SSL_CERT_FILE: /paperclip/certs/homelab-system-bundle.crt
+      PAPERCLIP_HOME: /paperclip
+      PAPERCLIP_DEPLOYMENT_MODE: authenticated
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: private
+      PAPERCLIP_PUBLIC_URL: https://nexus.tail4e4f0f.ts.net:9443
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?required}
+      PAPERCLIP_TOOL_ACTION_SIGNING_SECRET: ${PAPERCLIP_TOOL_ACTION_SIGNING_SECRET:?required}
+      PAPERCLIP_ALLOWED_HOSTNAMES: 127.0.0.1,192.168.4.20,localhost,nexus.tail4e4f0f.ts.net,paperclip,paperclip.homelab.lan,paperclip.blinkwired.com,paperclip-chat.blinkwired.com
+      PAPERCLIP_API_URL: http://paperclip:3100
+      PAPERCLIP_CHAT_WEBHOOK_PUBLIC_URL: https://paperclip-chat.blinkwired.com
+    volumes:
+    - /srv/containers/data/paperclip:/paperclip
+    - /srv/containers/data/hermes/tools/bin/jq:/usr/local/bin/jq:ro
+    - /srv/containers/data/hermes/tools/bin/yq:/usr/local/bin/yq:ro
+    - /srv/containers/data/hermes/tools/bin/shellcheck:/usr/local/bin/shellcheck:ro
+    - /srv/containers/data/hermes/tools/bin/trivy:/usr/local/bin/trivy:ro
+    extra_hosts:
+    - hermes.homelab.lan:172.30.240.251
+    networks:
+      iot-vlan:
+        ipv4_address: 192.168.4.20
+        mac_address: 02:42:c0:a8:04:14
+        gw_priority: 0
+      paperclip-hermes: {}
+      nexus-egress:
+        ipv4_address: 172.30.240.3
+        gw_priority: 100
+  hermes-api-relay:
+    profiles: ["retired-paperclip"]
+    image: ghcr.io/paperclipai/paperclip@sha256:1661b3dd3fdf7a9b59542d1ced464c3faf9dc8309798b4d15a9923ed32795307
+    container_name: paperclip-hermes-relay
+    restart: always
+    user: 10000:10000
+    entrypoint:
+    - node
+    - /relay/hermes-api-relay.mjs
+    command: []
+    network_mode: service:paperclip
+    depends_on:
+      paperclip:
+        condition: service_started
+        restart: true
+    read_only: true
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    volumes:
+    - /srv/containers/compose/paperclip/hermes-api-relay.mjs:/relay/hermes-api-relay.mjs:ro
+    healthcheck:
+      test:
+      - CMD
+      - node
+      - -e
+      - const s=require('net').connect(18642,'127.0.0.1',()=>{s.destroy();process.exit(0)});s.on('error',()=>process.exit(1));setTimeout(()=>process.exit(1),2000).unref()
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: '2'
+    mem_limit: 268435456
+    memswap_limit: 536870912
+    cpus: 0.5
+    pids_limit: 256
+  qwen-api-relay:
+    profiles: ["retired-paperclip"]
+    image: ghcr.io/paperclipai/paperclip@sha256:1661b3dd3fdf7a9b59542d1ced464c3faf9dc8309798b4d15a9923ed32795307
+    container_name: paperclip-qwen-relay
+    restart: always
+    user: 10000:10000
+    entrypoint:
+    - node
+    - /relay/qwen-api-relay.mjs
+    command: []
+    network_mode: service:paperclip
+    depends_on:
+      paperclip:
+        condition: service_started
+        restart: true
+    read_only: true
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    volumes:
+    - /srv/containers/compose/paperclip/qwen-api-relay.mjs:/relay/qwen-api-relay.mjs:ro
+    healthcheck:
+      test:
+      - CMD
+      - node
+      - -e
+      - const s=require('net').connect(18643,'127.0.0.1',()=>{s.destroy();process.exit(0)});s.on('error',()=>process.exit(1));setTimeout(()=>process.exit(1),2000).unref()
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    mem_limit: 268435456
+    memswap_limit: 536870912
+    cpus: 0.5
+    pids_limit: 256
+networks:
+  iot-vlan:
+    external: true
+  paperclip-hermes:
+    external: true
+  nexus-egress:
+    external: true

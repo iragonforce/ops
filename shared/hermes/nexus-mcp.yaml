@@ -1,0 +1,134 @@
+# Nexus Hermes MCP definitions
+# Source: verified production configuration, 2026-11-08
+# Credentials must remain external to Git.
+
+mcp_servers:
+  unifi:
+    command: /opt/hermes/.venv/bin/python
+    args:
+    - /opt/data/agent-kit/mcp/homelab.py
+    - unifi
+    env:
+      UNIFI_API_KEY: ${HERMES_REF_ADAE8E90DC6A5D06}
+      UNIFI_TLS_SHA256: 76bf3b43aa6e1970a674789826be6136ebafa6917e9929e2de58ad2d45e2b780
+      UNIFI_SITE_ID: 88f7af54-98f8-306a-a1c7-c9349722b1f6
+    enabled: true
+    connect_timeout: 20
+    timeout: 30
+    tools:
+      resources: false
+      prompts: false
+    lazy: true
+  prometheus:
+    command: /opt/hermes/.venv/bin/python
+    args:
+    - /opt/data/agent-kit/mcp/homelab.py
+    - prometheus
+    env:
+      PROMETHEUS_URL: http://192.168.5.2:30104
+    enabled: true
+    connect_timeout: 15
+    timeout: 35
+    tools:
+      resources: false
+      prompts: false
+    lazy: true
+  context7:
+    command: /opt/data/agent-tools-stage1/node_modules/node/bin/node
+    args:
+    - /opt/data/agent-tools-stage1/node_modules/@upstash/context7-mcp/dist/index.js
+    enabled: true
+    lazy: true
+    connect_timeout: 35
+    timeout: 60
+    tools:
+      include:
+      - resolve-library-id
+      - query-docs
+    elicitation:
+      enabled: false
+  codebase_memory:
+    command: /opt/data/codex-sync/codebase-memory-start
+    args:
+    - --ui=false
+    env:
+      CBM_ALLOWED_ROOT: /opt/data/agent-tools-stage1/test-project
+      CBM_CACHE_DIR: /opt/data/agent-tools-stage1/state/codebase-memory
+      CBM_WORKERS: '2'
+      CBM_MEM_BUDGET_MB: '512'
+      CBM_RUNTIME_DIR: /tmp/hermes-cbm-10000
+      CBM_STARTUP_TIMEOUT_MS: '60000'
+    enabled: true
+    lazy: true
+    connect_timeout: 45
+    timeout: 120
+    tools:
+      include:
+      - index_repository
+      - search_graph
+      - query_graph
+      - trace_path
+      - get_code_snippet
+      - get_file_outline
+      - get_graph_schema
+      - get_architecture
+      - search_code
+      - list_projects
+      - index_status
+  project_graph:
+    command: /opt/data/agent-tools-stage1/node_modules/node/bin/node
+    args:
+    - /opt/data/agent-tools-stage1/node_modules/@modelcontextprotocol/server-memory/dist/index.js
+    env:
+      MEMORY_FILE_PATH: /opt/data/agent-tools-stage1/state/project-graph.jsonl
+    enabled: true
+    lazy: true
+    connect_timeout: 30
+    timeout: 30
+    tools:
+      include:
+      - create_entities
+      - create_relations
+      - add_observations
+      - search_nodes
+      - open_nodes
+  playwright:
+    command: /usr/bin/python3
+    args:
+    - /opt/data/agent-tools-stage1/bin/playwright-socket.py
+    enabled: true
+    lazy: true
+    connect_timeout: 40
+    timeout: 60
+    tools:
+      include:
+      - browser_navigate
+      - browser_snapshot
+      - browser_click
+      - browser_evaluate
+      - browser_close
+      - browser_fill_form
+      - browser_type
+      - browser_press_key
+      - browser_wait_for
+      - browser_take_screenshot
+  designer-playwright:
+    url: http://designer-browser:8931/mcp
+    timeout: 30
+    connect_timeout: 10
+    lazy: true
+  git-serena:
+    command: /opt/data/mcp/serena/bin/serena
+    args:
+    - start-mcp-server
+    - --context
+    - agent
+    - --enable-web-dashboard
+    - 'false'
+    - --open-web-dashboard
+    - 'false'
+    env:
+      PYTHONPATH: /opt/data/mcp/serena
+    timeout: 60
+    connect_timeout: 20
+    lazy: true

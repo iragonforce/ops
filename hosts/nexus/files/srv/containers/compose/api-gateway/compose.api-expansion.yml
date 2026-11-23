@@ -1,0 +1,20 @@
+services:
+  gateway:
+    environment:
+      KONG_NGINX_MAIN_ENV: "QBITTORRENT_API_KEY,HOME_ASSISTANT_API_KEY,N8N_API_TOKEN,KONG_SYNCTHING_API_KEY,CHECKMK_NEXUS_API_KEY,WEALTHFOLIO_RECEIPT_MATCH_READ,ADGUARD_USER,ADGUARD_PASSWORD,WRANGLER_API_KEY,PORTAINER_API_KEY,ZIGBEE2MQTT_AUTH_TOKEN,PHOTON_API_TOKEN,KONG_SONARR_API_KEY,KONG_RADARR_API_KEY,KONG_LIDARR_API_KEY,KONG_PROWLARR_API_KEY,KONG_BAZARR_API_KEY"
+      PHOTON_API_TOKEN: "${PHOTON_API_TOKEN:?Bitwarden secret required}"
+      KONG_SONARR_API_KEY: "${KONG_SONARR_API_KEY:?Bitwarden secret required}"
+      KONG_RADARR_API_KEY: "${KONG_RADARR_API_KEY:?Bitwarden secret required}"
+      KONG_LIDARR_API_KEY: "${KONG_LIDARR_API_KEY:?Bitwarden secret required}"
+      KONG_PROWLARR_API_KEY: "${KONG_PROWLARR_API_KEY:?Bitwarden secret required}"
+      KONG_BAZARR_API_KEY: "${KONG_BAZARR_API_KEY:?Bitwarden secret required}"
+      ZIGBEE2MQTT_AUTH_TOKEN: "${ZIGBEE2MQTT_AUTH_TOKEN:?Bitwarden secret required}"
+      PORTAINER_API_KEY: "${PORTAINER_API_KEY:?Bitwarden secret required}"
+      WRANGLER_API_KEY: "${WRANGLER_API_KEY:?Bitwarden secret required}"
+      ADGUARD_PASSWORD: "${ADGUARD_PASSWORD:?Bitwarden secret required}"
+      ADGUARD_USER: "${ADGUARD_USER:?Bitwarden secret required}"
+      WEALTHFOLIO_RECEIPT_MATCH_READ: "${WEALTHFOLIO_RECEIPT_MATCH_READ:?Bitwarden secret required}"
+      CHECKMK_NEXUS_API_KEY: "${CHECKMK_NEXUS_API_KEY:?Bitwarden secret required}"
+      HOME_ASSISTANT_API_KEY: "${HOME_ASSISTANT_API_KEY:?Bitwarden secret required}"
+      N8N_API_TOKEN: "${N8N_API_TOKEN:?Bitwarden secret required}"
+      KONG_SYNCTHING_API_KEY: "${KONG_SYNCTHING_API_KEY:?Bitwarden secret required}"

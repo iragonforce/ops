@@ -1,0 +1,17 @@
+#!/usr/bin/python3
+
+if __name__ == "__main__":
+    import sys as _ops_sys
+    if _ops_sys.argv[1:] == ["--help"]:
+        print('Restore the existing container configuration through its maintained recovery procedure.\nUsage: container-restore \n\nSource: hosts/nexus/files/usr/local/sbin/container-restore in ~/ops\nSee man container-restore for the existing call sites and argument handling.')
+        raise SystemExit(0)
+# Restore the existing container configuration through its maintained recovery procedure. See container-restore(1) for source and integration details.
+import json,subprocess,time
+names=json.load(open('/etc/docker/nexus-service-containers.json'))
+for attempt in range(12):
+ cs=json.loads(subprocess.check_output(['docker','inspect',*names],text=True))
+ stopped=[c['Name'].lstrip('/') for c in cs if c['State']['Status'] not in ('running','restarting')]
+ if not stopped:break
+ for name in stopped:subprocess.run(['docker','start',name],timeout=60)
+ time.sleep(5)
+else:raise SystemExit('Containers remain stopped after retries')

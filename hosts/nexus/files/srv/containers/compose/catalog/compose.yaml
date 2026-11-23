@@ -1,0 +1,22 @@
+services:
+  api-topology:
+    image: nginx:alpine
+    container_name: homelab-api-topology
+    restart: unless-stopped
+    volumes:
+      - /opt/homelab-api/catalog/index.html:/usr/share/nginx/html/index.html:ro
+    networks: [proxy-backend]
+
+  api-reference:
+    image: scalarapi/api-reference:latest
+    container_name: homelab-api-reference
+    restart: unless-stopped
+    volumes:
+      - /opt/homelab-api/catalog/openapi:/docs:ro
+    environment:
+      API_REFERENCE_CONFIG: '{"theme":"default"}'
+    networks: [proxy-backend]
+
+networks:
+  proxy-backend:
+    external: true

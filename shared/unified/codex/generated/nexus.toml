@@ -1,0 +1,290 @@
+developer_instructions = "For third-party engineering skills, treat already specified and authorized routine work as ready for execution: do not repeat brainstorming, clarification, or approval questions. Keep significant-plan approval and disruptive-action coordination requirements. Run formal tests only when requested. Use native tools for shell/files/Git/fetch; project_graph is explicit project knowledge, never automatic personal memory. Load full skills only when needed; keep large logs in private files and report bounded excerpts. Code indexes are approved only inside the stage1 synthetic test-project. Mem0 is disabled and must not replace or mirror Hermes memory. Component updates require an explicitly selected version and affected functional checks."
+model = "gpt-6-astra"
+model_reasoning_effort = "high"
+approvals_reviewer = "user"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+
+[tui]
+status_line = ["model-with-reasoning", "current-dir", "project-root", "context-remaining", "context-used", "five-hour-limit", "weekly-limit", "codex-version", "context-window-size", "used-tokens", "total-input-tokens", "total-output-tokens", "session-id"]
+screen_reader_detection_done = true
+
+[tui.model_availability_nux]
+"gpt-5.5" = 4
+"gpt-6.1-sol" = 4
+
+[marketplaces.context-mode]
+source_type = "git"
+source = "https://github.com/mksglu/claude-context-mode.git"
+
+[marketplaces.openai-bundled]
+source_type = "local"
+source = "/home/iragonforce/.codex/.tmp/bundled-marketplaces/openai-bundled"
+
+[marketplaces.superpowers-dev]
+source_type = "local"
+source = "/home/iragonforce/projects/agent-tools-stage1/sources/obra/superpowers"
+
+[plugins."context-mode@context-mode"]
+enabled = true
+
+[plugins."visualize@openai-bundled"]
+enabled = true
+
+[plugins."superpowers@superpowers-dev"]
+enabled = true
+
+[hooks.state]
+
+[hooks.state."context-mode@context-mode:.codex-plugin/hooks.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:9b85e297ad70747b368c22e9c4e34281800709512705e3661c97cd3e721f9e22"
+trusted_content_hash = "sha256:7a5b6c965b234264b855c055a28b1e3b597c5cd819151f4e74bbd4779c89a8a5"
+
+[hooks.state."context-mode@context-mode:.codex-plugin/hooks.json:post_tool_use:0:0"]
+trusted_hash = "sha256:5c9b252fba4884901034c3c1593e56cc1833efaf23cb24d0cde47974e2b94bff"
+trusted_content_hash = "sha256:7a5b6c965b234264b855c055a28b1e3b597c5cd819151f4e74bbd4779c89a8a5"
+
+[hooks.state."context-mode@context-mode:.codex-plugin/hooks.json:pre_compact:0:0"]
+trusted_hash = "sha256:ac1f9e5eb71ca262492150381d8f078b897056fc691f9973fc56d7b1b402e648"
+
+[hooks.state."context-mode@context-mode:.codex-plugin/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:36fd81896ba86e6dcc421f18e29c7a6c09bc76c2ee7562ede426dfb92e9dcf10"
+trusted_content_hash = "sha256:7a5b6c965b234264b855c055a28b1e3b597c5cd819151f4e74bbd4779c89a8a5"
+
+[hooks.state."context-mode@context-mode:.codex-plugin/hooks.json:user_prompt_submit:0:0"]
+trusted_hash = "sha256:7d2143376a6f28c939b711bde2e99125e2387e1a6a2a95da069df2324daf602e"
+trusted_content_hash = "sha256:7a5b6c965b234264b855c055a28b1e3b597c5cd819151f4e74bbd4779c89a8a5"
+
+[hooks.state."context-mode@context-mode:.codex-plugin/hooks.json:stop:0:0"]
+trusted_hash = "sha256:9205c1763e40c0256ab334e2e96c037c1cdf5b8bfaddba31ed19d93d3388586a"
+
+[mcp_servers.context7]
+enabled = false
+enabled_tools = ["resolve-library-id", "query-docs"]
+command = "/home/iragonforce/projects/agent-tools-stage1/node_modules/node/bin/node"
+args = ["/home/iragonforce/projects/agent-tools-stage1/node_modules/@upstash/context7-mcp/dist/index.js"]
+startup_timeout_sec = 35
+tool_timeout_sec = 60
+
+[mcp_servers.codebase_memory]
+enabled = false
+enabled_tools = ["index_repository", "search_graph", "query_graph", "trace_path", "get_code_snippet", "get_file_outline", "get_graph_schema", "get_architecture", "search_code", "list_projects", "index_status"]
+command = "/home/iragonforce/projects/agent-tools-stage1/bin/codebase-memory-mcp"
+args = ["--ui=false"]
+startup_timeout_sec = 45
+tool_timeout_sec = 120
+[mcp_servers.codebase_memory.env]
+CBM_ALLOWED_ROOT = "/home/iragonforce/projects/agent-tools-stage1/test-project"
+CBM_CACHE_DIR = "/home/iragonforce/projects/agent-tools-stage1/state/codebase-memory"
+CBM_WORKERS = "2"
+CBM_MEM_BUDGET_MB = "512"
+
+[mcp_servers.project_graph]
+enabled = false
+enabled_tools = ["create_entities", "create_relations", "add_observations", "search_nodes", "open_nodes"]
+command = "/home/iragonforce/projects/agent-tools-stage1/node_modules/node/bin/node"
+args = ["/home/iragonforce/projects/agent-tools-stage1/node_modules/@modelcontextprotocol/server-memory/dist/index.js"]
+startup_timeout_sec = 30
+tool_timeout_sec = 30
+[mcp_servers.project_graph.env]
+MEMORY_FILE_PATH = "/home/iragonforce/projects/agent-tools-stage1/state/project-graph.jsonl"
+
+[mcp_servers.playwright]
+enabled = false
+enabled_tools = ["browser_navigate", "browser_snapshot", "browser_click", "browser_evaluate", "browser_close", "browser_fill_form", "browser_type", "browser_press_key", "browser_wait_for", "browser_take_screenshot"]
+command = "/home/iragonforce/projects/agent-tools-stage1/node_modules/node/bin/node"
+args = ["/home/iragonforce/projects/agent-tools-stage1/node_modules/@playwright/mcp/cli.js", "--headless", "--isolated", "--executable-path", "/home/iragonforce/.cache/ms-playwright/chromium-1247/chrome-linux64/chrome", "--block-service-workers", "--no-webmcp", "--image-responses", "omit", "--idle-timeout", "120000", "--output-dir", "/home/iragonforce/projects/agent-tools-stage1/state/browser-output"]
+startup_timeout_sec = 40
+tool_timeout_sec = 60
+
+[mcp_servers.hn-unifi]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "unifi"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-prometheus]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "prometheus"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-context7]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "context7"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+enabled_tools = ["resolve-library-id", "query-docs"]
+
+[mcp_servers.hn-codebase-memory]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "codebase_memory"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+enabled_tools = ["index_repository", "search_graph", "query_graph", "trace_path", "get_code_snippet", "get_file_outline", "get_graph_schema", "get_architecture", "search_code", "list_projects", "index_status"]
+
+[mcp_servers.hn-project-graph]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "project_graph"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+enabled_tools = ["create_entities", "create_relations", "add_observations", "search_nodes", "open_nodes"]
+
+[mcp_servers.hn-playwright]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "playwright"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+enabled_tools = ["browser_navigate", "browser_snapshot", "browser_click", "browser_evaluate", "browser_close", "browser_fill_form", "browser_type", "browser_press_key", "browser_wait_for", "browser_take_screenshot"]
+
+[mcp_servers.hn-main-tasks]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "main-tasks"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-gptoss-readonly]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "gptoss-readonly"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-gptoss-tasks]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "gptoss-tasks"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-designer-role]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "designer-role"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-designer-tasks]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "designer-tasks"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-designer-playwright]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "designer-playwright"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-nexus-role]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "nexus-role"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-nexus-tasks]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "nexus-tasks"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-tensor-role]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "tensor-role"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-tensor-tasks]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "tensor-tasks"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-git-role]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "git-role"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-git-tasks]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "git-tasks"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-git-serena]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "git-serena"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-hyprland-role]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "hyprland-role"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-hyprland-tasks]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "hyprland-tasks"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-network-role]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "network-role"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-network-tasks]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "network-tasks"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-qubit-role]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "qubit-role"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+
+[mcp_servers.hn-qubit-tasks]
+command = "/usr/bin/python3"
+args = ["/home/iragonforce/.config/homelab/unified/codex/bin/hermes-mcp-exec.py", "main", "qubit-tasks"]
+enabled = true
+startup_timeout_sec = 180
+tool_timeout_sec = 120
+[projects."/home/iragonforce/projects/agent-tools-stage1/test-project"]
+trust_level = "trusted"
+
+[notice]
+hide_full_access_warning = true
+hide_rate_limit_model_nudge = true
+
+[notice.model_migrations]
+"gpt-5.1-codex-mini" = "gpt-5.4"
+"gpt-5.3-codex" = "gpt-5.4"
+"gpt-5.2" = "gpt-5.4"
+"gpt-5.5" = "gpt-6.1-sol"
+

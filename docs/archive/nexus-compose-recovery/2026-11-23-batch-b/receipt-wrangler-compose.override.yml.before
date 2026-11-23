@@ -1,0 +1,16 @@
+services:
+  wrangler:
+    extra_hosts:
+    - tensor:192.168.1.3
+    networks:
+      default: {}
+      proxy-backend:
+        ipv4_address: 172.16.11.109
+    restart: always
+    mem_limit: 536870912
+    memswap_limit: 1073741824
+    cpus: 0.5
+    pids_limit: 256
+networks:
+  proxy-backend:
+    external: true

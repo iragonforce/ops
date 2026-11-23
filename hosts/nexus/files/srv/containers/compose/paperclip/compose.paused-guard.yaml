@@ -1,0 +1,9 @@
+services:
+  paperclip:
+    image: blinkwired/paperclip-paused-guard:20261103-v1
+    pull_policy: never
+    cpus: 2.0
+    mem_limit: 4294967296
+    restart: always
+    memswap_limit: 4831838208
+    pids_limit: 2048

@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily receipt transaction reconciliation
+
+[Timer]
+OnCalendar=*-*-* 04:30:00
+Persistent=true
+Unit=receipt-reconcile.service
+
+[Install]
+WantedBy=timers.target

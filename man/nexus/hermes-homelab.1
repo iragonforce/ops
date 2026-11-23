@@ -1,0 +1,22 @@
+.TH "HERMES-HOMELAB" "1" "2026-11-06" "Homelab ops"
+.SH NAME
+hermes-homelab \- Launch the shared Nexus Hermes runtime through the existing SSH or Docker route.
+.SH SYNOPSIS
+.B hermes-homelab
+[arguments]
+.SH DESCRIPTION
+Launch the shared Nexus Hermes runtime through the existing SSH or Docker route.
+Established names and consumer paths are preserved. No hardware or service action was executed for documentation verification.
+.SH INTERFACE
+.SS /home/iragonforce/.local/bin/hermes-homelab
+Source: shared/scripts/hermes-homelab
+.nf
+print('Launch the shared Nexus Hermes runtime through the existing SSH or Docker route.\nUsage: hermes-homelab  [ARGUMENT ...]\n\nSource: shared/scripts/hermes-homelab in ~/ops\nSee man hermes-homelab for the existing call sites and argument handling.')
+.fi
+
+.SH DEPENDENCIES
+Use the interpreter in the source shebang and the existing host packages and services referenced in that source. Host configuration and private credentials remain on their original host.
+.SH OPERATIONS
+Before changing behavior, inspect inventory/audit-2026-11-06/nexus.json for recorded consumers and the source above for exact dependency paths. Never invoke a power, desktop, network, credential, notification, or storage operation merely to test it.
+.SH SOURCE
+Private iragonforce/ops repository. Consult docs/workflow.md for deployment, verification, rollback, and change records.

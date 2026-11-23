@@ -1,0 +1,35 @@
+.TH DEPLOY-NEXUS-MCP 1 "2026-11-08" "Homelab" "Operator Commands"
+.SH NAME
+deploy-nexus-mcp \- synchronize Nexus Hermes MCP definitions from Git
+.SH SYNOPSIS
+.B python3 shared/hermes/deploy-nexus-mcp.py
+.BR check | apply
+.RI [ --source " FILE" ]
+.RI [ --live " FILE" ]
+.SH DESCRIPTION
+Checks or atomically replaces the top-level mcp_servers
+section of Nexus Hermes config.yaml using the Git-managed
+nexus-mcp.yaml file.
+Unrelated configuration sections are preserved.
+The gateway is not restarted automatically.
+.SH OPTIONS
+.TP
+.B check
+Compare the source and live MCP definitions without writing.
+.TP
+.B apply
+Apply changed definitions while preserving file ownership
+and permissions.
+.TP
+.B --source FILE
+Override the Git source path.
+.TP
+.B --live FILE
+Override the live configuration path.
+.SH EXIT STATUS
+0 on success; 2 for configuration drift in check mode;
+1 for other failures.
+.SH DEPENDENCIES
+Python 3 and PyYAML.
+.SH SEE ALSO
+shared/hermes/README.md

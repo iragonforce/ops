@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Apply the existing tmux SSH-exit behavior. See tmux-ssh-exit(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Apply the existing tmux SSH-exit behavior.
+Usage: tmux-ssh-exit  [ARGUMENT ...]
+
+Source: hosts/nexus/files/.config/tmux/helpers/tmux-ssh-exit in ~/ops
+See man tmux-ssh-exit for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+
+# Called by the interactive zsh exit function. Detach only an SSH-backed client.
+set -euo pipefail
+[[ -n "${TMUX:-}" && -n "${TMUX_PANE:-}" ]] || exit 1
+tmux_bin="${TMUX_BIN:-$(command -v tmux 2>/dev/null || true)}"
+[[ -n "$tmux_bin" ]] || exit 1
+
+session_name="$("$tmux_bin" display-message -p -t "$TMUX_PANE" '#{session_name}')"
+[[ -n "$session_name" ]] || exit 1
+
+is_ssh_client() {
+  local pid="$1" command_name depth
+  [[ "$pid" =~ ^[0-9]+$ ]] || return 1
+  for (( depth=0; depth<12 && pid>1; depth++ )); do
+    command_name="$(ps -o comm= -p "$pid" 2>/dev/null || true)"
+    case "${command_name##*/}" in
+      sshd|sshd-*) return 0 ;;
+    esac
+    pid="$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ' || true)"
+    [[ "$pid" =~ ^[0-9]+$ ]] || break
+  done
+  return 1
+}
+
+# The client sending the command has the newest activity timestamp.
+# Select one client so another SSH login viewing the same session is untouched.
+read -r _ client_pid client_name < <(
+  "$tmux_bin" list-clients -t "$session_name" -F '#{client_activity} #{client_pid} #{client_name}' |
+    sort -rn | head -1
+)
+if [[ -n "${client_name:-}" ]] && is_ssh_client "$client_pid"; then
+  "$tmux_bin" detach-client -t "$client_name"
+  exit 0
+fi
+exit 1

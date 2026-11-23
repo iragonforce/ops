@@ -1,0 +1,62 @@
+name: step-ca
+services:
+  step-ca:
+    command:
+      - /usr/local/bin/step-ca
+      - --password-file
+      - /home/step/secrets/password
+      - --resolver=192.168.1.2:1053
+      - /home/step/config/ca.json
+    image: smallstep/step-ca:0.30.2@sha256:a2b17872915c193259b75a5474c398326f41bd199f0842093e52cf4182bc8270
+    container_name: step-ca
+    restart: always
+    user: 1000:1000
+    read_only: true
+    security_opt:
+    - no-new-privileges:true
+    volumes:
+    - type: bind
+      source: /srv/containers/data/step-ca
+      target: /home/step
+      bind:
+        create_host_path: false
+    ports:
+    - 192.168.1.2:9000:9000/tcp
+    extra_hosts:
+    - paperclip.homelab.lan:172.16.11.4
+    - hermes.homelab.lan:172.16.11.4
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.246
+        mac_address: 02:42:c0:a8:05:f6
+        gw_priority: 100
+      proxy-backend:
+        ipv4_address: 172.16.11.111
+      nexus-egress:
+        gw_priority: 200
+        ipv4_address: 172.30.240.101
+    healthcheck:
+      test:
+      - CMD
+      - step
+      - ca
+      - health
+      - --ca-url
+      - https://192.168.1.2:9000
+      - --root
+      - /home/step/certs/root_ca.crt
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    mem_limit: 268435456
+    memswap_limit: 536870912
+    cpus: 0.5
+    pids_limit: 256
+networks:
+  docker-vlan:
+    external: true
+  proxy-backend:
+    external: true
+  nexus-egress:
+    external: true

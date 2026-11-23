@@ -1,0 +1,10 @@
+{
+  "bind": ":7551",
+  "host": "192.168.5.5",
+  "worlds": [
+    {
+      "name": "Bedrock level",
+      "port": 19132
+    }
+  ]
+}

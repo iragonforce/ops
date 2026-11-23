@@ -1,0 +1,38 @@
+name: finance-analytics
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: finance-analytics-db
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: finance_analytics
+      POSTGRES_USER: finance_analytics
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_password
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+      TZ: America/Toronto
+
+    volumes:
+      - finance_data:/var/lib/postgresql/data
+      - /opt/finance-analytics/secrets/pg_password:/run/secrets/pg_password:ro
+
+    networks:
+      - analytics_net
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U finance_analytics -d finance_analytics
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+networks:
+  analytics_net:
+    name: finance-analytics-net
+    internal: true
+
+volumes:
+  finance_data:
+    name: finance-analytics-pgdata

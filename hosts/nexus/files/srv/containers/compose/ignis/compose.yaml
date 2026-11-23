@@ -1,0 +1,32 @@
+services:
+  ignis:
+    image: nobbe/ignis:latest
+    container_name: ignis
+    environment:
+      PUID: '1000'
+      PGID: '1000'
+      TZ: America/Toronto
+      WS_ORIGINS: https://obsidian.blinkwired.com
+    volumes:
+    - /opt/ignis/vaults:/vaults
+    - /home/iragonforce/secondBrain:/vaults/secondBrain
+    - /opt/ignis/ignis-profile/.obsidian:/vaults/secondBrain/.obsidian
+    - /opt/ignis/data:/app/data
+    - obsidian-app:/app/obsidian-app
+    networks:
+      proxy-backend:
+        ipv4_address: 172.16.11.106
+      egress:
+        gw_priority: 1
+    restart: always
+    mem_limit: 268435456
+    memswap_limit: 536870912
+    cpus: 0.5
+    pids_limit: 256
+volumes:
+  obsidian-app: null
+networks:
+  proxy-backend:
+    external: true
+  egress:
+    driver: bridge

@@ -1,0 +1,53 @@
+name: cups
+services:
+  cups:
+    image: drpsychick/airprint-bridge:noble-20261001@sha256:b6dcc432ec13f459a82cbb123183b3787897f39b1cea4f9f36fdc989a46f5f2c
+    pull_policy: never
+    container_name: cups
+    restart: always
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - /healthcheck.sh
+      interval: 10000000000ns
+      timeout: 3000000000ns
+    env_file:
+    - path: /etc/nexus/secrets/cups/cups.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/cups/recovered-volumes/cups_cups-config
+      target: /etc/cups
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /run/dbus/system_bus_socket
+      target: /run/dbus/system_bus_socket
+      read_only: false
+      bind:
+        create_host_path: false
+    shm_size: 67108864
+    mem_limit: 268435456
+    cpus: 0.25
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.46
+        gw_priority: 300
+        mac_address: 26:27:40:fe:84:c1
+      proxy-backend:
+        aliases:
+        - cups
+        ipv4_address: 172.16.11.27
+        mac_address: 6a:09:04:7b:02:ba
+    dns:
+    - 1.1.1.1
+    memswap_limit: 536870912
+    pids_limit: 256
+networks:
+  docker-vlan:
+    external: true
+  proxy-backend:
+    external: true
+  nexus-egress:
+    external: true

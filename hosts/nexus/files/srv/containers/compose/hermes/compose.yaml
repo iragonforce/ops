@@ -1,0 +1,297 @@
+services:
+  hermes:
+    environment:
+      HERMES_DASHBOARD: "1"
+      HERMES_DASHBOARD_HOST: "0.0.0.0"
+      HERMES_DASHBOARD_PORT: "9119"
+      HERMES_DASHBOARD_PUBLIC_URL: "https://hermes.blinkwired.com"
+      HERMES_DASHBOARD_OIDC_ISSUER: "https://auth.blinkwired.com/application/o/hermes/"
+      HERMES_DASHBOARD_OIDC_CLIENT_ID: "hermes-dashboard"
+    image: localhost/hermes-agent:v0.21.6-tools-1
+    pull_policy: never
+    container_name: hermes
+    restart: always
+    command:
+    - gateway
+    - run
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -fsS
+      - http://127.0.0.1:8642/health
+      interval: 30000000000ns
+      timeout: 5000000000ns
+      start_period: 30000000000ns
+      retries: 5
+    env_file:
+    - path: /etc/nexus/secrets/hermes/hermes.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /mnt/bulk
+      target: /mnt/bulk
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data
+      target: /mnt/fast
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/fast/project
+      target: /mnt/fast/project
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/fast/screenshots
+      target: /mnt/fast/screenshots
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/fast/downloads
+      target: /mnt/fast/downloads
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/fast/documents
+      target: /mnt/fast/documents
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/fast/3d-models
+      target: /mnt/fast/3d-models
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/hermes/data
+      target: /opt/data
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/hermes/tools/bin/jq
+      target: /usr/local/bin/jq
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/hermes/tools/bin/yq
+      target: /usr/local/bin/yq
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/hermes/tools/bin/shellcheck
+      target: /usr/local/bin/shellcheck
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/hermes/tools/bin/actionlint
+      target: /usr/local/bin/actionlint
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/hermes/tools/bin/trivy
+      target: /usr/local/bin/trivy
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /usr/bin/docker
+      target: /usr/local/bin/docker
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/bulk/data
+      target: /mnt/bulk/data
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /run/agent-credentials/hermes.env
+      target: /run/agent-credentials/hermes.env
+      read_only: true
+      bind:
+        create_host_path: false
+    shm_size: 67108864
+    mem_limit: 4294967296
+    cpus: 2.0
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.55
+        gw_priority: 300
+        mac_address: ce:83:27:9f:17:24
+      proxy-backend:
+        aliases:
+        - hermes
+        ipv4_address: 172.16.11.34
+        mac_address: 8e:9e:ca:a8:33:ad
+      paperclip-hermes:
+        aliases:
+        - hermes
+      agent-browser: {}
+      qdrant_default: {}
+    dns:
+    - 1.1.1.1
+    memswap_limit: 4831838208
+    pids_limit: 1024
+  designer-browser:
+    image: nousresearch/hermes-agent:v0.21.6@sha256:55e192fba0cd4fde61142abbff5adeacff40efdb482ccd0ff877924bd274f909
+    container_name: designer-browser
+    entrypoint:
+    - node
+    command:
+    - /mcp-playwright/node_modules/@playwright/mcp/cli.js
+    - --headless
+    - --isolated
+    - --no-sandbox
+    - --browser
+    - chromium
+    - --host
+    - 0.0.0.0
+    - --port
+    - '8931'
+    - --allowed-hosts
+    - designer-browser:8931,localhost:8931
+    user: 10000:10000
+    environment:
+      HOME: /tmp
+      PLAYWRIGHT_BROWSERS_PATH: /browser-cache
+    volumes:
+    - /srv/containers/data/hermes/data/mcp/playwright:/mcp-playwright:ro
+    - /srv/containers/data/hermes/data/mcp/playwright-browsers:/browser-cache:ro
+    read_only: true
+    tmpfs:
+    - /tmp:rw,noexec,nosuid,size=256m,uid=10000,gid=10000
+    shm_size: 1073741824
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    restart: always
+    mem_limit: 1610612736
+    pids_limit: 128
+    networks:
+    - agent-browser
+    memswap_limit: 2147483648
+    cpus: 2
+  qwen-hermes:
+    profiles: ["retired-local-experiment"]
+    image: nousresearch/hermes-agent:v0.21.6@sha256:55e192fba0cd4fde61142abbff5adeacff40efdb482ccd0ff877924bd274f909
+    container_name: qwen-hermes
+    pull_policy: never
+    entrypoint: /opt/hermes/.venv/bin/hermes
+    command:
+    - -p
+    - paperclipqwen
+    - gateway
+    - run
+    user: 1000:1000
+    init: true
+    env_file:
+    - path: /etc/nexus/secrets/hermes/qwen.env
+      format: raw
+    volumes:
+    - /srv/containers/data/hermes/qwen-data:/opt/data
+    - /srv/containers/data/hermes/workspaces/homelab-knowledge:/workspace
+    - /srv/containers/data/hermes/data/mcp/serena:/opt/data/mcp/serena:ro
+    read_only: true
+    tmpfs:
+    - /tmp:rw,noexec,nosuid,size=128m,uid=1000,gid=1000
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 3221225472
+    cpus: 2.0
+    restart: always
+    networks:
+      nexus-egress:
+        ipv4_address: 172.30.240.30
+      paperclip-hermes: {}
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -fsS
+      - http://127.0.0.1:8642/health
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    memswap_limit: 3758096384
+  paperclip-knowledge:
+    profiles: ["retired-paperclip"]
+    image: nousresearch/hermes-agent:v0.21.6@sha256:55e192fba0cd4fde61142abbff5adeacff40efdb482ccd0ff877924bd274f909
+    container_name: paperclip-knowledge
+    entrypoint:
+    - /opt/hermes/.venv/bin/python
+    command:
+    - /bridge/knowledge-bridge.py
+    user: 10000:10000
+    environment:
+      HOME: /opt/data
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUNBUFFERED: '1'
+      GEMINI_FORCE_FILE_STORAGE: 'true'
+      TZ: UTC
+    network_mode: service:hermes
+    depends_on:
+      hermes:
+        condition: service_started
+        restart: true
+    volumes:
+    - /srv/containers/compose/paperclip-knowledge:/bridge:ro
+    - /srv/containers/data/paperclip/migrations/20261017/public:/knowledge
+    - /etc/nexus/secrets/paperclip/knowledge-bridge.json:/run/secrets/bridge.json:ro
+    - /srv/containers/data/hermes/data/.ssh:/opt/data/.ssh:ro
+    read_only: true
+    tmpfs:
+    - /tmp:rw,noexec,nosuid,size=64m,uid=10000,gid=10000
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    restart: always
+    mem_limit: 536870912
+    pids_limit: 64
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+    healthcheck:
+      test:
+      - CMD
+      - /opt/hermes/.venv/bin/python
+      - -c
+      - import urllib.request; urllib.request.urlopen("http://127.0.0.1:8768/health",
+        timeout=3)
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    memswap_limit: 1073741824
+    cpus: 1
+networks:
+  docker-vlan:
+    external: true
+  proxy-backend:
+    external: true
+  nexus-egress:
+    external: true
+  paperclip-hermes:
+    external: true
+  agent-browser: {}
+  qdrant_default:
+    external: true

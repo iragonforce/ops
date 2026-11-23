@@ -1,0 +1,26 @@
+services:
+  obsidian:
+    image: lscr.io/linuxserver/obsidian@sha256:a3324c3380f40a70d98058636a47db4afaca261907751a720afa4132c7f4c14e
+    container_name: obsidian-nexus
+    restart: always
+    shm_size: 1gb
+    environment:
+      PUID: '1000'
+      PGID: '1000'
+      TZ: Etc/UTC
+    env_file: /etc/nexus/secrets/obsidian-nexus/gui.env
+    volumes:
+    - /srv/containers/data/obsidian-nexus/config:/config
+    - /home/iragonforce/secondBrain:/vault
+    - /srv/containers/data/obsidian-nexus/vault-config:/vault/.obsidian
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.57
+      paperclip-hermes:
+        aliases:
+        - obsidian-nexus
+networks:
+  docker-vlan:
+    external: true
+  paperclip-hermes:
+    external: true

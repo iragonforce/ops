@@ -1,0 +1,18 @@
+#!/bin/sh
+# Attach the canonical Nexus tmux session. See nexus-login-tmux(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Attach the canonical Nexus tmux session.
+Usage: nexus-login-tmux 
+
+Source: hosts/nexus/files/.local/bin/login-tmux in ~/ops
+See man nexus-login-tmux for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+set -eu
+if [ "${TERM:-dumb}" = dumb ] || ! infocmp "${TERM:-dumb}" >/dev/null 2>&1; then export TERM=xterm-256color; fi
+if ! tmux has-session -t nexus 2>/dev/null; then "$HOME/.local/bin/tmux-bootstrap-session" nexus "$HOME"; fi
+"$HOME/.local/bin/tmux-ensure-layout" nexus "$HOME"
+if [ -z "$(tmux list-clients -t nexus -F '#{client_pid}')" ]; then tmux select-window -t nexus:1; fi
+exec tmux attach-session -t nexus

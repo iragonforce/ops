@@ -1,0 +1,47 @@
+name: minecraft-bedrock
+services:
+  minecraft-bedrock:
+    image: itzg/minecraft-bedrock-server:2026.9.2@sha256:244e72a36a3e3d69c588cbeefe6d8f6f97c48869b801718a4023570654e3b3d9
+    pull_policy: never
+    container_name: minecraft-bedrock
+    restart: always
+    user: 568:568
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - /usr/local/bin/mc-monitor status-bedrock --host 127.0.0.1 --port $$SERVER_PORT
+      start_period: 60000000000ns
+    env_file:
+    - path: /etc/nexus/secrets/minecraft-bedrock/minecraft-bedrock.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/minecraft-server
+      target: /data
+      read_only: false
+      bind:
+        create_host_path: false
+    shm_size: 67108864
+    mem_limit: 1073741824
+    cpus: 2.0
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.5
+        gw_priority: 300
+        mac_address: 46:33:fd:98:63:26
+      proxy-backend:
+        aliases:
+        - minecraft-bedrock
+        ipv4_address: 172.16.11.23
+        mac_address: 26:39:36:62:62:7b
+    dns:
+    - 1.1.1.1
+    memswap_limit: 1610612736
+    pids_limit: 256
+networks:
+  docker-vlan:
+    external: true
+  proxy-backend:
+    external: true
+  nexus-egress:
+    external: true

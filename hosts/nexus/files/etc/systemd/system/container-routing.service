@@ -1,0 +1,7 @@
+[Unit]
+Description=Nexus container source routing
+After=docker.service vlans.service
+Wants=docker.service
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/container-routing routes

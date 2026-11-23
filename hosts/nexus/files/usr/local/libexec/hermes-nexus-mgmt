@@ -1,0 +1,33 @@
+#!/usr/bin/python3
+import os
+import subprocess
+import sys
+
+command = os.environ.get("SSH_ORIGINAL_COMMAND", "")
+
+if command == "health":
+    print("HERMES_NEXUS_MGMT_OK")
+    print("uid:", os.getuid())
+    sys.exit(0)
+
+if command == "containers":
+    result = subprocess.run(
+        ["/usr/bin/sudo", "-n",
+         "/usr/local/sbin/hermes-docker-report"],
+        env={"PATH": "/usr/bin:/bin"},
+        check=False,
+    )
+    sys.exit(result.returncode)
+
+if command == "restart npm-summary":
+    result = subprocess.run(
+        ["/usr/bin/sudo", "-n", "/usr/bin/docker",
+         "--host", "unix:///var/run/docker.sock",
+         "restart", "npm-summary"],
+        env={"PATH": "/usr/bin:/bin"},
+        check=False,
+    )
+    sys.exit(result.returncode)
+
+print("DENIED: command not authorized", file=sys.stderr)
+sys.exit(126)

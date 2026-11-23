@@ -1,0 +1,27 @@
+.TH "TMUX-RELAY-PREFIX-KEY" "1" "2026-11-06" "Homelab ops"
+.SH NAME
+tmux-relay-prefix-key \- Forward the configured prefix action to the existing tmux relay.
+.SH SYNOPSIS
+.B tmux-relay-prefix-key
+[arguments]
+.SH DESCRIPTION
+Forward the configured prefix action to the existing tmux relay.
+Established names and consumer paths are preserved. No hardware or service action was executed for documentation verification.
+.SH INTERFACE
+.SS /home/iragonforce/.config/tmux/helpers/tmux-relay-prefix-key
+Source: shared/scripts/tmux-relay-prefix-key
+.nf
+key="${1:?key required}"
+.fi
+.SS /home/iragonforce/.local/bin/tmux-relay-prefix-key
+Source: shared/scripts/tmux-relay-prefix-key
+.nf
+Usage: tmux-relay-prefix-key  [ARGUMENT ...]
+.fi
+
+.SH DEPENDENCIES
+Use the interpreter in the source shebang and the existing host packages and services referenced in that source. Host configuration and private credentials remain on their original host.
+.SH OPERATIONS
+Before changing behavior, inspect inventory/audit-2026-11-06/nexus.json for recorded consumers and the source above for exact dependency paths. Never invoke a power, desktop, network, credential, notification, or storage operation merely to test it.
+.SH SOURCE
+Private iragonforce/ops repository. Consult docs/workflow.md for deployment, verification, rollback, and change records.

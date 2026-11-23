@@ -1,0 +1,73 @@
+name: receipt-wrangler
+services:
+  db:
+    image: postgres:17-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: wrangler
+      POSTGRES_PASSWORD: ${RW_DB_PASSWORD:?missing}
+      POSTGRES_DB: wrangler
+    volumes:
+    - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - pg_isready -U wrangler -d wrangler
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 536870912
+    memswap_limit: 1073741824
+    cpus: 0.5
+    pids_limit: 256
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command:
+    - redis-server
+    - --appendonly
+    - 'yes'
+    volumes:
+    - redisdata:/data
+    healthcheck:
+      test:
+      - CMD
+      - redis-cli
+      - ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    mem_limit: 134217728
+    memswap_limit: 268435456
+    cpus: 0.5
+    pids_limit: 256
+  wrangler:
+    image: noah231515/receipt-wrangler:latest
+    entrypoint: ./entrypoint.sh
+    restart: unless-stopped
+    environment:
+      ENCRYPTION_KEY: ${RW_ENCRYPTION_KEY:?missing}
+      SECRET_KEY: ${RW_SECRET_KEY:?missing}
+      DB_USER: wrangler
+      DB_PASSWORD: ${RW_DB_PASSWORD:?missing}
+      DB_NAME: wrangler
+      DB_HOST: db
+      DB_PORT: '5432'
+      DB_ENGINE: postgresql
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
+    volumes:
+    - ./data:/app/receipt-wrangler-api/data
+    - ./logs:/app/receipt-wrangler-api/logs
+    ports:
+    - 127.0.0.1:19082:80
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    security_opt:
+    - no-new-privileges:true
+volumes:
+  pgdata: null
+  redisdata: null

@@ -1,0 +1,7 @@
+[Unit]
+Description=Hourly persistent storage health record
+[Timer]
+OnCalendar=hourly
+Persistent=yes
+[Install]
+WantedBy=timers.target

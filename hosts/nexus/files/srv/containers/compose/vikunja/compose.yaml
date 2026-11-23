@@ -1,0 +1,47 @@
+name: vikunja
+services:
+  vikunja:
+    image: vikunja/vikunja:2.7.0@sha256:e2204a1c1c6a81e833c2b3a5442be182ca2335b54c2e7e37578cc3fe12a27cfc
+    pull_policy: never
+    container_name: vikunja
+    restart: always
+    env_file:
+    - path: /etc/nexus/secrets/vikunja/vikunja.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/vikunja/files
+      target: /app/vikunja/files
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/vikunja/db
+      target: /db
+      read_only: false
+      bind:
+        create_host_path: false
+    shm_size: 67108864
+    mem_limit: 268435456
+    cpus: 0.25
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.43
+        gw_priority: 300
+        mac_address: 0a:be:68:98:09:42
+      proxy-backend:
+        aliases:
+        - vikunja
+        ipv4_address: 172.16.11.22
+        mac_address: 2e:e9:07:a1:3d:5f
+    dns:
+    - 1.1.1.1
+    memswap_limit: 536870912
+    pids_limit: 256
+networks:
+  docker-vlan:
+    external: true
+  proxy-backend:
+    external: true
+  nexus-egress:
+    external: true

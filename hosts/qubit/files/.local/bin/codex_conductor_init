@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# Initialize an optional project conductor layout without overwriting existing files. See codex_conductor_init(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Initialize an optional project conductor layout without overwriting existing files.
+Usage: codex_conductor_init  [ARGUMENT ...]
+Usage:
+Source: hosts/qubit/files/.local/bin/codex_conductor_init in ~/ops
+See man codex_conductor_init for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+# codex_conductor_init
+#
+# Non-destructive by default:
+# - Does NOT delete files.
+# - Does NOT overwrite existing files/folders.
+#
+# Usage:
+#   codex_conductor_init            # initializes current directory
+#   codex_conductor_init /path/to/repo
+#
+set -euo pipefail
+
+REPO_ROOT="${1:-$(pwd)}"
+CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+
+skill_names=(conductor-setup conductor-status conductor-implement conductor-newTrack conductor-revert update-conductor)
+
+mkdir -p "$REPO_ROOT/.codex/skills"
+
+for s in "${skill_names[@]}"; do
+  src="$CODEX_HOME/skills/$s"
+  dst="$REPO_ROOT/.codex/skills/$s"
+  [[ -d "$src" ]] || { echo "Missing installed skill: $src"; exit 1; }
+  if [[ -e "$dst" ]]; then
+    echo "  Exists, skipping: .codex/skills/$s"
+    continue
+  fi
+  cp -a "$src" "$dst"
+  echo "  Installed: .codex/skills/$s"
+done
+
+# Install Conductor templates (non-destructive)
+if [[ -d "$CODEX_HOME/conductor/templates" ]]; then
+  if [[ -e "$REPO_ROOT/conductor/templates" ]]; then
+    echo "  Exists, skipping: conductor/templates"
+  else
+    mkdir -p "$REPO_ROOT/conductor/templates"
+    cp -a "$CODEX_HOME/conductor/templates"/. "$REPO_ROOT/conductor/templates/"
+    echo "  Installed: conductor/templates"
+  fi
+else
+  echo "  NOTE: Missing templates at $CODEX_HOME/conductor/templates (re-run conductor_for_codex.sh)"
+fi
+
+rule_line='Always run $conductor-status before doing anything else.'
+if [[ -e "$REPO_ROOT/AGENTS.md" ]]; then
+  if command -v grep >/dev/null 2>&1; then
+    if ! grep -Fxq "$rule_line" "$REPO_ROOT/AGENTS.md"; then
+      echo "$rule_line" >>"$REPO_ROOT/AGENTS.md"
+    fi
+  else
+    echo "$rule_line" >>"$REPO_ROOT/AGENTS.md" || true
+  fi
+  echo "  Ensured AGENTS.md contains conductor-status rule"
+else
+  cat >"$REPO_ROOT/AGENTS.md" <<'AGENTS_EOF'
+# AGENTS.md
+
+Always run $conductor-status before doing anything else.
+
+
+AGENTS_EOF
+  echo "  Created AGENTS.md"
+fi
+
+# Ensure conductor/ ignore exists (no duplicates if grep is available)
+if [[ ! -f "$REPO_ROOT/.gitignore" ]]; then
+  echo "conductor/" >"$REPO_ROOT/.gitignore"
+elif command -v grep >/dev/null 2>&1; then
+  if ! grep -qx "conductor/" "$REPO_ROOT/.gitignore"; then
+    echo "conductor/" >>"$REPO_ROOT/.gitignore"
+  fi
+else
+  echo "conductor/" >>"$REPO_ROOT/.gitignore" || true
+fi
+
+echo "  Ensured .gitignore contains conductor/"

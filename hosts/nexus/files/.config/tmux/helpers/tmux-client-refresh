@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Refresh the existing tmux client integration. See tmux-client-refresh(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Refresh the existing tmux client integration.
+Usage: tmux-client-refresh 
+
+Source: hosts/nexus/files/.config/tmux/helpers/tmux-client-refresh in ~/ops
+See man tmux-client-refresh for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+
+set -euo pipefail
+
+export TMUX_BIN="${TMUX_BIN:-$(command -v tmux 2>/dev/null || true)}"
+
+if [[ -z "${TMUX_BIN:-}" && -x /usr/bin/tmux ]]; then
+  export TMUX_BIN=/usr/bin/tmux
+fi
+
+if [[ -z "${TMUX_BIN:-}" && -x /opt/homebrew/bin/tmux ]]; then
+  export TMUX_BIN=/opt/homebrew/bin/tmux
+fi
+
+"$HOME/.local/bin/tmux-refresh-status"

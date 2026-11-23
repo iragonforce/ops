@@ -1,0 +1,21 @@
+[Unit]
+Description=Send one Telegram notification per host boot
+Wants=network-online.target
+After=network-online.target tailscaled.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=root
+LoadCredential=telegram.json:/etc/homelab/secrets/telegram-boot.json
+ExecStart=/usr/local/sbin/homelab-boot-notify
+StateDirectory=homelab-boot-notify
+StateDirectoryMode=0700
+UMask=0077
+TimeoutStartSec=30
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX

@@ -1,0 +1,33 @@
+.TH "OBSIDIAN-ANKI-FLASHCARDS" "1" "2026-11-06" "Homelab ops"
+.SH NAME
+obsidian-anki-flashcards \- Process changed Obsidian notes through the existing review and Anki workflow.
+.SH SYNOPSIS
+.B obsidian-anki-flashcards
+[arguments]
+.SH DESCRIPTION
+Process changed Obsidian notes through the existing review and Anki workflow.
+Established names and consumer paths are preserved. No hardware or service action was executed for documentation verification.
+.SH INTERFACE
+.SS /Users/iragonforce/.local/bin/obsidian-anki-flashcards
+Source: hosts/qubit/files/.local/bin/obsidian-anki-flashcards
+.nf
+group.add_argument("--baseline", action="store_true", help="Register existing notes without generating anything")
+group.add_argument("--once", action="store_true", help="Process changed notes once")
+group.add_argument("--patch-reviewer", action="store_true", help="Allow full rewrites with protection warnings")
+group.add_argument("--install-agent", action="store_true", help="Write the macOS LaunchAgent")
+parser.add_argument("--vault", type=Path, default=DEFAULT_VAULT)
+parser.add_argument("--reviewer", type=Path, default=DEFAULT_REVIEWER)
+parser.add_argument("--state-dir", type=Path, default=DEFAULT_STATE)
+parser.add_argument("--limit", type=int, default=1)
+parser.add_argument("--now", action="store_true", help="Bypass edit quiet period for a deliberate manual test")
+parser.add_argument("--note", help="Process one vault-relative path when it differs from baseline")
+parser.add_argument("--auto-apply", action="store_true", help="Apply full rewrites in iCloud with approval and backups")
+parser.add_argument("--timeout", type=int, default=420)
+.fi
+
+.SH DEPENDENCIES
+Use the interpreter in the source shebang and the existing host packages and services referenced in that source. Host configuration and private credentials remain on their original host.
+.SH OPERATIONS
+Before changing behavior, inspect inventory/audit-2026-11-06/qubit.json for recorded consumers and the source above for exact dependency paths. Never invoke a power, desktop, network, credential, notification, or storage operation merely to test it.
+.SH SOURCE
+Private iragonforce/ops repository. Consult docs/workflow.md for deployment, verification, rollback, and change records.

@@ -1,0 +1,21 @@
+services:
+  gateway:
+    cpu_shares: 2048
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    environment:
+      KONG_NGINX_WORKER_PROCESSES: auto
+      KONG_NGINX_MAIN_WORKER_RLIMIT_NOFILE: '65535'
+      KONG_NGINX_EVENTS_WORKER_CONNECTIONS: '8192'
+      KONG_NGINX_HTTP_CLIENT_MAX_BODY_SIZE: 64m
+      KONG_NGINX_HTTP_CLIENT_BODY_BUFFER_SIZE: 1m
+    networks:
+      proxy-backend:
+        ipv4_address: 172.16.11.108
+    restart: always
+    mem_limit: 2147483648
+    memswap_limit: 2684354560
+    cpus: 2
+    pids_limit: 256

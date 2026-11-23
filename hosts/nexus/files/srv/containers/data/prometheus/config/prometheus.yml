@@ -1,0 +1,38 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:30104"]
+        labels:
+          instance: nexus
+
+  - job_name: "node-exporter-nexus"
+    static_configs:
+      - targets: ["172.16.11.1:9100"]
+    relabel_configs:
+      - target_label: instance
+        replacement: nexus
+
+  - job_name: "node-exporter-tensor"
+    static_configs:
+      - targets: ["192.168.1.3:9100"]
+    relabel_configs:
+      - target_label: instance
+        replacement: tensor
+
+  - job_name: "cadvisor-nexus"
+    static_configs:
+      - targets: ["cadvisor:8080"]
+    relabel_configs:
+      - target_label: instance
+        replacement: nexus
+
+  - job_name: "node-exporter-qubit"
+    static_configs:
+      - targets: ["192.168.1.4:9100"]
+    relabel_configs:
+      - target_label: instance
+        replacement: qubit

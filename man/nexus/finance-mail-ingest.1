@@ -1,0 +1,57 @@
+.TH FINANCE-MAIL-INGEST 1 "2026-11-12" "Finance Infrastructure" "Nexus Host Utilities"
+.SH NAME
+finance-mail-ingest \- stage authenticated bank alerts and candidate validated-receipt links
+.SH SYNOPSIS
+.B /opt/data/bin/finance-mail-ingest
+.RB [ --preview | --apply ]
+.SH DESCRIPTION
+Uses the existing Nexus localhost Proton Bridge IMAP connection and Bitwarden
+Secrets Manager credential to inspect CIBC purchase-alert emails without changing
+mail flags. Only the exact supported sender/subject/body template with aligned
+CIBC DKIM is parsed. Other subjects are ignored; unexpected template or
+security failures block an apply run. The mail header date is only an alert
+receipt time, not proof of the purchase or bank-posting date.
+.PP
+The default
+.B --preview
+is read-only. With
+.B --apply
+it extends the
+.B transaction_email_alerts
+table in the existing finance-analytics PostgreSQL database, stores parsed
+amount/merchant/provenance, and updates tentative one-to-one links against
+.B validated, nonduplicate CAD receipts
+from both Metro email and scanned Receipt Wrangler sources. Exact CAD cents,
+near-date and strong merchant are required; ambiguity is held for review.
+The new
+.B purchase_receipt_id
+references the validated analytics receipt. For scanned receipts only, the
+existing Wrangler ID is also retained. The
+.B v_purchase_item_tracking
+view exposes every validated item observation with observed unit price and
+separate email/bank candidate states; receipt line items remain traceable
+without inventing a bank expense or treating a candidate as confirmed.
+Message-ID hashes prevent duplicate ingestion on UID/UIDVALIDITY changes. No
+raw email body, card suffix or credentials are persisted. Existing Receipt
+Wrangler and Wealthfolio transactions are never created or modified.
+.SH DEPENDENCIES
+Host Python 3.9+, Docker/psql, systemd-creds, bws, the existing local Proton
+Bridge IMAP listener on 127.0.0.1:1143, projected validated receipts and
+finance-analytics PostgreSQL, and root-only
+.B /etc/nexus/secrets/finance-imap-user
+(mode 0600). Confirm a current protected and tested finance-analytics backup
+before applying a schema change. The receipt projection runs first in
+.B finance-intake.service
+so newly uploaded scanned items are available for the email match in the same
+hourly cycle.
+.SH OUTPUT
+Aggregate counts and generic errors only. Exit 0 means preview or apply/readback
+completed; nonzero means stop and review. No automatic timer is installed by
+this executable.
+.SH ROLLBACK
+Inspect the exact source-key/receipt links and any later consumers. Remove
+only reviewed candidate references or restore the previous view definition;
+never roll the complete live database back over later receipts or owner writes. The
+private
+.B iragonforce/ops
+repository owns the script and this manual.

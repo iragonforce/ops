@@ -1,0 +1,11 @@
+[Unit]
+Description=Restrict Cockpit backend to loopback and NPM
+Before=cockpit.socket
+After=network-pre.target
+[Service]
+Type=oneshot
+ExecStartPre=-/usr/sbin/nft delete table inet homelab_cockpit
+ExecStart=/usr/sbin/nft -f /etc/nexus/cockpit-guard.nft
+RemainAfterExit=yes
+[Install]
+WantedBy=multi-user.target

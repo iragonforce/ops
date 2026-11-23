@@ -1,0 +1,22 @@
+[Unit]
+Description=Proton Mail Bridge
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=protonbridge
+Group=protonbridge
+Environment=HOME=/var/lib/protonbridge
+Environment=GNUPGHOME=/var/lib/protonbridge/.gnupg
+Environment=PASSWORD_STORE_DIR=/var/lib/protonbridge/.password-store
+ExecStart=/usr/bin/protonmail-bridge --noninteractive
+Restart=on-failure
+RestartSec=10
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

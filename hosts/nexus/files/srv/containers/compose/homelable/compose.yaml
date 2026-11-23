@@ -1,0 +1,144 @@
+name: homelable
+services:
+  homelable-frontend:
+    image: nexus/homelable-frontend:20261011@sha256:c116bc258f5d4864df42b26b23dff7a9928fd4dc873dec312eba4f3bcb064b10
+    pull_policy: never
+    container_name: homelable-frontend
+    restart: always
+    env_file:
+    - path: /etc/nexus/secrets/homelable/homelable-frontend.env
+      format: raw
+    volumes: []
+    shm_size: 67108864
+    mem_limit: 268435456
+    cpus: 0.25
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.50
+        gw_priority: 300
+        mac_address: 6e:96:a3:fb:1f:ba
+      homelable_homelable_net:
+        aliases:
+        - homelable-frontend
+        - frontend
+        ipv4_address: 172.16.10.3
+        mac_address: 4e:24:b9:fc:a9:20
+      proxy-backend:
+        aliases:
+        - homelable-frontend
+        ipv4_address: 172.16.11.39
+        mac_address: 16:a8:b3:60:f2:d5
+    depends_on:
+      homelable-backend:
+        condition: service_started
+    healthcheck:
+      test:
+      - CMD
+      - /usr/bin/curl
+      - -fsS
+      - --max-time
+      - '4'
+      - http://127.0.0.1:80/
+      interval: 30s
+      timeout: 6s
+      retries: 5
+      start_period: 90s
+    dns:
+    - 1.1.1.1
+    memswap_limit: 536870912
+    pids_limit: 256
+  mcp-homelable:
+    image: nexus/mcp-homelable:20261011-repaired@sha256:1bfce12adeb6c413fd0ebf2b5ea91d10706d65fa4437ea9de0166a97a4d973fa
+    pull_policy: never
+    container_name: mcp-homelable
+    restart: always
+    env_file:
+    - path: /etc/nexus/secrets/homelable/mcp-homelable.env
+      format: raw
+    volumes: []
+    shm_size: 67108864
+    mem_limit: 268435456
+    cpus: 0.25
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.52
+        gw_priority: 300
+        mac_address: 1a:56:34:41:d2:c3
+      proxy-backend:
+        aliases:
+        - mcp-homelable
+        ipv4_address: 172.16.11.38
+        mac_address: ca:c4:60:4b:41:ad
+    healthcheck:
+      test:
+      - CMD
+      - python
+      - -c
+      - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health',timeout=4)
+      interval: 30s
+      timeout: 6s
+      retries: 5
+      start_period: 60s
+    dns:
+    - 1.1.1.1
+    memswap_limit: 536870912
+    pids_limit: 256
+  homelable-backend:
+    image: nexus/homelable-backend:20261011-repaired@sha256:61fff791466aa27f28c03db60452329b5eade736a1ec0940fb204d7a2092e14f
+    pull_policy: never
+    container_name: homelable-backend
+    restart: always
+    env_file:
+    - path: /etc/nexus/secrets/homelable/homelable-backend.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/homelable/data
+      target: /app/data
+      read_only: false
+      bind:
+        create_host_path: false
+    cap_add:
+    - CAP_NET_RAW
+    shm_size: 67108864
+    mem_limit: 268435456
+    cpus: 0.5
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.51
+        gw_priority: 300
+        mac_address: 5a:ad:7f:b0:f6:b8
+      homelable_homelable_net:
+        aliases:
+        - homelable-backend
+        - backend
+        ipv4_address: 172.16.10.2
+        mac_address: 7e:58:71:4b:a6:49
+      proxy-backend:
+        aliases:
+        - homelable-backend
+        ipv4_address: 172.16.11.37
+        mac_address: ae:ed:93:17:8d:cc
+    healthcheck:
+      test:
+      - CMD
+      - python
+      - -c
+      - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health',timeout=4)
+      interval: 30s
+      timeout: 6s
+      retries: 5
+      start_period: 60s
+    dns:
+    - 1.1.1.1
+    memswap_limit: 536870912
+    pids_limit: 256
+networks:
+  docker-vlan:
+    external: true
+  homelable_homelable_net:
+    external: true
+  proxy-backend:
+    external: true
+  nexus-egress:
+    external: true

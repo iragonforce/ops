@@ -1,0 +1,27 @@
+#!/bin/sh
+# Maintain the existing tunnel compatibility path. See tunnel-compat(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Maintain the existing tunnel compatibility path.
+Usage: tunnel-compat
+
+Source: hosts/nexus/files/usr/local/sbin/tunnel-compat in ~/ops
+See man tunnel-compat for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+set -eu
+nft list table ip nexus_tunnel_compat >/dev/null 2>&1 && nft delete table ip nexus_tunnel_compat || true
+nft -f - <<'EOF'
+table ip nexus_tunnel_compat {
+ chain prerouting {
+  type nat hook prerouting priority -110; policy accept;
+  ip saddr 172.30.240.250 ip daddr 192.168.1.2 tcp dport 30021 dnat to 172.30.240.251:80
+ }
+ chain postrouting {
+  type nat hook postrouting priority 90; policy accept;
+  # Same-bridge DNAT needs SNAT so replies traverse this host and reverse NAT.
+  ip saddr 172.30.240.250 ip daddr 172.30.240.251 tcp dport 80 ct status dnat ct original proto-dst 30021 snat to 172.30.240.1
+ }
+}
+EOF

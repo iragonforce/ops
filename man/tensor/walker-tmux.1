@@ -1,0 +1,24 @@
+.TH "WALKER-TMUX" "1" "2026-11-06" "Homelab ops"
+.SH NAME
+walker-tmux \- Launch the selected Walker command in the intended tmux context.
+.SH SYNOPSIS
+.B walker-tmux
+[arguments]
+.SH DESCRIPTION
+Launch the selected Walker command in the intended tmux context.
+Established names and consumer paths are preserved. No hardware or service action was executed for documentation verification.
+.SH INTERFACE
+.SS /home/iragonforce/.local/bin/walker-tmux
+Source: hosts/tensor/files/.local/bin/walker-tmux
+.nf
+case "${1:-}" in
+if [[ "${1:-}" == "--" ]]; then shift; fi
+while [[ "${1:-}" == --* ]]; do shift; done
+.fi
+
+.SH DEPENDENCIES
+Use the interpreter in the source shebang and the existing host packages and services referenced in that source. Host configuration and private credentials remain on their original host.
+.SH OPERATIONS
+Before changing behavior, inspect inventory/audit-2026-11-06/tensor.json for recorded consumers and the source above for exact dependency paths. Never invoke a power, desktop, network, credential, notification, or storage operation merely to test it.
+.SH SOURCE
+Private iragonforce/ops repository. Consult docs/workflow.md for deployment, verification, rollback, and change records.

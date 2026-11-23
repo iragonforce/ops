@@ -1,0 +1,177 @@
+#!/usr/bin/env bash
+# Ingest receipt text using the existing locking and deduplication procedure. See receipt-text-ingest(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Ingest receipt text using the existing locking and deduplication procedure.
+Usage: receipt-text-ingest  [ARGUMENT ...]
+
+Source: hosts/nexus/files/usr/local/sbin/receipt-text-ingest in ~/ops
+See man receipt-text-ingest for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+set -euo pipefail
+umask 077
+
+MODE="${1:---preview}"
+
+case "$MODE" in
+  --preview|--submit) ;;
+  *) echo "Invalid mode" >&2; exit 2 ;;
+esac
+
+DIR=/opt/homelab-api/receipt-intake
+mkdir -p "$DIR/submitted"
+chmod 700 "$DIR/submitted"
+
+RAW="$(mktemp)"
+JSON="$(mktemp)"
+trap 'rm -f "$RAW" "$JSON"' EXIT
+
+cat > "$RAW"
+
+if (( $(wc -c < "$RAW") > 65536 )); then
+  echo "Receipt text exceeds 64 KiB" >&2
+  exit 1
+fi
+
+python3 /usr/local/libexec/normalize-receipt-records.py "$RAW"
+
+jq -n --rawfile raw "$RAW" \
+  -f /usr/local/libexec/receipt-parser.jq > "$JSON"
+
+python3 - "$JSON" <<'PY'
+import json
+import sys
+from datetime import date
+from decimal import Decimal
+
+receipt = json.load(open(sys.argv[1]))
+
+date.fromisoformat(receipt["date"])
+
+if Decimal(receipt["total"]) < 0:
+    raise SystemExit("Invalid receipt total")
+
+if not receipt["items"]:
+    raise SystemExit("Receipt has no items")
+
+for item in receipt["items"]:
+    if not item["name"] or item["name"] == "UNKNOWN":
+        raise SystemExit("Invalid item name")
+    if item["quantity"] <= 0:
+        raise SystemExit("Invalid item quantity")
+PY
+
+if [ "$MODE" = "--preview" ]; then
+  cat "$JSON"
+  exit 0
+fi
+
+exec 9>"$DIR/.submit.lock"
+flock -x 9
+
+HASH="$(sha256sum "$RAW" | cut -d' ' -f1)"
+ARCHIVE="$DIR/submitted/$HASH.json"
+
+if [ -f "$ARCHIVE" ]; then
+  echo "Receipt already submitted"
+  exit 0
+fi
+
+# Check existing Receipt Wrangler records before creating another draft.
+# The submit lock is already held at this point.
+set +e
+DEDUP_MESSAGE="$(python3 /usr/local/libexec/receipt-dedup-guard.py --check "$JSON" 2>&1)"
+DEDUP_CODE=$?
+set -e
+
+case "$DEDUP_CODE" in
+  0)
+    ;;
+  10)
+    printf '%s\n' "$DEDUP_MESSAGE"
+    exit 0
+    ;;
+  11)
+    printf '%s\n' "$DEDUP_MESSAGE" >&2
+    exit 3
+    ;;
+  *)
+    printf '%s\n' "$DEDUP_MESSAGE" >&2
+    exit 1
+    ;;
+esac
+
+python3 - "$JSON" <<'PY'
+import json
+import os
+import subprocess
+import sys
+import urllib.error
+import urllib.request
+from pathlib import Path
+
+receipt = json.load(open(sys.argv[1]))
+
+access_token = subprocess.check_output(["systemd-creds", "decrypt", "--name=bws-access-token", "/etc/credstore.encrypted/bws-access-token", "-"], text=True).strip()
+
+result = subprocess.run(
+    [
+        "bws", "secret", "get",
+        "b1ca8c71-832c-4183-ae9e-b4f70175b952",
+        "--output", "json"
+    ],
+    env={**os.environ, "BWS_ACCESS_TOKEN": access_token},
+    capture_output=True,
+    text=True,
+    timeout=30,
+    check=True,
+)
+
+secret = json.loads(result.stdout)
+
+if secret.get("key") != "N8N_SIRI_RECEIPT":
+    raise SystemExit("Bitwarden secret mismatch")
+
+payload = {
+    "name": receipt["merchant"],
+    "amount": receipt["total"],
+    "date": receipt["date"] + "T12:00:00Z",
+    "groupId": 1,
+    "paidByUserId": 1,
+    "status": "DRAFT",
+    "receiptItems": [
+        {
+            "name": item["name"],
+            "amount": item["totalPrice"],
+            "chargedToUserId": 1,
+            "status": "DRAFT"
+        }
+        for item in receipt["items"]
+    ]
+}
+
+request = urllib.request.Request(
+    "http://127.0.0.1:19082/api/receipt/",
+    data=json.dumps(payload).encode(),
+    method="POST",
+    headers={
+        "Authorization": secret["value"],
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }
+)
+
+try:
+    with urllib.request.urlopen(request, timeout=30) as response:
+        if not 200 <= response.status < 300:
+            raise SystemExit("Unexpected API response")
+except urllib.error.HTTPError as error:
+    raise SystemExit(f"Receipt Wrangler HTTP {error.code}")
+
+print("Receipt draft created successfully")
+PY
+
+cp "$JSON" "$ARCHIVE"
+chmod 600 "$ARCHIVE"

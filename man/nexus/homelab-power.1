@@ -1,0 +1,24 @@
+.TH "HOMELAB-POWER" "1" "2026-11-06" "Homelab ops"
+.SH NAME
+homelab-power \- Control or query the selected host through the existing power-management route.
+.SH SYNOPSIS
+.B homelab-power
+[arguments]
+.SH DESCRIPTION
+Control or query the selected host through the existing power-management route.
+Established names and consumer paths are preserved. No hardware or service action was executed for documentation verification.
+.SH INTERFACE
+.SS /usr/local/bin/homelab-power
+Source: shared/scripts/power
+.nf
+p.add_argument('host',choices=['nexus','tensor','qubit'])
+p.add_argument('action',nargs='?',choices=['on','off','status'])
+p.add_argument('--via',choices=['nexus','tensor'],help='Awake LAN relay for magic packets')
+.fi
+
+.SH DEPENDENCIES
+Use the interpreter in the source shebang and the existing host packages and services referenced in that source. Host configuration and private credentials remain on their original host.
+.SH OPERATIONS
+Before changing behavior, inspect inventory/audit-2026-11-06/nexus.json for recorded consumers and the source above for exact dependency paths. Never invoke a power, desktop, network, credential, notification, or storage operation merely to test it.
+.SH SOURCE
+Private iragonforce/ops repository. Consult docs/workflow.md for deployment, verification, rollback, and change records.

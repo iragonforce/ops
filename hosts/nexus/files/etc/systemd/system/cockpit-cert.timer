@@ -1,0 +1,8 @@
+[Unit]
+Description=Check private Cockpit TLS certificate daily
+[Timer]
+OnCalendar=daily
+RandomizedDelaySec=1h
+Persistent=yes
+[Install]
+WantedBy=timers.target

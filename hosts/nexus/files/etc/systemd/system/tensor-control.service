@@ -1,0 +1,16 @@
+[Unit]
+Description=Authenticated Tensor lighting, display and power controls (nexus)
+Wants=network-online.target vlans.service
+After=network-online.target vlans.service
+[Service]
+Type=simple
+User=iragonforce
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
+LoadCredential=control.json:/etc/tensor-control/control.json
+ExecStart=/usr/bin/python3 /usr/local/lib/tensor-control/control-server.py
+Restart=on-failure
+RestartSec=5
+UMask=0077
+[Install]
+WantedBy=multi-user.target

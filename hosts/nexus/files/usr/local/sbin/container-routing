@@ -1,0 +1,187 @@
+#!/usr/bin/env python3
+# Prepare or apply the existing container routes and IPv6 integration. See container-routing(1) for source and integration details.
+"""Nexus network rollout, preserving Compose secrets, images and data."""
+
+if __name__ == "__main__":
+    import sys as _ops_sys
+    if _ops_sys.argv[1:] == ["--help"]:
+        print('Prepare or apply the existing container routes and IPv6 integration.\nUsage: container-routing  [ARGUMENT ...]\n\nSource: hosts/nexus/files/usr/local/sbin/container-routing in ~/ops\nSee man container-routing for the existing call sites and argument handling.')
+        raise SystemExit(0)
+import copy,json,os,pathlib,re,sqlite3,subprocess,sys,time,yaml
+os.umask(0o077)
+STATE=pathlib.Path('/var/lib/nexus-network-20261012')
+STATE.mkdir(mode=0o700,exist_ok=True)
+COMPOSE=pathlib.Path('/srv/containers/compose')
+OLD=json.loads((STATE/'containers-before.json').read_text())
+def run(*args):
+    p=subprocess.run(args,capture_output=True,text=True)
+    if p.returncode:
+        (STATE/'last-command-error.txt').write_text(p.stderr)
+        raise RuntimeError('Command failed: '+args[0]+'; private diagnostic saved')
+    return p.stdout
+def put(p,text,mode=0o600):
+    p=pathlib.Path(p);p.parent.mkdir(parents=True,exist_ok=True);p.write_text(text);p.chmod(mode)
+def containers():return json.loads(run('docker','inspect',*run('docker','ps','-aq').split()))
+def locate():
+    result={}
+    for p in COMPOSE.glob('*/compose.yaml'):
+        d=yaml.safe_load(p.read_text())
+        for k,v in d.get('services',{}).items():
+            n=v.get('container_name',k)
+            if any(x['Name'].lstrip('/')==n for x in OLD):result[n]=(p,k)
+    return result
+def start(name):
+    p,k=locate()[name]
+    old=next(x for x in OLD if x['Name'].lstrip('/')==name)
+    project=old['Config']['Labels']['com.docker.compose.project']
+    run('docker','compose','--project-name',project,'-f',str(p),'up','-d','--no-deps','--pull','never',k)
+    print('Applied container',name,flush=True)
+def source_routes():
+    for name,v in [('adguard-home',3),('nginx-proxy-manager',5)]:
+        p=subprocess.run(['docker','inspect',name],capture_output=True,text=True)
+        if p.returncode:continue
+        c=json.loads(p.stdout)[0]
+        if not c['State']['Running']:continue
+        pid=str(c['State']['Pid']);ipv4=f'192.168.{v}.'+('2' if v==3 else '20')
+        pre=['nsenter','-t',pid,'-n']
+        rows=json.loads(run(*pre,'ip','-j','-4','addr'))
+        iface=next(x['ifname'] for x in rows if any(a['local']==ipv4 for a in x.get('addr_info',[])))
+        table=str(103 if v==3 else 105);priority=str(27003 if v==3 else 27005)
+        run(*pre,'ip','route','replace',f'192.168.{v}.0/24','dev',iface,'src',ipv4,'table',table)
+        run(*pre,'ip','route','replace','default','via',f'192.168.{v}.1','dev',iface,'table',table)
+        rules=json.loads(run(*pre,'ip','-j','rule'))
+        if not any(str(x.get('priority'))==priority for x in rules):run(*pre,'ip','rule','add','priority',priority,'from',ipv4+'/32','lookup',table)
+    p=subprocess.run(['docker','inspect','cloudflared'],capture_output=True,text=True)
+    if p.returncode==0:
+        c=json.loads(p.stdout)[0]
+        if c['State']['Running']:
+            pre=['nsenter','-t',str(c['State']['Pid']),'-n']
+            rows=json.loads(run(*pre,'ip','-j','-4','addr'))
+            iface=next(x['ifname'] for x in rows if any(a['local']=='172.30.240.250' for a in x.get('addr_info',[])))
+            run(*pre,'ip','route','replace','192.168.1.2/32','via','172.30.240.1','dev',iface,'src','172.30.240.250')
+    # Keep health checks and restricted admin ingress working from the host shims.
+    for v in range(2,6):run('ip','route','replace',f'192.168.{v}.0/24','dev',f'nexus-mv{v}','src',f'192.168.{v}.254')
+
+def prepare():
+    raw=run('docker','exec','otbr','ot-ctl','dataset','active','-x')
+    hexes=[x.strip() for x in raw.splitlines() if re.fullmatch('[0-9a-fA-F]{40,}',x.strip())]
+    if len(hexes)!=1:raise RuntimeError('Saved Thread dataset unavailable; stopped')
+    put(STATE/'thread-active.hex',hexes[0]+'\n')
+    put('/etc/nexus/secrets/iot/thread-dataset.hex',hexes[0]+'\n')
+    all_overrides=json.loads(pathlib.Path('/var/lib/nexus-restoration/service-overrides.json').read_text())
+    for p in COMPOSE.glob('*/compose.yaml'):
+        d=yaml.safe_load(p.read_text());changed=False
+        for k,svc in d.get('services',{}).items():
+            name=svc.get('container_name',k)
+            nets=svc.get('networks',{})
+            vlan=next((n for n in nets if n in ['pia-vlan','adguard-vlan','iot-vlan','docker-vlan']),None)
+            if not vlan:continue
+            if name not in ['nginx-proxy-manager','adguard-home']:
+                nets[vlan]['gw_priority']=300
+                if name!='cloudflared':nets.pop('nexus-egress',None)
+            if vlan in ['iot-vlan','adguard-vlan']:
+                v=4 if vlan=='iot-vlan' else 3
+                octet=nets[vlan]['ipv4_address'].split('.')[-1]
+                nets[vlan]['ipv6_address']=f'fd00:{v}::{octet}'
+                if vlan=='iot-vlan':nets[vlan]['interface_name']='iot0'
+            if name=='matter-server':
+                previous=next(x for x in OLD if x['Name']=='/matter-server')['Config'].get('Cmd') or ['--storage-path','/data','--paa-root-cert-dir','/data/credentials']
+                svc['command']=previous+(['--primary-interface','iot0'] if '--primary-interface' not in previous else [])
+            if name=='otbr':
+                mount='/etc/nexus/secrets/iot/thread-dataset.hex:/usr/local/etc/thread-dataset.hex:ro'
+                if mount not in svc['volumes']:svc['volumes'].append(mount)
+            all_overrides.setdefault(name,{})['networks']=copy.deepcopy(nets)
+            if name in ['matter-server','otbr']:
+                for field in ['command','volumes']:
+                    if field in svc:all_overrides[name][field]=copy.deepcopy(svc[field])
+            changed=True
+        if changed:put(p,yaml.safe_dump(d,sort_keys=False))
+    put('/var/lib/nexus-restoration/service-overrides.json',json.dumps(all_overrides,indent=2)+'\n')
+    p=pathlib.Path('/srv/containers/data/iot-mqtt/otbr-start.sh');s=p.read_text()
+    startidx=s.index('seed_dataset() {');endidx=s.index('\n\nsysctl --system',startidx)
+    s=s[:startidx]+'''seed_dataset() {
+  if dataset_active; then return 0; fi
+  [ -s /usr/local/etc/thread-dataset.hex ] || { echo "Saved Thread dataset missing" >&2; return 1; }
+  local saved
+  saved="$(tr -d '\\r\\n' </usr/local/etc/thread-dataset.hex)"
+  otctl dataset set active "$saved" >/dev/null
+  dataset_active
+}'''+s[endidx:]
+    s=s.replace('DEBUG_LEVEL="7"','DEBUG_LEVEL="3"')
+    s=s.replace('  seed_dataset || true','  ready=false\n  for attempt in {1..30}; do\n    if seed_dataset; then ready=true; break; fi\n    sleep 1\n  done\n  if ! "$ready"; then kill "$agent_pid"; exit 1; fi')
+    s=s.replace('  # Keep the dataset available but avoid leader attach; VLAN 4 lacks IPv6 multicast routing.\n  otctl thread stop >/dev/null 2>&1 || true','  otctl thread start >/dev/null')
+    put(p,s,0o700)
+    # Persistent source routing for direct VLAN ingress and host-published ingress.
+    put('/usr/local/sbin/container-routing',pathlib.Path(__file__).read_text(),0o700)
+    unit='''[Unit]
+Description=Nexus container source routing
+After=docker.service vlans.service
+Wants=docker.service
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/container-routing routes
+'''
+    put('/etc/systemd/system/container-routing.service',unit,0o644)
+    put('/etc/systemd/system/container-routing.timer','''[Unit]
+Description=Keep Nexus container routing valid after recreation
+[Timer]
+OnBootSec=20s
+OnUnitActiveSec=20s
+Unit=container-routing.service
+[Install]
+WantedBy=timers.target
+''',0o644)
+    for p in COMPOSE.glob('*/compose.yaml'):
+        run('docker','compose','-f',str(p),'config','--quiet')
+    run('systemctl','daemon-reload');run('systemctl','enable','--now','container-routing.timer')
+    print('Compose and Thread changes prepared; source-routing recovery timer enabled')
+
+def ipv6():
+    oldnets=json.loads((STATE/'networks-before.json').read_text())
+    loc=locate()
+    for net,v in [('adguard-vlan',3),('iot-vlan',4)]:
+        names=[x['Name'].lstrip('/') for x in containers() if net in x['NetworkSettings']['Networks']]
+        for name in names:run('docker','stop','--time','30',name);run('docker','rm',name)
+        run('docker','network','rm',net)
+        old=next(x for x in oldnets if x['Name']==net)
+        args=['docker','network','create','--driver','macvlan','--ipv6','--subnet',f'192.168.{v}.0/24','--gateway',f'192.168.{v}.1',
+          '--subnet',f'fd00:{v}::/64','--gateway',f'fd00:{v}::1','--aux-address',f'nexus-host=192.168.{v}.254','--aux-address',f'nexus-host-v6=fd00:{v}::254']
+        for k,val in old['Options'].items():args+=['--opt',k+'='+val]
+        run(*args,net)
+        if v==3:
+            p=pathlib.Path('/srv/containers/data/adguard/home/AdGuardHome.yaml');d=yaml.safe_load(p.read_text())
+            hosts=d['dns'].get('bind_hosts',[])
+            if '::' not in hosts:hosts.append('::')
+            d['dns']['bind_hosts']=hosts
+            allowed=d['dns'].get('allowed_clients',[])
+            for a in ['fd00:1::/64','fd00:3::/64','fd00:4::/64','fd7a:115c:a1e0::9639:4338','fd7a:115c:a1e0::ed39:b232']:
+                if a not in allowed:allowed.append(a)
+            d['dns']['allowed_clients']=allowed;put(p,yaml.safe_dump(d,sort_keys=False))
+        for name in names:start(name)
+        run('ip','-6','addr','replace',f'fd00:{v}::254/64','dev',f'nexus-mv{v}')
+        source_routes()
+        print('Restored IPv4 and added local IPv6:',net,flush=True)
+    # Make host shim address restoration persistent in the existing unit.
+    p=pathlib.Path('/usr/local/sbin/vlans');s=p.read_text()
+    if '# Local IPv6 and full VLAN routes' not in s:
+        s+='\n# Local IPv6 and full VLAN routes\n'
+        for v in range(2,6):s+=f'ip route replace 192.168.{v}.0/24 dev nexus-mv{v} src 192.168.{v}.254\n'
+        for v in [3,4]:s+=f'ip -6 addr replace fd00:{v}::254/64 dev nexus-mv{v}\n'
+        put(p,s,0o700)
+
+def rollout():
+    affected=[]
+    for name,(p,k) in locate().items():
+        svc=yaml.safe_load(p.read_text())['services'][k]
+        if any(n in svc.get('networks',{}) for n in ['pia-vlan','adguard-vlan','iot-vlan','docker-vlan']):affected.append(name)
+    # IPv6 services already recreated; keep DNS and the proxy until the end.
+    for name in affected:
+        if name in ['adguard-home','home-assistant','otbr','matter-server','mosquitto','zigbee2mqtt']:continue
+        start(name)
+        if name=='nginx-proxy-manager':source_routes()
+    source_routes()
+    print('Active frontend routing applied; previous image versions retained')
+
+if __name__=='__main__':
+    try:{'prepare':prepare,'ipv6':ipv6,'rollout':rollout,'routes':source_routes}[sys.argv[1]]()
+    except Exception as e:print('Stopped:',str(e));sys.exit(1)

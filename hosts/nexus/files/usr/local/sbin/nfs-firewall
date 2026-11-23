@@ -1,0 +1,15 @@
+#!/bin/bash
+# Apply the existing NFS firewall policy. See nfs-firewall(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Apply the existing NFS firewall policy.
+Usage: nfs-firewall
+
+Source: hosts/nexus/files/usr/local/sbin/nfs-firewall in ~/ops
+See man nfs-firewall for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+set -euo pipefail
+nft list table inet nexus_nfs >/dev/null 2>&1 && nft delete table inet nexus_nfs
+nft -f /etc/nexus/nfs-firewall.nft

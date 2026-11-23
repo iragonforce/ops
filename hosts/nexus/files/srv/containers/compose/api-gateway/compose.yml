@@ -1,0 +1,39 @@
+name: api-gateway
+
+services:
+  gateway:
+    image: kong:3.9.4
+    container_name: homelab-api-gateway
+    restart: unless-stopped
+
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /etc/kong/kong.json
+      KONG_PROXY_LISTEN: "0.0.0.0:8000"
+      KONG_ADMIN_LISTEN: "off"
+      KONG_STATUS_LISTEN: "off"
+      KONG_LOG_LEVEL: warn
+      KONG_NGINX_HTTP_CLIENT_MAX_BODY_SIZE: 20m
+
+    volumes:
+      - /opt/homelab-api/config/kong.json:/etc/kong/kong.json:ro
+
+    ports:
+      - "127.0.0.1:18090:8000"
+
+    networks:
+      - proxy-backend
+
+    security_opt:
+      - no-new-privileges:true
+
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+networks:
+  proxy-backend:
+    external: true

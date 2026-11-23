@@ -1,0 +1,34 @@
+#!/usr/bin/python3
+# Report observed Hermes skill usage from the existing counters and history. See hermes-skill-usage(1) for source and integration details.
+"""Read existing Hermes records; emit counts only, never conversation content."""
+
+if __name__ == "__main__":
+    import sys as _ops_sys
+    if _ops_sys.argv[1:] == ["--help"]:
+        print('Report observed Hermes skill usage from the existing counters and history.\nUsage: hermes-skill-usage \n\nSource: hosts/nexus/files/usr/local/libexec/hermes-skill-usage in ~/ops\nSee man hermes-skill-usage for the existing call sites and argument handling.')
+        raise SystemExit(0)
+from pathlib import Path
+import json,sqlite3,collections,datetime
+root=Path('/srv/containers/data/hermes/data');native=json.loads((root/'skills/.usage.json').read_text());active={p.parent.name for p in (root/'skills').rglob('SKILL.md')}
+c=sqlite3.connect('file:'+str(root/'state.db')+'?mode=ro',uri=True);counts=collections.Counter();sessions=collections.defaultdict(set);manages=collections.Counter()
+for sid,raw in c.execute('select session_id,tool_calls from messages where tool_calls is not null'):
+ try:arr=json.loads(raw)
+ except (ValueError,TypeError):continue
+ if not isinstance(arr,list):continue
+ for item in arr:
+  f=item.get('function',item);name=f.get('name');args=f.get('arguments',{})
+  if isinstance(args,str):
+   try:args=json.loads(args)
+   except ValueError:continue
+  if not isinstance(args,dict):continue
+  skill=args.get('name','')
+  if name=='skill_view' and isinstance(skill,str) and skill:
+   counts[skill]+=1;sessions[skill].add(sid)
+  if name=='skill_manage':
+   for op in args.get('operations',[]):
+    if isinstance(op,dict):manages[str(op.get('action','unknown'))]+=1
+rows=[]
+for name in sorted(set(counts)|set(native)|active):
+ n=native.get(name,{})
+ rows.append({'name':name,'currently_installed':name.split('/')[-1] in active,'historical_view_requests':counts[name],'sessions_with_view_requests':len(sessions[name]),'native_view_count':n.get('view_count',0),'native_use_count':n.get('use_count',0),'last_used_at':n.get('last_used_at')})
+print(json.dumps({'metric':'Historical skill_view requests and separate native counters; counters count loads, not usefulness. Sources have different retention and are not added together.','generated_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'sessions_in_database':c.execute('select count(*) from sessions').fetchone()[0],'messages_in_database':c.execute('select count(*) from messages').fetchone()[0],'skill_view_requests':sum(counts.values()),'skill_manage_actions':dict(manages),'skills':sorted(rows,key=lambda r:r['historical_view_requests'],reverse=True)},indent=2))

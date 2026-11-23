@@ -1,0 +1,15 @@
+[Unit]
+Description=Isolated Playwright MCP connection for Hermes
+
+[Service]
+Type=exec
+User=iragonforce
+Group=iragonforce
+WorkingDirectory=/home/iragonforce/projects/agent-tools-stage1/test-project
+ExecStart=/home/iragonforce/projects/agent-tools-stage1/node_modules/node/bin/node /home/iragonforce/projects/agent-tools-stage1/node_modules/@playwright/mcp/cli.js --headless --isolated --executable-path /home/iragonforce/.cache/ms-playwright/chromium-1247/chrome-linux64/chrome --block-service-workers --no-webmcp --image-responses omit --idle-timeout 120000 --output-dir /home/iragonforce/projects/agent-tools-stage1/state/hermes-browser-output
+StandardInput=socket
+StandardOutput=socket
+StandardError=journal
+KillMode=control-group
+TimeoutStopSec=10
+UMask=0077

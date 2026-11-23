@@ -1,0 +1,205 @@
+#!/usr/bin/env python3
+
+if __name__ == "__main__":
+    import sys as _ops_sys
+    if _ops_sys.argv[1:] == ["--help"]:
+        print('Convert the configured local CSV statements into Wealthfolio import and review files.\nUsage: wealthfolio-convert \n\nSource: hosts/qubit/files/.local/bin/wealthfolio-convert in ~/ops\nSee man wealthfolio-convert for the existing call sites and argument handling.')
+        raise SystemExit(0)
+# Convert the configured local CSV statements into Wealthfolio import and review files. See wealthfolio-convert(1) for source and integration details.
+
+import csv
+import re
+import shutil
+import tempfile
+from datetime import date
+from decimal import Decimal, InvalidOperation
+from pathlib import Path
+
+BASE = Path("/Users/iragonforce/cvs")
+FILES = ["credit.csv", "chequing.csv", "savings.csv"]
+OUTPUT = BASE / "wealthfolio"
+
+FIELDS = ["date", "symbol", "activityType",
+          "currency", "amount", "comment"]
+
+ALIASES = {
+    "date": {"date", "transaction date"},
+    "description": {"description", "transaction", "details",
+                    "transaction description", "memo"},
+    "spent": {"spent", "debit", "withdrawal"},
+    "deposit": {"deposit", "credit", "deposits"},
+}
+
+REVIEW = re.compile(
+    r"\b(transfer|e-transfer|etransfer|payment|refund|"
+    r"reversal|returned|wealthsimple|investment|"
+    r"savings|credit card|interest)\b",
+    re.I,
+)
+
+def money(text, line):
+    text = text.strip().replace("$", "").replace(",", "")
+    if not text:
+        return None
+    try:
+        value = Decimal(text)
+    except InvalidOperation:
+        raise ValueError(f"Line {line}: invalid amount {text!r}")
+    if not value.is_finite() or value <= 0:
+        raise ValueError(f"Line {line}: invalid amount {text!r}")
+    if value != value.quantize(Decimal("0.01")):
+        raise ValueError(f"Line {line}: amount has fractional cents")
+    return value
+
+def clean_description(text, activity, line):
+    text = " ".join(text.strip().split())
+
+    pattern = (
+        r"^(?:Electronic Funds Transfer|EFT)\s+"
+        r"(DEPOSIT|WITHDRAWAL)\s+"
+    )
+    match = re.match(pattern, text, re.I)
+
+    if match:
+        if match.group(1).upper() != activity:
+            raise ValueError(
+                f"Line {line}: description conflicts with amount direction"
+            )
+        text = text[match.end():].strip()
+
+    match = re.match(r"^(DEPOSIT|WITHDRAWAL)\s+", text, re.I)
+    if match and match.group(1).upper() == activity:
+        text = text[match.end():].strip()
+
+    return text
+
+def parse_file(source):
+    with source.open(newline="", encoding="utf-8-sig") as f:
+        raw = [(n, r) for n, r in enumerate(csv.reader(f), 1)
+               if any(cell.strip() for cell in r)]
+
+    if not raw:
+        raise ValueError("Empty CSV")
+
+    first = [x.strip().lower() for x in raw[0][1]]
+
+    try:
+        date.fromisoformat(raw[0][1][0].strip())
+        columns = dict(date=0, description=1, spent=2, deposit=3)
+        data = raw
+    except ValueError:
+        columns = {}
+        for key, names in ALIASES.items():
+            matches = [i for i, value in enumerate(first) if value in names]
+            if len(matches) != 1:
+                raise ValueError(f"Missing or ambiguous {key} header")
+            columns[key] = matches[0]
+        data = raw[1:]
+
+    converted = []
+    review = []
+    deposits = Decimal("0")
+    withdrawals = Decimal("0")
+
+    for line, row in data:
+        if len(row) <= max(columns.values()):
+            raise ValueError(f"Line {line}: missing columns")
+
+        day = row[columns["date"]].strip()
+        description = row[columns["description"]].strip()
+
+        date.fromisoformat(day)
+
+        spent = money(row[columns["spent"]], line)
+        deposit = money(row[columns["deposit"]], line)
+
+        if (spent is None) == (deposit is None):
+            raise ValueError(
+                f"Line {line}: expected exactly one Spent/Deposit amount"
+            )
+
+        activity = "DEPOSIT" if deposit is not None else "WITHDRAWAL"
+        amount = deposit if deposit is not None else spent
+
+        comment = clean_description(description, activity, line)
+        if not comment:
+            comment = description or "Unspecified bank transaction"
+
+        converted.append([
+            day, "$CASH-CAD", activity, "CAD",
+            f"{amount:.2f}", comment
+        ])
+
+        if deposit is not None:
+            deposits += amount
+        else:
+            withdrawals += amount
+
+        if REVIEW.search(description):
+            review.append([
+                source.name, line, day, activity,
+                f"{amount:.2f}", description,
+                "Review transaction classification"
+            ])
+
+    return converted, review, deposits, withdrawals
+
+def main():
+    if OUTPUT.exists():
+        raise SystemExit(
+            f"Output directory already exists: {OUTPUT}\n"
+            "Move or remove previous output before rerunning."
+        )
+
+    staging = Path(tempfile.mkdtemp(
+        prefix=".wealthfolio-stage-", dir=BASE
+    ))
+
+    try:
+        reviews = []
+        summaries = []
+
+        for filename in FILES:
+            source = BASE / filename
+            rows, flagged, deposits, withdrawals = parse_file(source)
+
+            with (staging / filename).open(
+                "w", newline="", encoding="utf-8"
+            ) as f:
+                writer = csv.writer(f)
+                writer.writerow(FIELDS)
+                writer.writerows(rows)
+
+            reviews.extend(flagged)
+            summaries.append((filename, len(rows), deposits, withdrawals))
+
+        with (staging / "review.csv").open(
+            "w", newline="", encoding="utf-8"
+        ) as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                "source", "source_line", "date", "activityType",
+                "amount", "original_description", "reason"
+            ])
+            writer.writerows(reviews)
+
+        staging.rename(OUTPUT)
+
+    except Exception:
+        if staging.exists():
+            shutil.rmtree(staging)
+        raise
+
+    print("=== WEALTHFOLIO CONVERSION ===")
+    for name, count, deposits, withdrawals in summaries:
+        print(f"\n{name}")
+        print(f"  Transactions: {count}")
+        print(f"  Deposits:     ${deposits:.2f}")
+        print(f"  Withdrawals:  ${withdrawals:.2f}")
+        print(f"  Net change:   ${deposits - withdrawals:.2f}")
+
+    print(f"\nTransactions flagged for review: {len(reviews)}")
+    print(f"Output: {OUTPUT}")
+
+if __name__ == "__main__":
+    main()

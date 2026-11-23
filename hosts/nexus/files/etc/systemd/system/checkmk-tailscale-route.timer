@@ -1,0 +1,11 @@
+[Unit]
+Description=Keep Checkmk Tailscale routes synchronized
+
+[Timer]
+OnBootSec=30s
+OnUnitInactiveSec=30s
+AccuracySec=5s
+Unit=checkmk-tailscale-route.service
+
+[Install]
+WantedBy=timers.target

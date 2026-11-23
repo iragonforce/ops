@@ -1,0 +1,54 @@
+name: checkmk
+services:
+  checkmk:
+    image: checkmk/check-mk-community:2.5.0-latest@sha256:9eb222d05fe03d751f70ac7d8022cc655637679ba1d38922ee408e4e25058c26
+    container_name: checkmk
+    restart: always
+    hostname: checkmk
+    environment:
+      CMK_SITE_ID: cmk
+      TZ: America/Toronto
+    env_file:
+    - /etc/nexus/secrets/checkmk/checkmk.env
+    stop_grace_period: 90s
+    shm_size: 256m
+    mem_limit: 4294967296
+    cpus: 2.0
+    volumes:
+    - type: bind
+      source: /srv/containers/data/checkmk/sites
+      target: /omd/sites
+      bind:
+        create_host_path: false
+    tmpfs:
+    - /opt/omd/sites/cmk/tmp:uid=1000,gid=1000,mode=1777
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.56
+        gw_priority: 300
+        mac_address: 4a:0f:24:7c:6c:b8
+      proxy-backend:
+        aliases:
+        - checkmk
+        ipv4_address: 172.16.11.46
+        mac_address: ca:e0:aa:47:00:d2
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '5'
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - curl -fsS http://127.0.0.1:5000/cmk/check_mk/login.py -o /dev/null
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 180s
+    memswap_limit: 4831838208
+    pids_limit: 256
+networks:
+  docker-vlan:
+    external: true
+  proxy-backend:
+    external: true

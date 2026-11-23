@@ -1,0 +1,9 @@
+[Unit]
+Description=Nexus NFS client restrictions
+Before=nfs-server.service rpcbind.service rpcbind.socket
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/nfs-firewall
+RemainAfterExit=yes
+[Install]
+WantedBy=multi-user.target

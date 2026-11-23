@@ -1,0 +1,25 @@
+.TH "INSTALL.PY" "1" "2026-11-06" "Homelab ops"
+.SH NAME
+install.py \- Check and deploy explicitly selected Git-owned files with drift protection.
+.SH SYNOPSIS
+.B install.py
+[arguments]
+.SH DESCRIPTION
+Check and deploy explicitly selected Git-owned files with drift protection.
+Established names and consumer paths are preserved. No hardware or service action was executed for documentation verification.
+.SH INTERFACE
+.SS /Users/iragonforce/.config/homelab/unified/bin/install.py
+Source: shared/unified/bin/install.py
+.nf
+parser.add_argument('--repo', type=Path, default=Path.home() / 'ops', help='ops checkout')
+parser.add_argument('--target', action='append', help='exact manifest target; repeatable')
+parser.add_argument('--group', help='explicit manifest deployment group')
+parser.add_argument('--apply', action='store_true', help='write selected files; default is read-only')
+.fi
+
+.SH DEPENDENCIES
+Use the interpreter in the source shebang and the existing host packages and services referenced in that source. Host configuration and private credentials remain on their original host.
+.SH OPERATIONS
+Before changing behavior, inspect inventory/audit-2026-11-06/qubit.json for recorded consumers and the source above for exact dependency paths. Never invoke a power, desktop, network, credential, notification, or storage operation merely to test it.
+.SH SOURCE
+Private iragonforce/ops repository. Consult docs/workflow.md for deployment, verification, rollback, and change records.

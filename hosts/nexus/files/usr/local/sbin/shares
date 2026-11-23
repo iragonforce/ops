@@ -1,0 +1,51 @@
+#!/bin/bash
+# Establish the existing selected NFS bind mounts after checking pool sources. See storage-shares(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Establish the existing selected NFS bind mounts after checking pool sources.
+Usage: storage-shares
+
+Source: hosts/nexus/files/usr/local/sbin/shares in ~/ops
+See man storage-shares for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+set -Eeuo pipefail
+[[ $(findmnt -n -o SOURCE /mnt/bulk) == bulk ]]
+[[ $(findmnt -n -o SOURCE /mnt/fast) == fast ]]
+[[ $(findmnt -n -o SOURCE /mnt/fast/shared) == fast/shared ]]
+for d in media downloads documents projects; do
+ mkdir -p /srv/nfs/$d
+ mountpoint -q /srv/nfs/$d || mount --bind /mnt/bulk/data/$d /srv/nfs/$d
+done
+mkdir -p /srv/nfs/bulk /srv/nfs/fast
+mountpoint -q /srv/nfs/bulk || mount --bind /mnt/bulk/data /srv/nfs/bulk
+mkdir -p /mnt/fast/shared/documents
+mountpoint -q /mnt/fast/shared/documents || mount --bind /mnt/fast/documents /mnt/fast/shared/documents
+mkdir -p /mnt/fast/shared/project
+mountpoint -q /mnt/fast/shared/project || mount --bind /mnt/fast/project /mnt/fast/shared/project
+mkdir -p /mnt/fast/shared/codebase
+mountpoint -q /mnt/fast/shared/codebase || mount --bind /mnt/fast/codebase /mnt/fast/shared/codebase
+mkdir -p /mnt/fast/shared/3d-models
+if [ -d "/mnt/fast/3d-models" ]; then
+  mountpoint -q "/mnt/fast/shared/3d-models" || mount --bind "/mnt/fast/3d-models" "/mnt/fast/shared/3d-models"
+else
+  echo "WARNING: Missing optional source /mnt/fast/3d-models" >&2
+fi
+mkdir -p /mnt/fast/shared/screenshots
+mountpoint -q /mnt/fast/shared/screenshots || mount --bind /mnt/fast/screenshots /mnt/fast/shared/screenshots
+mkdir -p /mnt/fast/shared/photos
+mountpoint -q /mnt/fast/shared/photos || mount --bind /mnt/fast/photos /mnt/fast/shared/photos
+mkdir -p /mnt/fast/shared/pics
+mountpoint -q /mnt/fast/shared/pics || mount --bind /mnt/fast/pics /mnt/fast/shared/pics
+mkdir -p /mnt/fast/shared/downloads
+mountpoint -q /mnt/fast/shared/downloads || mount --bind /mnt/fast/downloads /mnt/fast/shared/downloads
+mkdir -p /mnt/fast/shared/obsidian-vault
+if [ -d "/mnt/fast/obsidian-vault" ]; then
+  mountpoint -q "/mnt/fast/shared/obsidian-vault" || mount --bind "/mnt/fast/obsidian-vault" "/mnt/fast/shared/obsidian-vault"
+else
+  echo "WARNING: Missing optional source /mnt/fast/obsidian-vault" >&2
+fi
+mkdir -p /mnt/fast/shared/claude-shared
+mountpoint -q /mnt/fast/shared/claude-shared || mount --bind /mnt/fast/claude-shared /mnt/fast/shared/claude-shared
+mountpoint -q /srv/nfs/fast || mount --rbind /mnt/fast/shared /srv/nfs/fast

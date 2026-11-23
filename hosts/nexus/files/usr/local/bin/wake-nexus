@@ -1,0 +1,3 @@
+#!/bin/sh
+# Wake Nexus using the existing relay and credential configuration. See wake-nexus(1) for source and integration details.
+exec /usr/local/bin/homelab-wake nexus "$@"

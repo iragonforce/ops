@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+
+if __name__ == "__main__":
+    import sys as _ops_sys
+    if _ops_sys.argv[1:] == ["--help"]:
+        print('Report existing Docker service monitoring data to Checkmk.\nUsage: blinkwired-docker-checkmk \n\nSource: hosts/nexus/files/usr/local/sbin/docker-checkmk in ~/ops\nSee man blinkwired-docker-checkmk for the existing call sites and argument handling.')
+        raise SystemExit(0)
+# Report existing Docker service monitoring data to Checkmk. See blinkwired-docker-checkmk(1) for source and integration details.
+import re
+import subprocess
+
+def report(code, name, message):
+    print(f'{code} "{name}" - {message}')
+
+try:
+    result = subprocess.run(
+        [
+            "docker", "ps", "-a",
+            "--format", "{{.Names}}\t{{.State}}\t{{.Status}}"
+        ],
+        capture_output=True,
+        text=True,
+        timeout=15,
+        check=True
+    )
+
+    entries = result.stdout.splitlines()
+
+    if not entries:
+        report(2, "Docker monitoring", "No containers returned")
+    else:
+        report(
+            0, "Docker monitoring",
+            f"{len(entries)} containers inspected"
+        )
+
+    for line in entries:
+        try:
+            name, state, status = line.split("\t", 2)
+        except ValueError:
+            continue
+
+        if not re.fullmatch(r"[A-Za-z0-9_.-]+", name):
+            continue
+
+        state = state.lower()
+
+        if state == "running":
+            if "(unhealthy)" in status:
+                code = 2
+            elif "(starting)" in status:
+                code = 1
+            else:
+                code = 0
+        elif state in ("restarting", "paused", "created"):
+            code = 1
+        else:
+            code = 2
+
+        report(code, f"Docker {name}", status)
+
+except Exception as exc:
+    report(
+        2, "Docker monitoring",
+        f"Collection failed: {type(exc).__name__}"
+    )

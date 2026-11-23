@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# Control the retained inner-session status relay. See tmux-relay-inner-status(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Control the retained inner-session status relay.
+Usage: tmux-relay-inner-status  [ARGUMENT ...]
+
+Source: shared/scripts/tmux-relay-inner-status in ~/ops
+See man tmux-relay-inner-status for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+set -euo pipefail
+
+state="${1:?state required}"
+tmux_bin="${TMUX_BIN:-$(command -v tmux 2>/dev/null || true)}"
+
+if [[ -z "$tmux_bin" && -x /usr/bin/tmux ]]; then
+  tmux_bin=/usr/bin/tmux
+fi
+
+if [[ -z "$tmux_bin" && -x /opt/homebrew/bin/tmux ]]; then
+  tmux_bin=/opt/homebrew/bin/tmux
+fi
+
+if [[ -z "$tmux_bin" ]]; then
+  exit 127
+fi
+
+session_name="$("$tmux_bin" display-message -p '#S' 2>/dev/null || true)"
+window_index="$("$tmux_bin" display-message -p '#I' 2>/dev/null || true)"
+
+if [[ -z "$session_name" || -z "$window_index" ]]; then
+  exit 0
+fi
+
+target="${session_name}:${window_index}"
+relay_flag="$("$tmux_bin" show-window-options -v -t "$target" @relay_window 2>/dev/null || true)"
+
+if [[ "$relay_flag" != "on" ]]; then
+  exit 0
+fi
+
+relay_host="$("$tmux_bin" show-window-options -v -t "$target" @relay_host 2>/dev/null || true)"
+relay_connect_target="$("$tmux_bin" show-window-options -v -t "$target" @relay_connect_target 2>/dev/null || true)"
+relay_control_path="$("$tmux_bin" show-window-options -v -t "$target" @relay_control_path 2>/dev/null || true)"
+
+if [[ -z "$relay_connect_target" ]]; then
+  relay_connect_target="$relay_host"
+fi
+
+if [[ -z "$relay_connect_target" ]]; then
+  exit 0
+fi
+
+case "$state" in
+  on)
+    remote_cmd='tmux set-option -g status on 2>/dev/null || true'
+    ;;
+  off)
+    remote_cmd='tmux set-option -g status off 2>/dev/null || true'
+    ;;
+  *)
+    exit 2
+    ;;
+esac
+
+ssh_args=(
+  -o BatchMode=yes
+  -o ConnectTimeout=2
+  -o ServerAliveInterval=60
+  -o ServerAliveCountMax=3
+)
+
+if [[ -n "$relay_control_path" ]]; then
+  ssh_args+=(
+    -o ControlMaster=auto
+    -o ControlPersist=yes
+    -o ControlPath="$relay_control_path"
+  )
+fi
+
+ssh "${ssh_args[@]}" "$relay_connect_target" "$remote_cmd" >/dev/null 2>&1 || true

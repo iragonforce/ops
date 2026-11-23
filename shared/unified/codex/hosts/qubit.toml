@@ -1,0 +1,258 @@
+model = "gpt-6-sol"
+model_reasoning_effort = "high"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+approvals_reviewer = "user"
+notify = ["/Users/iragonforce/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
+
+[projects."/Users/iragonforce"]
+trust_level = "trusted"
+
+[projects."/Users/iragonforce/Documents/Codex/2026-06-24/check-all-docker-containers-on-my"]
+trust_level = "trusted"
+
+[projects."/Users/iragonforce/Documents/Codex/2026-07-31/hatch-pet-users-iragonforce-codex-skills"]
+trust_level = "trusted"
+
+[projects."/Users/iragonforce/Documents/Codex/2026-07-31/realtime-voice-chat"]
+trust_level = "trusted"
+
+[projects."/Users/iragonforce/Documents/Codex/2026-07-31/hatch-pet-users-iragonforce-codex-skills-2"]
+trust_level = "trusted"
+
+[projects."/Users/iragonforce/Documents/Codex/2026-07-31/hatch-pet-users-iragonforce-codex-skills-3"]
+trust_level = "trusted"
+
+[projects."/Users/iragonforce/Documents/ChatGPT/apple-photos-image-cleanup"]
+trust_level = "trusted"
+
+[projects."/private/var/tmp"]
+trust_level = "trusted"
+
+[projects."/Users/iragonforce/Documents/ChatGPT/tmux fix"]
+trust_level = "trusted"
+
+[projects."/Users/iragonforce/Documents/Codex/2026-09-06/i-x20"]
+trust_level = "trusted"
+
+[projects."/Users/iragonforce/Documents/Codex/2026-09-08/i-h"]
+trust_level = "trusted"
+
+[projects."/Users/iragonforce/Documents/Codex/2026-09-09/you-need-to-install-a-common"]
+trust_level = "trusted"
+
+[projects."/Users/iragonforce/Documents/Codex/2026-09-10/wha"]
+trust_level = "trusted"
+
+[projects."/Users/iragonforce/Documents/Codex/2026-09-11/can"]
+trust_level = "trusted"
+
+[projects."/Users/iragonforce/Library/Mobile Documents/iCloud~md~obsidian/Documents/secondBrain"]
+trust_level = "trusted"
+
+[projects."/Users/iragonforce/Documents/Codex/2026-09-13/why"]
+trust_level = "trusted"
+
+[projects."/Users/iragonforce/Documents/Codex/2026-09-15/exa"]
+trust_level = "trusted"
+
+[projects."/Users/iragonforce/Documents/Codex/2026-09-15/bes"]
+trust_level = "trusted"
+
+[projects."/Users/iragonforce/Documents/Codex/2026-09-15/bes-2"]
+trust_level = "trusted"
+
+[notice]
+hide_full_access_warning = true
+hide_rate_limit_model_nudge = true
+
+[notice.model_migrations]
+"gpt-5.1-codex-mini" = "gpt-5.4"
+"gpt-5.3-codex" = "gpt-5.4"
+"gpt-5.2" = "gpt-5.4"
+
+[tui]
+status_line = ["model-with-reasoning", "current-dir", "project-root", "context-remaining", "context-used", "five-hour-limit", "weekly-limit", "codex-version", "context-window-size", "used-tokens", "total-input-tokens", "total-output-tokens", "session-id"]
+screen_reader_detection_done = true
+
+[tui.model_availability_nux]
+"gpt-5.5" = 4
+"gpt-6.1-sol" = 4
+
+[marketplaces.openai-bundled]
+source_type = "local"
+source = "/Users/iragonforce/.codex/.tmp/bundled-marketplaces/openai-bundled"
+
+[marketplaces.openai-primary-runtime]
+source_type = "local"
+source = "/Users/iragonforce/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
+
+[marketplaces.context-mode]
+source_type = "git"
+source = "https://github.com/mksglu/claude-context-mode.git"
+
+[marketplaces.ecc]
+source_type = "git"
+source = "https://github.com/affaan-m/everything-claude-code.git"
+
+[plugins."documents@openai-primary-runtime"]
+enabled = true
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = true
+
+[plugins."pdf@openai-primary-runtime"]
+enabled = true
+
+[plugins."template-creator@openai-primary-runtime"]
+enabled = true
+
+[plugins."visualize@openai-bundled"]
+enabled = true
+
+[plugins."codex-app-tools@openai-bundled"]
+enabled = true
+
+[plugins."context-mode@context-mode"]
+enabled = true
+
+[plugins."browser@openai-bundled"]
+enabled = true
+
+[plugins."unified-computer-use@openai-bundled"]
+enabled = true
+
+[plugins."computer-use@openai-bundled"]
+enabled = true
+
+[plugins."ecc@ecc"]
+enabled = true
+
+[desktop]
+mac-menu-bar-enabled = false
+conversationDetailMode = "STEPS_COMMANDS"
+keepRemoteControlAwakeWhilePluggedIn = true
+followUpQueueMode = "steer"
+dock-icon-preference = "app-default"
+appearanceTheme = "dark"
+appearanceDarkCodeThemeId = "vercel"
+sansFontSize = 14
+usePointerCursors = true
+selected-avatar-id = "bsod"
+external-agent-import-sync-item-types = "all"
+external-agent-import-sync-enabled = true
+codeFontSize = 13
+ambient-suggestions-enabled = true
+confirm-before-close = "never"
+localeOverride = "en-US"
+default-workspace-full-view = true
+preventSleepWhileRunning = true
+show-context-window-usage = true
+enabled-reasoning-efforts = ["low", "medium", "high", "xhigh", "persistent"]
+notifications-sound = "none"
+toys-confetti-enabled = true
+toys-audio-visualizer-enabled = false
+migratedFollowUpQueueToSteer = false
+
+[desktop.open-in-target-preferences]
+global = "ghostty"
+
+[desktop.open-in-target-preferences.perPath]
+"/Users/iragonforce" = "ghostty"
+
+[desktop.appearanceDarkChromeTheme]
+accent = "#006efe"
+contrast = 50
+ink = "#ededed"
+opaqueWindows = true
+surface = "#000000"
+
+[desktop.appearanceDarkChromeTheme.fonts]
+code = '"Geist Mono", ui-monospace, "SFMono-Regular"'
+ui = "Geist, Inter"
+
+[desktop.appearanceDarkChromeTheme.semanticColors]
+diffAdded = "#00AD3A"
+diffRemoved = "#F13342"
+skill = "#9540D5"
+
+[features]
+js_repl = false
+
+[mcp_servers.computer-use]
+command = "./Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient"
+args = ["mcp"]
+cwd = "."
+enabled = false
+
+[mcp_servers.node_repl]
+args = []
+command = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl"
+env_vars = ["BROWSER_USE_ACCESS_EXECUTOR_ID", "BROWSER_USE_ACCESS_PIPE_PATH", "BROWSER_USE_ACCESS_VERIFYING_IDENTITY"]
+startup_timeout_sec = 120
+
+[mcp_servers.node_repl.env]
+NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
+NODE_REPL_NODE_MODULE_DIRS = "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
+NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/iragonforce/.codex:/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
+CODEX_HOME = "/Users/iragonforce/.codex"
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab,mcpapps"
+BROWSER_USE_TINYSKY_ENABLED = "1"
+NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = ""
+NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = ""
+NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = ""
+BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
+BROWSER_USE_CODEX_APP_VERSION = "26.1103.31037"
+NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/iragonforce/.codex/plugins/cache/openai-bundled/browser/26.1103.31037/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
+SKY_CUA_SERVICE_PATH = "/Users/iragonforce/.codex/computer-use/Codex Computer Use.app"
+CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex"
+
+[shell_environment_policy.set]
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "9230e2bd8b24b7ac7a0ba6774c64bf0d78ecdabbdd91d0ed627b02a587bae2df"
+
+[hooks.state]
+
+[hooks.state."/Users/iragonforce/.codex/hooks.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:f956b3b21aaac2674711a3a6d622da19da2e6622712912edb62ddc8faec6ec67"
+
+[hooks.state."/Users/iragonforce/.codex/hooks.json:post_tool_use:0:0"]
+trusted_hash = "sha256:e7821697a327a3d9c419ba769ba1372d0c0548cfa43cd87c41fc73bd2b4c9778"
+
+[hooks.state."/Users/iragonforce/.codex/hooks.json:stop:0:0"]
+trusted_hash = "sha256:a7d4f6e0309d6f9ccbf8e238acf1e5ac097dde21c35c71cbe2d852845a2f8128"
+
+[hooks.state."context-mode@context-mode:.codex-plugin/hooks.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:56da0c4249dc7af048f42ae458fb83931926a8af41ec6fab5ae819ff3a8c83ae"
+trusted_content_hash = "sha256:7f91eea11a8796f9ba8715adb789f11962daa751f01edc5e8758140aa79612fd"
+
+[hooks.state."context-mode@context-mode:.codex-plugin/hooks.json:post_tool_use:0:0"]
+trusted_hash = "sha256:0d237345f8d46110d36cd0ef08e79b55fa151a07691dee36d492aa6f64bc0efd"
+trusted_content_hash = "sha256:7f91eea11a8796f9ba8715adb789f11962daa751f01edc5e8758140aa79612fd"
+
+[hooks.state."context-mode@context-mode:.codex-plugin/hooks.json:pre_compact:0:0"]
+trusted_hash = "sha256:ac1f9e5eb71ca262492150381d8f078b897056fc691f9973fc56d7b1b402e648"
+trusted_content_hash = "sha256:7f91eea11a8796f9ba8715adb789f11962daa751f01edc5e8758140aa79612fd"
+
+[hooks.state."context-mode@context-mode:.codex-plugin/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:a6cc6a322d0931bdd68a5969e523cd71e6eedccab4850e8996c8948311173618"
+trusted_content_hash = "sha256:7f91eea11a8796f9ba8715adb789f11962daa751f01edc5e8758140aa79612fd"
+
+[hooks.state."context-mode@context-mode:.codex-plugin/hooks.json:user_prompt_submit:0:0"]
+trusted_hash = "sha256:114549c484c131b94782d3424527dd1042d48bc3a8616a11299acdf60b112572"
+trusted_content_hash = "sha256:7f91eea11a8796f9ba8715adb789f11962daa751f01edc5e8758140aa79612fd"
+
+[hooks.state."context-mode@context-mode:.codex-plugin/hooks.json:stop:0:0"]
+trusted_hash = "sha256:9205c1763e40c0256ab334e2e96c037c1cdf5b8bfaddba31ed19d93d3388586a"
+trusted_content_hash = "sha256:7f91eea11a8796f9ba8715adb789f11962daa751f01edc5e8758140aa79612fd"
+
+[hooks.state."ecc@ecc:hooks/codex-hooks.json:session_start:0:0"]
+trusted_hash = "sha256:c3626e67fac0ba01fb8473da8417d5945692a85362704ade504f292889dc5d45"
+trusted_content_hash = "sha256:ac58b14c4cb84c6080f676d7f2b0441c6ac80469d5deadc20336cb21d832411d"
+
+[[skills.config]]
+path = "/Users/iragonforce/.codex/skills/hatch-pet/SKILL.md"
+enabled = false

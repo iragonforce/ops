@@ -1,0 +1,109 @@
+{
+  "uid": "nexus-qbittorrent-vpn",
+  "title": "Nexus — qBittorrent & VPN",
+  "tags": ["nexus", "qbittorrent", "vpn", "prometheus"],
+  "timezone": "browser",
+  "schemaVersion": 41,
+  "version": 1,
+  "refresh": "30s",
+  "time": {"from": "now-6h", "to": "now"},
+  "editable": false,
+  "panels": [
+    {
+      "id": 1, "title": "Download speed", "type": "stat", "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "afgt2mp7n1wxse"},
+      "targets": [{"expr": "qbittorrent_download_bytes_per_second{job=\"node-exporter-nexus\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "Bps"}, "overrides": []}
+    },
+    {
+      "id": 2, "title": "Upload speed", "type": "stat", "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "afgt2mp7n1wxse"},
+      "targets": [{"expr": "qbittorrent_upload_bytes_per_second{job=\"node-exporter-nexus\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "Bps"}, "overrides": []}
+    },
+    {
+      "id": 3, "title": "Downloaded (qBittorrent session)", "type": "stat", "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "afgt2mp7n1wxse"},
+      "targets": [{"expr": "qbittorrent_downloaded_bytes_total{job=\"node-exporter-nexus\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []}
+    },
+    {
+      "id": 4, "title": "Uploaded (qBittorrent session)", "type": "stat", "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "afgt2mp7n1wxse"},
+      "targets": [{"expr": "qbittorrent_uploaded_bytes_total{job=\"node-exporter-nexus\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []}
+    },
+    {
+      "id": 5, "title": "qBittorrent transfer speeds", "type": "timeseries", "gridPos": {"x": 0, "y": 4, "w": 24, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "afgt2mp7n1wxse"},
+      "targets": [
+        {"expr": "qbittorrent_download_bytes_per_second{job=\"node-exporter-nexus\"}", "legendFormat": "Download", "refId": "A"},
+        {"expr": "qbittorrent_upload_bytes_per_second{job=\"node-exporter-nexus\"}", "legendFormat": "Upload", "refId": "B"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "Bps"}, "overrides": []}
+    },
+    {
+      "id": 6, "title": "Torrent states (includes stalled/queued)", "type": "timeseries", "gridPos": {"x": 0, "y": 12, "w": 12, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "afgt2mp7n1wxse"},
+      "targets": [{"expr": "qbittorrent_torrents{job=\"node-exporter-nexus\"}", "legendFormat": "{{state}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []}
+    },
+    {
+      "id": 7, "title": "Downloading torrents", "type": "stat", "gridPos": {"x": 12, "y": 12, "w": 6, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "afgt2mp7n1wxse"},
+      "targets": [{"expr": "qbittorrent_torrents{job=\"node-exporter-nexus\",state=\"downloading\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []}
+    },
+    {
+      "id": 8, "title": "Seeding torrents", "type": "stat", "gridPos": {"x": 18, "y": 12, "w": 6, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "afgt2mp7n1wxse"},
+      "targets": [{"expr": "qbittorrent_torrents{job=\"node-exporter-nexus\",state=\"seeding\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []}
+    },
+    {
+      "id": 9, "title": "Paused torrents", "type": "stat", "gridPos": {"x": 12, "y": 16, "w": 6, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "afgt2mp7n1wxse"},
+      "targets": [{"expr": "qbittorrent_torrents{job=\"node-exporter-nexus\",state=\"paused\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []}
+    },
+    {
+      "id": 10, "title": "Errored torrents", "type": "stat", "gridPos": {"x": 18, "y": 16, "w": 6, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "afgt2mp7n1wxse"},
+      "targets": [{"expr": "qbittorrent_torrents{job=\"node-exporter-nexus\",state=\"error\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []}
+    },
+    {
+      "id": 11, "title": "qBittorrent API connection", "type": "stat", "gridPos": {"x": 0, "y": 20, "w": 6, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "afgt2mp7n1wxse"},
+      "targets": [{"expr": "qbittorrent_connection_up{job=\"node-exporter-nexus\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []}
+    },
+    {
+      "id": 12, "title": "Collector success", "type": "stat", "gridPos": {"x": 6, "y": 20, "w": 6, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "afgt2mp7n1wxse"},
+      "targets": [{"expr": "qbittorrent_scrape_success{job=\"node-exporter-nexus\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []}
+    },
+    {
+      "id": 13, "title": "Seconds since last successful collection", "type": "stat", "gridPos": {"x": 12, "y": 20, "w": 6, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "afgt2mp7n1wxse"},
+      "targets": [{"expr": "time() - qbittorrent_last_success_unixtime{job=\"node-exporter-nexus\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []}
+    },
+    {
+      "id": 14, "title": "Gluetun service running", "type": "stat", "gridPos": {"x": 18, "y": 20, "w": 6, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "afgt2mp7n1wxse"},
+      "targets": [{"expr": "homelab_container_running{job=\"node-exporter-nexus\",host=\"nexus\",container=\"gluetun\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []}
+    },
+    {
+      "id": 15, "title": "Gluetun tun0 traffic (not application throughput)", "type": "timeseries", "gridPos": {"x": 0, "y": 24, "w": 24, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "afgt2mp7n1wxse"},
+      "targets": [
+        {"expr": "rate(container_network_receive_bytes_total{job=\"cadvisor-nexus\",name=\"gluetun\",interface=\"tun0\"}[$__rate_interval])", "legendFormat": "tun0 RX", "refId": "A"},
+        {"expr": "rate(container_network_transmit_bytes_total{job=\"cadvisor-nexus\",name=\"gluetun\",interface=\"tun0\"}[$__rate_interval])", "legendFormat": "tun0 TX", "refId": "B"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "Bps"}, "overrides": []}
+    }
+  ]
+}

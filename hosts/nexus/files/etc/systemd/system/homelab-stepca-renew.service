@@ -1,0 +1,8 @@
+[Unit]
+Description=Renew Homelab step-ca certificates served by Nginx Proxy Manager
+Wants=docker.service
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/srv/containers/compose/step-ca/renew-nginx-homelab.sh

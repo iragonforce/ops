@@ -1,0 +1,98 @@
+model = "gpt-6-sol"
+model_reasoning_effort = "medium"
+approvals_reviewer = "user"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+
+[projects."/Users/iragonforce"]
+trust_level = "trusted"
+
+[projects."/home/iragonforce"]
+trust_level = "trusted"
+
+[tui]
+status_line = ["model-with-reasoning", "current-dir", "project-root", "context-remaining", "context-used", "five-hour-limit", "weekly-limit", "codex-version", "context-window-size", "used-tokens", "total-input-tokens", "total-output-tokens", "session-id"]
+screen_reader_detection_done = true
+
+[tui.model_availability_nux]
+"gpt-5.5" = 4
+"gpt-6.1-sol" = 4
+
+[notice]
+hide_full_access_warning = true
+hide_rate_limit_model_nudge = true
+
+[notice.model_migrations]
+"gpt-5.1-codex-mini" = "gpt-5.4"
+"gpt-5.3-codex" = "gpt-5.4"
+"gpt-5.2" = "gpt-5.4"
+"gpt-5.5" = "gpt-6.1-sol"
+
+[marketplaces.openai-bundled]
+source_type = "local"
+source = "/home/iragonforce/.codex/.tmp/bundled-marketplaces/openai-bundled"
+
+[marketplaces.openai-primary-runtime]
+last_updated = "2026-04-28T16:17:38Z"
+source_type = "local"
+source = "/home/iragonforce/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
+
+[marketplaces.context-mode]
+source_type = "git"
+source = "https://github.com/mksglu/claude-context-mode.git"
+
+[plugins."browser-use@openai-bundled"]
+enabled = false
+
+[plugins."documents@openai-primary-runtime"]
+enabled = true
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = true
+
+[plugins."pdf@openai-primary-runtime"]
+enabled = true
+
+[plugins."browser@openai-bundled"]
+enabled = true
+
+[plugins."chrome@openai-bundled"]
+enabled = true
+
+[plugins."computer-use@openai-bundled"]
+enabled = true
+
+[plugins."context-mode@context-mode"]
+enabled = true
+
+[plugins."visualize@openai-bundled"]
+enabled = true
+
+[hooks.state]
+
+[hooks.state."context-mode@context-mode:.codex-plugin/hooks.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:9b85e297ad70747b368c22e9c4e34281800709512705e3661c97cd3e721f9e22"
+trusted_content_hash = "sha256:7a5b6c965b234264b855c055a28b1e3b597c5cd819151f4e74bbd4779c89a8a5"
+
+[hooks.state."context-mode@context-mode:.codex-plugin/hooks.json:post_tool_use:0:0"]
+trusted_hash = "sha256:5c9b252fba4884901034c3c1593e56cc1833efaf23cb24d0cde47974e2b94bff"
+trusted_content_hash = "sha256:7a5b6c965b234264b855c055a28b1e3b597c5cd819151f4e74bbd4779c89a8a5"
+enabled = true
+
+[hooks.state."context-mode@context-mode:.codex-plugin/hooks.json:pre_compact:0:0"]
+trusted_hash = "sha256:ac1f9e5eb71ca262492150381d8f078b897056fc691f9973fc56d7b1b402e648"
+
+[hooks.state."context-mode@context-mode:.codex-plugin/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:36fd81896ba86e6dcc421f18e29c7a6c09bc76c2ee7562ede426dfb92e9dcf10"
+trusted_content_hash = "sha256:7a5b6c965b234264b855c055a28b1e3b597c5cd819151f4e74bbd4779c89a8a5"
+enabled = true
+
+[hooks.state."context-mode@context-mode:.codex-plugin/hooks.json:user_prompt_submit:0:0"]
+trusted_hash = "sha256:7d2143376a6f28c939b711bde2e99125e2387e1a6a2a95da069df2324daf602e"
+trusted_content_hash = "sha256:7a5b6c965b234264b855c055a28b1e3b597c5cd819151f4e74bbd4779c89a8a5"
+
+[hooks.state."context-mode@context-mode:.codex-plugin/hooks.json:stop:0:0"]
+trusted_hash = "sha256:9205c1763e40c0256ab334e2e96c037c1cdf5b8bfaddba31ed19d93d3388586a"

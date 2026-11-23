@@ -1,0 +1,27 @@
+name: paperclip-spectrum
+services:
+  spectrum:
+    profiles: ["retired-paperclip"]
+    build:
+      context: /home/iragonforce/paperclip
+      dockerfile: Dockerfile
+    image: local/paperclip-spectrum:2026-10-19
+    container_name: paperclip-spectrum
+    restart: always
+    init: true
+    user: 1000:1000
+    volumes:
+    - type: bind
+      source: /home/iragonforce/paperclip/.env
+      target: /app/.env
+      read_only: true
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.58
+    mem_limit: 536870912
+    memswap_limit: 1073741824
+    cpus: 1
+    pids_limit: 256
+networks:
+  docker-vlan:
+    external: true

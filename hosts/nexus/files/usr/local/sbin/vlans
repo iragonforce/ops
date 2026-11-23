@@ -1,0 +1,103 @@
+#!/bin/bash
+# Apply the existing host VLAN configuration. See vlans(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Apply the existing host VLAN configuration.
+Usage: vlans
+
+Source: hosts/nexus/files/usr/local/sbin/vlans in ~/ops
+See man vlans for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+set -euo pipefail
+[[ $(cat /sys/class/net/enp6s0/address) == 98:03:8e:a7:b7:43 ]]
+ip link show enp6s0.2 >/dev/null 2>&1 || ip link add link enp6s0 name enp6s0.2 type vlan id 2
+ip link set enp6s0.2 up
+if ! ip link show nexus-mv2 >/dev/null 2>&1; then arping -D -c 2 -w 3 -I enp6s0.2 192.168.2.254 >/dev/null || exit 1; ip link add nexus-mv2 link enp6s0.2 address 0a:8d:6d:72:69:16 type macvlan mode bridge; fi
+ip addr replace 192.168.2.254/32 dev nexus-mv2
+ip link set nexus-mv2 up
+ip route replace 192.168.2.1/32 dev nexus-mv2 src 192.168.2.254
+ip route replace 192.168.2.10/32 dev nexus-mv2 src 192.168.2.254
+ip route replace 192.168.2.2/32 dev nexus-mv2 src 192.168.2.254
+ip route replace 192.168.2.3/32 dev nexus-mv2 src 192.168.2.254
+ip route replace 192.168.2.4/32 dev nexus-mv2 src 192.168.2.254
+ip route replace 192.168.2.5/32 dev nexus-mv2 src 192.168.2.254
+ip route replace 192.168.2.6/32 dev nexus-mv2 src 192.168.2.254
+ip route replace 192.168.2.9/32 dev nexus-mv2 src 192.168.2.254
+ip link show enp6s0.3 >/dev/null 2>&1 || ip link add link enp6s0 name enp6s0.3 type vlan id 3
+ip link set enp6s0.3 up
+if ! ip link show nexus-mv3 >/dev/null 2>&1; then arping -D -c 2 -w 3 -I enp6s0.3 192.168.3.254 >/dev/null || exit 1; ip link add nexus-mv3 link enp6s0.3 address 72:9c:74:00:39:10 type macvlan mode bridge; fi
+ip addr replace 192.168.3.254/32 dev nexus-mv3
+ip link set nexus-mv3 up
+ip route replace 192.168.3.1/32 dev nexus-mv3 src 192.168.3.254
+ip route replace 192.168.3.2/32 dev nexus-mv3 src 192.168.3.254
+ip link show enp6s0.4 >/dev/null 2>&1 || ip link add link enp6s0 name enp6s0.4 type vlan id 4
+ip link set enp6s0.4 up
+if ! ip link show nexus-mv4 >/dev/null 2>&1; then arping -D -c 2 -w 3 -I enp6s0.4 192.168.4.254 >/dev/null || exit 1; ip link add nexus-mv4 link enp6s0.4 address 3a:43:da:05:79:d5 type macvlan mode bridge; fi
+ip addr replace 192.168.4.254/32 dev nexus-mv4
+ip link set nexus-mv4 up
+ip route replace 192.168.4.1/32 dev nexus-mv4 src 192.168.4.254
+ip route replace 192.168.4.2/32 dev nexus-mv4 src 192.168.4.254
+ip route replace 192.168.4.4/32 dev nexus-mv4 src 192.168.4.254
+ip route replace 192.168.4.5/32 dev nexus-mv4 src 192.168.4.254
+ip route replace 192.168.4.7/32 dev nexus-mv4 src 192.168.4.254
+ip route replace 192.168.4.8/32 dev nexus-mv4 src 192.168.4.254
+ip link show enp6s0.5 >/dev/null 2>&1 || ip link add link enp6s0 name enp6s0.5 type vlan id 5
+ip link set enp6s0.5 up
+if ! ip link show nexus-mv5 >/dev/null 2>&1; then arping -D -c 2 -w 3 -I enp6s0.5 192.168.5.254 >/dev/null || exit 1; ip link add nexus-mv5 link enp6s0.5 address 62:7a:69:1d:9a:b7 type macvlan mode bridge; fi
+ip addr replace 192.168.5.254/32 dev nexus-mv5
+ip link set nexus-mv5 up
+ip route replace 192.168.5.1/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.16/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.18/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.2/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.20/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.21/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.22/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.23/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.24/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.242/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.245/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.28/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.3/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.32/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.33/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.35/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.4/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.40/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.41/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.42/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.43/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.44/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.45/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.46/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.48/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.49/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.5/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.50/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.51/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.52/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.53/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.55/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.6/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.7/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.8/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.5.9/32 dev nexus-mv5 src 192.168.5.254
+ip route replace 192.168.2.11/32 dev nexus-mv2 src 192.168.2.254
+
+ip route replace 192.168.5.25/32 dev nexus-mv5
+
+# Local IPv6 and full VLAN routes
+ip route replace 192.168.2.0/24 dev nexus-mv2 src 192.168.2.254
+ip route replace 192.168.3.0/24 dev nexus-mv3 src 192.168.3.254
+ip route replace 192.168.4.0/24 dev nexus-mv4 src 192.168.4.254
+ip route replace 192.168.5.0/24 dev nexus-mv5 src 192.168.5.254
+ip -6 addr replace fd00:3::254/64 dev nexus-mv3
+ip -6 addr replace fd00:4::254/64 dev nexus-mv4
+
+# Prefer macvlan shim routes over parent-interface SLAAC routes
+for attempt in {1..25}; do if ip -6 route replace fd00:3::/64 dev nexus-mv3 src fd00:3::254 metric 10 >/dev/null 2>&1; then break; fi; sleep 0.2; done
+ip -6 route replace fd00:3::/64 dev nexus-mv3 src fd00:3::254 metric 10
+for attempt in {1..25}; do if ip -6 route replace fd00:4::/64 dev nexus-mv4 src fd00:4::254 metric 10 >/dev/null 2>&1; then break; fi; sleep 0.2; done
+ip -6 route replace fd00:4::/64 dev nexus-mv4 src fd00:4::254 metric 10

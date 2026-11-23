@@ -1,0 +1,11 @@
+[Unit]
+Description=Check for expired Glance CI/CD deployments
+
+[Timer]
+OnCalendar=*-*-* *:*:00
+AccuracySec=10s
+Persistent=true
+Unit=glance-cicd-rollback.service
+
+[Install]
+WantedBy=timers.target

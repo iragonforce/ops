@@ -1,0 +1,18 @@
+[Unit]
+Description=Glance contextual service private app relays
+After=docker.service tailscaled.service network-online.target
+Wants=network-online.target
+RequiresMountsFor=/srv/containers/data/glance/config
+[Service]
+DynamicUser=yes
+LoadCredential=relay-ports.json:/etc/nexus/dashboard/relay-ports.json
+ExecStart=/usr/bin/python3 /usr/local/libexec/glance-network-relay.py
+Restart=always
+RestartSec=5
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+MemoryMax=192M
+[Install]
+WantedBy=multi-user.target

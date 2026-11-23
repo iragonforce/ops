@@ -1,0 +1,21 @@
+#!/bin/sh
+# Start, stop or query the existing Void libvirt virtual machine. See void-vm-control(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Start, stop or query the existing Void libvirt virtual machine.
+Usage: void-vm-control  [ARGUMENT ...]
+[ "$#" -eq 1 ] || { echo 'Usage: void-vm-control on|off|status'; exit 2; }
+*) echo 'Usage: void-vm-control on|off|status'; exit 2 ;;
+Source: hosts/nexus/files/usr/local/sbin/void-vm-control in ~/ops
+See man void-vm-control for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+set -eu
+[ "$#" -eq 1 ] || { echo 'Usage: void-vm-control on|off|status'; exit 2; }
+case "$1" in
+  on) exec /usr/bin/virsh --connect qemu:///system start void ;;
+  off) exec /usr/bin/virsh --connect qemu:///system shutdown void ;;
+  status) exec /usr/bin/virsh --connect qemu:///system dominfo void ;;
+  *) echo 'Usage: void-vm-control on|off|status'; exit 2 ;;
+esac

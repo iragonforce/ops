@@ -1,0 +1,11 @@
+[Unit]
+Description=Qdrant Memory (periodic inbox reconciliation)
+
+[Timer]
+OnBootSec=3min
+OnUnitInactiveSec=15min
+AccuracySec=1min
+Unit=qdrant-memory.service
+
+[Install]
+WantedBy=timers.target

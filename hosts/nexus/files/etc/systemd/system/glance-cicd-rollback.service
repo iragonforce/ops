@@ -1,0 +1,12 @@
+[Unit]
+Description=Recover expired Glance blue-green deployment
+Wants=docker.service
+After=docker.service container-restore.service network-online.target
+
+[Service]
+Type=oneshot
+User=root
+StateDirectory=glance-cicd
+StateDirectoryMode=0700
+ExecStart=/usr/bin/bash -c 'source /etc/nexus/secrets/cicd/npm-auth.env; exec /usr/bin/python3 /usr/local/libexec/glance-cicd-rollback.py'
+TimeoutStartSec=90

@@ -1,0 +1,12 @@
+[Unit]
+Description=Persist Docker lifecycle and health events
+Requires=docker.service
+After=docker.service
+[Service]
+ExecStart=/usr/local/sbin/docker-events
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,26 @@
+# iPhone receipt → finance analytics projection
+
+Date: 2026-11-09. Objective: make verified scanned receipt line items visible in the existing purchase/price-history tables without creating a second bank expense. Nexus host and `iragonforce/ops`; containing Git commits are the source and deployment revisions.
+
+## Source, deployment, and dependencies
+
+- Source `hosts/nexus/files/opt/data/bin/finance-receipt-sync`; installed executable **on the Nexus host** at `/opt/data/bin/finance-receipt-sync` (root:root 0755). This host path is distinct from the Hermes-container `/opt/data/bin` bind.
+- Man page `man/nexus/finance-receipt-sync.1`; installed in the host user's `.local/share/man/man1` (1000:1000 0644).
+- Scoped entries and installed SHA-256 receipts are in `inventory/deployments.json`; guarded installer preview reported two pending/zero conflicts, then applied only these two targets and read their digests/modes/owners back. The previously absent host `/opt/data/bin` was created by that selected deployment at mode 0755. Unrelated pre-existing ops changes were not staged.
+- Existing root-only normalized archives `/opt/homelab-api/receipt-intake/submitted` (0700 directory, 0600 JSON), Receipt Wrangler PostgreSQL 17 and existing `finance_analytics` PostgreSQL 17 are prerequisites. No service, container, schema, timer, other script, or Wealthfolio record was changed by the deployment.
+
+## Validation and production result
+
+A synthetic-data red/green cycle in `tests/finance/test_receipt_sync.py` covered exact source selection, arithmetic, ambiguity/changed-hash refusal, CSV COPY/upsert structure and Docker stdin attachment. Five unit tests and `py_compile` passed. A disposable network-isolated PostgreSQL 17 instance executed the real generated SQL twice on synthetic input: one receipt, one item, zero adjustments after both runs; it was removed. Actual host `--help` and read-only `--preview` exited zero, with one unique archive/Wrangler match and one new candidate. The older encrypted finance-analytics PG17 backup was restored in an isolated container earlier and matched the unchanged pre-write counts of 16 purchase receipts/73 items; it remains on Nexus, Qubit and the small GitHub encrypted-artifact set. Do not restore it over intervening live writes.
+
+The real source archive matched the one Receipt Wrangler receipt by exact date, total, normalized merchant and linked item name/amount. Archive schema, quantity×unit price, item subtotal, tax/discount arithmetic and total matched the Receipt Wrangler record. The **other** submitted archive did not match that merchant and was not used. Receipt Wrangler had two global item rows, but only **one linked to its sole receipt**; the other was unlinked and was not projected.
+
+`/opt/data/bin/finance-receipt-sync --apply` inserted exactly **one** validated `wrangler_scan` purchase receipt and **one** linked line item into existing finance analytics. It did not add a Wealthfolio activity or another Receipt Wrangler record. A second `--apply` reported one already-seen source and **zero** inserts. Independent SQL readback found 17 purchase receipts, 74 receipt items, 74 rows in existing `v_price_history`, zero bank snapshots and zero receipt-to-activity matches. The exact `wrangler_scan` target passed source-hash/parser marker, item-sum=subtotal, subtotal+tax+adjustments=total and linked Wrangler ID checks. Sixteen prior validated Metro email receipts and 73 prior items were preserved. Existing Metro receipts had no same-total/near-date match to this Wrangler receipt in the preflight; source-key uniqueness and an exact merchant/date/total collision guard prevent silent double-counting on future runs.
+
+This makes an initial **item-level purchase/price table** usable, not a reconciled budget: product canonicalization is empty, no bank activity snapshot is populated, and the scanned receipt has not yet been matched to a bank transaction. No recurring schedule was enabled; run `--preview`/`--apply` manually until mail intake and cross-source matching are verified together.
+
+## Remaining work and rollback
+
+Implement strict DKIM-aligned Proton Bridge mail intake for the 521 observed CIBC purchase notifications (521/572 purchase-subject candidates parsed; 51 were other headers). Read-only matching against the 3,209 existing CIBC credit activities produced 402 unique strong candidates, 34 ambiguous and 85 without a strong match; these are **candidates, not confirmed links**. Preserve receipt-email/scan distinction and do not add a second expense. Add bounded polling only after tested idempotency, failure handling and private retention. Complete Wealthsimple account coverage and statements before deriving budget totals.
+
+Targeted rollback: in `finance_analytics`, re-read the **one** `purchase_receipts` row with `source='wrangler_scan'` and the source key matching the protected Wrangler ID. If no later item edits, receipt-activity links or owner changes depend on it, delete that row in a transaction (its item rows cascade), then verify 16 receipts/73 items and that the source archive and Receipt Wrangler receipt are unchanged. Source/config rollback uses the previous Git revision and guarded deployment after drift comparison. Do not delete the unlinked Wrangler item or restore a full live database without intervening-write review.

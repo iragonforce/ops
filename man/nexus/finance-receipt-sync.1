@@ -1,0 +1,48 @@
+.TH FINANCE-RECEIPT-SYNC 1 "2026-11-09" "Finance Infrastructure" "Nexus Host Utilities"
+.SH NAME
+finance-receipt-sync \- project validated iPhone-scanned receipts into finance analytics
+.SH SYNOPSIS
+.B /opt/data/bin/finance-receipt-sync
+.RB [ --preview | --apply ]
+.SH DESCRIPTION
+Reads the existing Receipt Wrangler PostgreSQL records and protected normalized
+submission archives. Requires a unique exact date, total, merchant, linked-item
+and item-amount match, then verifies quantity, unit price, subtotal, tax,
+discounts and total. A distinct existing email receipt with the same merchant,
+date and total is held for review rather than counted twice.
+.PP
+The default
+.B --preview
+performs no writes and prints aggregate counts only.
+.B --apply
+inserts only new, validated rows into the existing
+.B purchase_receipts
+and
+.B receipt_items
+finance analytics tables. Source identity is unique by
+.B (source, source_key)
+and the source archive hash is checked on subsequent runs. Ambiguous and
+changed sources fail closed. The script does not change Receipt Wrangler,
+Wealthfolio, mailbox state or bank transactions.
+.SH DEPENDENCIES
+Nexus host Python 3.9+, Docker CLI/daemon, live
+.B receipt-wrangler-db-1
+and
+.B finance-analytics-db
+PostgreSQL containers, and root read access to
+.B /opt/homelab-api/receipt-intake/submitted
+(mode 0700 with 0600 JSON archives). The existing encrypted finance-analytics
+PostgreSQL backup must be verified before applying changes.
+.SH OUTPUT
+Only aggregate counts and generic errors are printed. Financial details stay
+in the existing protected databases and archives. Exit status 0 means preview
+or apply/readback completed; nonzero means stop and review, not retry blindly.
+.SH ROLLBACK
+Identify records by source
+.B wrangler_scan
+and the protected source-key/hash in the analytics database. Review intervening
+changes and referenced matches, then remove only this run's added rows with a
+targeted transaction. Do not restore an old whole database over new owner data.
+The source and this manual are owned by the private
+.B iragonforce/ops
+repository.

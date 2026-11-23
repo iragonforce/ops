@@ -1,0 +1,7 @@
+[Unit]
+Description=Renew private Cockpit TLS certificate
+After=tailscaled.service docker.service network-online.target
+RequiresMountsFor=/srv/containers/data/nginx/data
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/cockpit-cert

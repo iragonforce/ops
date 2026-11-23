@@ -1,0 +1,37 @@
+#!/usr/bin/env python3
+# Control or query the selected host through the existing power-management route. See homelab-power(1) for source and integration details.
+"""Commands: nexus/tensor/qubit on, off, status. No interactive sudo prompts."""
+import argparse,json,pathlib,socket,subprocess,sys
+def main():
+    p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('host',choices=['nexus','tensor','qubit'])
+    p.add_argument('action',nargs='?',choices=['on','off','status'])
+    p.add_argument('--via',choices=['nexus','tensor'],help='Awake LAN relay for magic packets')
+    a=p.parse_args();current=socket.gethostname().split('.')[0].lower()
+    paths=[pathlib.Path.home()/'.config/homelab/power-hosts.json',pathlib.Path('/etc/homelab/power-hosts.json')]
+    file=next((x for x in paths if x.is_file()),None)
+    if not file:p.error('Host configuration missing')
+    cfg=json.loads(file.read_text());local=a.host==current
+    if not a.action:
+        if local:print('This machine is '+a.host);return 0
+        return subprocess.run(['ssh',a.host]).returncode
+    if a.via and a.action!='on':p.error('--via is only for on')
+    if a.action=='on':
+        if local:print(a.host+' is already running');return 0
+        wake=pathlib.Path.home()/'.local/bin/homelab-wake'
+        if not wake.exists():wake=pathlib.Path('/usr/local/bin/homelab-wake')
+        cmd=[str(wake),a.host]
+        if a.via:cmd+=['--via',a.via]
+        return subprocess.run(cmd).returncode
+    cmd=['/usr/bin/sudo','-n','/usr/local/sbin/homelab-power-action','off'] if a.action=='off' else ['hostname']
+    if a.action=='off':print('Requesting '+cfg['hosts'][a.host]['off_action']+' on '+a.host+'...',flush=True)
+    if local:return subprocess.run(cmd).returncode
+    # Fixed remote command and pre-existing SSH identities. Never bypass host-key checks.
+    remote='sudo -n /usr/local/sbin/homelab-power-action off' if a.action=='off' else 'hostname'
+    r=subprocess.run(['ssh','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','ConnectTimeout=8',a.host,remote])
+    if r.returncode==255 and a.action=='off':
+        print('SSH disconnected; shutdown/sleep completion is not confirmed.',file=sys.stderr)
+    return r.returncode
+if __name__=='__main__':
+    try:sys.exit(main())
+    except (OSError,ValueError,KeyError) as e:sys.exit('Host power: '+str(e))

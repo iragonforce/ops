@@ -1,0 +1,11 @@
+[Unit]
+Description=Periodic reconciliation for Qdrant memory inbox (missed filesystem changes)
+
+[Timer]
+OnBootSec=3min
+OnUnitInactiveSec=15min
+AccuracySec=1min
+Unit=qdrant-memory-inbox.service
+
+[Install]
+WantedBy=timers.target

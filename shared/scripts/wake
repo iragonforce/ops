@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+# Send Wake-on-LAN packets directly or through an awake relay. See homelab-wake(1) for source and integration details.
+"""Send LAN magic packets, optionally through an awake SSH/Tailscale relay."""
+import argparse, ipaddress, json, os, pathlib, shlex, socket, subprocess, sys, time
+
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('target',nargs='?',choices=['nexus','tensor','qubit','both'])
+    parser.add_argument('--via',choices=['nexus','tensor'],help='Send from this awake relay over SSH/Tailscale')
+    parser.add_argument('--source',help='Local IPv4 address to bind for direct LAN sending')
+    parser.add_argument('--list',action='store_true',help='Show recorded hosts; send nothing')
+    parser.add_argument('--config',type=pathlib.Path)
+    args=parser.parse_args()
+    candidates=[args.config] if args.config else [pathlib.Path(os.environ['HOMELAB_WAKE_CONFIG'])] if 'HOMELAB_WAKE_CONFIG' in os.environ else [pathlib.Path.home()/'.config/homelab/wake-hosts.json',pathlib.Path('/etc/homelab/wake-hosts.json')]
+    config=next((p for p in candidates if p and p.is_file()),None)
+    if config is None:parser.error('No host configuration found.')
+    cfg=json.loads(config.read_text())
+    if args.list:
+        for name,h in cfg['hosts'].items():print(f"{name}: LAN={h['lan']} Tailscale={h['tailscale']} MAC={h['mac']}")
+        print(f"Broadcast={cfg['broadcast']} UDP={cfg['port']}")
+        return 0
+    if not args.target:parser.error('Choose nexus, tensor, or both.')
+    if args.via:
+        if args.target==args.via:parser.error('The relay must be awake; choose the other host as relay.')
+        relay=cfg['hosts'][args.via]
+        # Reuse the relay's known SSH host key and existing alias/identity settings.
+        # No host-key checks are bypassed and no passwords/keys are stored here.
+        effective=subprocess.run(['ssh','-G',args.via],capture_output=True,text=True)
+        if effective.returncode:raise OSError('Cannot read SSH configuration for relay '+args.via)
+        options=dict(line.split(' ',1) for line in effective.stdout.splitlines() if line.startswith(('hostname ','hostkeyalias ')))
+        key_alias=options.get('hostkeyalias') or options.get('hostname') or args.via
+        command=shlex.join(['/usr/local/bin/homelab-wake',args.target])
+        return subprocess.run(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=8','-o','StrictHostKeyChecking=yes','-o','HostName='+relay['tailscale'],'-o','HostKeyAlias='+key_alias,'-l',cfg['user'],args.via,command]).returncode
+    source=args.source or cfg.get('senders',{}).get(socket.gethostname().split('.')[0].lower())
+    broadcast=str(ipaddress.IPv4Address(cfg['broadcast']))
+    targets=['nexus','tensor'] if args.target=='both' else [args.target]
+    with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as sender:
+        sender.setsockopt(socket.SOL_SOCKET,socket.SO_BROADCAST,1)
+        if source:
+            try:sender.bind((str(ipaddress.IPv4Address(source)),0))
+            except OSError as error:
+                if args.source or error.errno not in [49,99]:raise
+                # The recorded Ethernet address may be absent while using Wi-Fi.
+                with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as probe:
+                    probe.setsockopt(socket.SOL_SOCKET,socket.SO_BROADCAST,1)
+                    probe.connect((broadcast,int(cfg['port'])))
+                    active=probe.getsockname()[0]
+                if ipaddress.ip_address(active) not in ipaddress.ip_network(broadcast+'/24',strict=False):
+                    raise OSError('Not on the home LAN; use --via nexus or --via tensor')
+                sender.bind((active,0))
+                print('Using active LAN address '+active)
+        for target in targets:
+            mac=cfg['hosts'][target]['mac'];octets=bytes.fromhex(mac.replace(':','').replace('-',''))
+            if len(octets)!=6:raise ValueError('Invalid target MAC address')
+            packet=b'\xff'*6+octets*16
+            for _ in range(3):sender.sendto(packet,(broadcast,int(cfg['port'])));time.sleep(0.15)
+            print(f"Sent 3 magic packets for {target} ({mac}) to {broadcast}:{cfg['port']}. Delivery/power-on is not acknowledged by Wake-on-LAN.")
+    return 0
+
+if __name__=='__main__':
+    try:sys.exit(main())
+    except (OSError,ValueError,KeyError) as e:sys.exit('Wake-on-LAN: '+str(e))

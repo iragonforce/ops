@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+# Launch the shared Nexus Hermes runtime through the existing SSH or Docker route. See hermes-homelab(1) for source and integration details.
+"""Run the shared Hermes profile in Nexus Docker from any homelab host."""
+
+if __name__ == "__main__":
+    import sys as _ops_sys
+    if _ops_sys.argv[1:] == ["--help"]:
+        print('Launch the shared Nexus Hermes runtime through the existing SSH or Docker route.\nUsage: hermes-homelab  [ARGUMENT ...]\n\nSource: shared/scripts/hermes-homelab in ~/ops\nSee man hermes-homelab for the existing call sites and argument handling.')
+        raise SystemExit(0)
+import os
+import shlex
+import socket
+import sys
+
+host = socket.gethostname().split('.')[0]
+if host not in ('qubit', 'tensor', 'nexus'):
+    raise SystemExit('Unknown homelab client host')
+
+supplied = sys.argv[1:]
+if not supplied:
+    supplied = ['chat', '--in', '/opt/data/workspace/homelab-context']
+elif supplied[0] == 'chat':
+    supplied = ['chat', '--in', '/opt/data/workspace/homelab-context', *supplied[1:]]
+# An explicit profile keeps the old identities accessible without switching
+# the default or copying session databases between profiles.
+explicit_profile = any(arg in ('-p', '--profile') or arg.startswith('--profile=')
+                       for arg in supplied)
+args = supplied
+backend = '/usr/local/bin/hermes'
+if host == 'nexus':
+    os.execv(backend, ['hermes', *args])
+
+try:
+    with socket.create_connection(('192.168.1.2', 22), 1.5):
+        target = '192.168.1.2'
+except OSError:
+    target = '100.96.255.81'
+
+tty = '-tt' if sys.stdin.isatty() and sys.stdout.isatty() else '-T'
+os.execvp('ssh', [
+    'ssh', tty, '-o', 'ConnectTimeout=8',
+    '-o', 'ServerAliveInterval=30', '-o', 'ServerAliveCountMax=3',
+    '-o', 'StrictHostKeyChecking=yes', '-o', 'HostKeyAlias=192.168.1.2',
+    '-o', 'HostName=' + target, 'nexus',
+    shlex.join([backend, *args]),
+])

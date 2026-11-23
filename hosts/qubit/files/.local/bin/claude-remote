@@ -1,0 +1,13 @@
+#!/bin/bash
+# Legacy remote Claude launcher targeting the retired truenas alias. See claude-remote(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Legacy remote Claude launcher targeting the retired truenas alias.
+Usage: claude-remote 
+
+Source: hosts/qubit/files/.local/bin/claude-remote in ~/ops
+See man claude-remote for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+exec ssh -t truenas /mnt/fast/agents/bin/claude-persistent-attach.sh

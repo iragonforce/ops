@@ -1,0 +1,66 @@
+name: bambustudio
+services:
+  bambustudio:
+    image: lscr.io/linuxserver/bambustudio:v02.08.04.57-ls174@sha256:056f90dada957824cec32f1a09eaec322a8b1af08e9d117cf5c4dadf89693aeb
+    pull_policy: never
+    container_name: bambustudio
+    restart: always
+    env_file:
+    - path: /etc/nexus/secrets/bambustudio/bambustudio.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/bambu-studio/config
+      target: /config
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/fast/3d-models
+      target: /models
+      read_only: true
+      bind:
+        create_host_path: false
+    security_opt:
+    - seccomp:unconfined
+    shm_size: 1073741824
+    mem_limit: 2080374784
+    cpus: 2.0
+    group_add:
+    - '44'
+    - '107'
+    devices:
+    - /dev/dri:/dev/dri:rwm
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.53
+        gw_priority: 300
+        mac_address: 4a:4f:52:fd:45:6b
+      proxy-backend:
+        aliases:
+        - bambustudio
+        ipv4_address: 172.16.11.28
+        mac_address: 46:35:22:94:03:81
+    healthcheck:
+      test:
+      - CMD
+      - /usr/bin/curl
+      - -fsS
+      - --max-time
+      - '4'
+      - http://127.0.0.1:3000/
+      interval: 30s
+      timeout: 6s
+      retries: 5
+      start_period: 90s
+    dns:
+    - 1.1.1.1
+    memswap_limit: 2617245696
+    pids_limit: 1024
+networks:
+  docker-vlan:
+    external: true
+  proxy-backend:
+    external: true
+  nexus-egress:
+    external: true

@@ -1,0 +1,11 @@
+[Unit]
+Description=Hourly verified finance receipt and purchase-alert intake
+
+[Timer]
+OnCalendar=hourly
+RandomizedDelaySec=2m
+Persistent=true
+Unit=finance-intake.service
+
+[Install]
+WantedBy=timers.target

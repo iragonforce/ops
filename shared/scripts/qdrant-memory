@@ -1,0 +1,222 @@
+#!/usr/bin/env python3
+"""Unified Qdrant Memory CLI for Nexus, Tensor (Linux), and Qubit (macOS).
+
+All hosts use ~/qdrant-inbox and ~/.local/bin/qdrant-memory. Nexus is the only
+Qdrant writer; other hosts transmit text over existing SSH to Nexus. The files
+remain on the originating host, and a separately scoped remote copy is indexed.
+"""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import shlex
+import socket
+import subprocess
+import sys
+
+HOME = Path.home()
+INBOX = HOME / 'qdrant-inbox'
+CONFIG = HOME / '.config/qdrant-memory/host'
+CORE = Path('/home/iragonforce/ops/shared/scripts/qdrant-memory.py')
+SERVER = Path('/home/iragonforce/ops/shared/scripts/qdrant-memory-remote.py')
+REMOTE = os.environ.get('QDRANT_MEMORY_SSH_HOST', 'nexus')
+MAX_BYTES = 256 * 1024
+TEXT_SUFFIXES = {'.md', '.txt', '.py', '.sh', '.lua', '.yaml', '.yml', '.json', '.jsonc', '.conf',
+                 '.service', '.timer', '.zsh', '.bash', '.c', '.h', '.js', '.ts', '.toml', '.ini',
+                 '.css', '.xml', '.go', '.rs', '.sql', '.nft', '.rules', '.desktop'}
+GIT_SLUG = re.compile(r'^(?:https://github\.com/|git@github\.com:)?([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+?)(?:\.git)?/?$')
+
+
+def role():
+    if os.environ.get('QDRANT_MEMORY_ROLE') == 'nexus':
+        return 'nexus'
+    if os.environ.get('QDRANT_MEMORY_ROLE') == 'client':
+        return 'client'
+    return 'nexus' if socket.gethostname().split('.')[0].lower() == 'nexus' and CORE.is_file() else 'client'
+
+
+def host_id():
+    if CONFIG.is_file():
+        value = CONFIG.read_text(encoding='utf-8').strip()
+    else:
+        value = socket.gethostname().split('.')[0].lower()
+    if value not in ('qubit', 'tensor', 'nexus'):
+        raise RuntimeError('Unknown host identity; run: qdrant-memory init --host qubit|tensor|nexus')
+    return value
+
+
+def command(args, *, input_bytes=None, remote=True):
+    argv = [sys.executable, str(SERVER), *args]
+    if remote:
+        argv = ['ssh', '-T', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=12', REMOTE,
+                shlex.join(['/usr/bin/python3', str(SERVER), *args])]
+    result = subprocess.run(argv, input=input_bytes, check=False)
+    if result.returncode:
+        raise RuntimeError(f'Qdrant Memory server command failed (status {result.returncode})')
+
+
+def core(args):
+    result = subprocess.run([sys.executable, str(CORE), *args], check=False)
+    if result.returncode:
+        raise RuntimeError(f'Nexus indexer returned status {result.returncode}')
+
+
+def send_file(file: Path, *, scope: str, dry_run: bool):
+    if file.is_symlink() or not file.is_file():
+        raise RuntimeError(f'Not a regular file: {file}')
+    if file.name.startswith('.') or file.suffix.lower() not in TEXT_SUFFIXES:
+        raise RuntimeError(f'Unsupported file extension or hidden file: {file.name}')
+    if len(file.name) > 180 or any(ord(ch) < 32 or ord(ch) == 127 for ch in file.name):
+        raise RuntimeError('File name exceeds 180 characters or contains control characters')
+    if file.stat().st_size > MAX_BYTES:
+        raise RuntimeError(f'File exceeds {MAX_BYTES} bytes: {file.name}')
+    before = file.stat()
+    payload = file.read_bytes()
+    after = file.stat()
+    if (before.st_size, before.st_mtime_ns, before.st_ino) != (after.st_size, after.st_mtime_ns, after.st_ino):
+        raise RuntimeError(f'File changed while reading: {file}')
+    if len(payload) > MAX_BYTES or b'\x00' in payload:
+        raise RuntimeError('Invalid or binary input')
+    try:
+        payload.decode('utf-8')
+    except UnicodeDecodeError as exc:
+        raise RuntimeError('Input must be UTF-8') from exc
+    owner = host_id()
+    stable_key = file.name if scope == 'inbox' else str(file.resolve())
+    digest = hashlib.sha256((scope + ':' + stable_key).encode()).hexdigest()[:12]
+    # Stable name supports repeat upserts; origin is additionally namespaced by host.
+    safe_stem = re.sub(r'[^A-Za-z0-9._-]+', '-', file.stem).strip('.-') or 'document'
+    basename = f'{owner}--{safe_stem[:55]}-{digest}.md'
+    if dry_run:
+        print(f'DRY RUN: {file} -> nexus:~/qdrant-inbox/{basename} ({len(payload)} bytes)')
+        return basename
+    args = ['receive', '--host', owner, '--scope', scope, '--name', basename, '--original', file.name]
+    command(args, input_bytes=payload, remote=(role() != 'nexus'))
+    return basename
+
+
+def source_files():
+    if not INBOX.is_dir() or INBOX.is_symlink():
+        raise RuntimeError('Inbox missing or symbolic link; run: qdrant-memory init --host <hostname>')
+    files = []
+    for file in sorted(INBOX.iterdir()):
+        if file.name.startswith('.'):
+            continue
+        if file.is_symlink():
+            raise RuntimeError(f'Symlink forbidden in inbox: {file.name}')
+        if file.is_dir():
+            raise RuntimeError(f'Subdirectories not supported: {file.name}')
+        if file.suffix.lower() not in ('.md', '.txt'):
+            print(f'SKIP (watcher accepts .md/.txt only): {file.name}')
+            continue
+        files.append(file)
+    if len(files) > 200:
+        raise RuntimeError('Too many inbox files; max 200 per host')
+    return files
+
+
+def sync_local(*, dry_run=False, allow_empty=False):
+    names = []
+    for file in source_files():
+        names.append(send_file(file, scope='inbox', dry_run=dry_run))
+    payload = json.dumps({'names': names}).encode()
+    if dry_run:
+        print(f'DRY RUN: would reconcile host={host_id()}, files={len(names)}; no remote deletion')
+        return
+    args = ['manifest', '--host', host_id()]
+    if allow_empty:
+        args.append('--allow-empty')
+    command(args, input_bytes=payload, remote=(role() != 'nexus'))
+    print(f'PASS: forwarded {len(names)} inbox files from {host_id()}')
+
+
+def init(*, host=None):
+    if host and host not in ('nexus', 'tensor', 'qubit'):
+        raise RuntimeError('--host must be nexus, tensor, or qubit')
+    INBOX.mkdir(mode=0o700, parents=True, exist_ok=True)
+    if INBOX.is_symlink():
+        raise RuntimeError('Inbox cannot be symlink')
+    os.chmod(INBOX, 0o700)
+    CONFIG.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    if host:
+        if CONFIG.exists() and CONFIG.read_text(encoding='utf-8').strip() != host:
+            raise RuntimeError(f'Existing host identity in {CONFIG}; refusing replacement')
+        CONFIG.write_text(host + '\n', encoding='utf-8')
+        CONFIG.chmod(0o600)
+    value = host_id()
+    if value == 'nexus' and role() == 'nexus':
+        core(['init'])
+    print(f'PASS: {value} inbox={INBOX}; cli={HOME / ".local/bin/qdrant-memory"}')
+
+
+def github_slug(value):
+    m = GIT_SLUG.fullmatch(value)
+    if not m:
+        raise RuntimeError('Use GitHub owner/repo, https://github.com/owner/repo, or git@github.com:owner/repo')
+    return f'{m.group(1)}/{m.group(2)}'
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    subs = ap.add_subparsers(dest='action', required=True)
+    ini = subs.add_parser('init')
+    ini.add_argument('--host', choices=['nexus', 'tensor', 'qubit'])
+    subs.add_parser('status')
+    syn = subs.add_parser('sync-inbox')
+    syn.add_argument('--dry-run', action='store_true')
+    syn.add_argument('--allow-empty', action='store_true')
+    upd = subs.add_parser('update')
+    upd.add_argument('target', help='File, ops, nexus, tensor, obsidian, all, or repo')
+    upd.add_argument('repo', nargs='?', help='GitHub URL or owner/repo (after `repo`)')
+    upd.add_argument('--dry-run', action='store_true')
+    args = ap.parse_args()
+    local = role() == 'nexus'
+    if args.action == 'init':
+        init(host=args.host)
+        return
+    if args.action == 'status':
+        command(['status'], remote=not local)
+        return
+    if args.action == 'sync-inbox':
+        if local:
+            core(['sync-inbox', *(['--dry-run'] if args.dry_run else []), *(['--allow-empty'] if args.allow_empty else [])])
+        else:
+            sync_local(dry_run=args.dry_run, allow_empty=args.allow_empty)
+        return
+    target = args.target
+    if target == 'repo':
+        if not args.repo:
+            raise RuntimeError('Usage: qdrant-memory update repo <github-owner/repo|GitHub-URL>')
+        slug = github_slug(args.repo)
+        if slug in ('iragonforce/ops', 'iragonforce/nexus', 'iragonforce/tensor'):
+            target = slug.split('/')[1]
+        else:
+            command(['repo', '--repo', slug, *(['--dry-run'] if args.dry_run else [])], remote=not local)
+            return
+    elif args.repo:
+        raise RuntimeError('Second positional argument allowed only after `repo`')
+    if target in ('ops', 'nexus', 'tensor', 'obsidian', 'all'):
+        if local:
+            core(['update', target, *(['--dry-run'] if args.dry_run else [])])
+        else:
+            command(['update', '--source', target, *(['--dry-run'] if args.dry_run else [])], remote=True)
+        return
+    file = Path(target).expanduser()
+    if not file.is_absolute():
+        candidate = INBOX / file
+        if len(file.parts) == 1 and candidate.is_file():
+            file = candidate
+    if local and file.parent.resolve() == INBOX.resolve() and file.suffix.lower() in ('.md', '.txt'):
+        core(['update', str(file), *(['--dry-run'] if args.dry_run else [])])
+        return
+    send_file(file, scope='inbox' if file.parent.resolve() == INBOX.resolve() else 'direct', dry_run=args.dry_run)
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except (RuntimeError, ValueError, OSError, subprocess.SubprocessError) as exc:
+        print(f'ERROR: {exc}', file=sys.stderr)
+        sys.exit(1)

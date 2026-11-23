@@ -1,0 +1,25 @@
+#!/usr/bin/python3
+# Launch the host-specific Hermes runtime, preserving its existing arguments. See hermes(1) for source and integration details.
+"""Nexus Hermes entrypoint: one profile, with legacy selector compatibility."""
+
+if __name__ == "__main__":
+    import sys as _ops_sys
+    if _ops_sys.argv[1:] == ["--help"]:
+        print('Launch the host-specific Hermes runtime, preserving its existing arguments.\nUsage: hermes  [ARGUMENT ...]\n\nSource: hosts/nexus/files/usr/local/bin/hermes in ~/ops\nSee man hermes for the existing call sites and argument handling.')
+        raise SystemExit(0)
+import os,sys
+legacy={'default','main','qubit','tensor','nexus','paperclip','paperclipdesigner','paperclipgit','paperclipgptoss','papercliphyprland','paperclipnetwork','paperclipnexus','paperclipqubit','papercliptensor'}
+args=[];source=iter(sys.argv[1:])
+for arg in source:
+ if arg in ('-p','--profile'):
+  name=next(source,None)
+  if name not in legacy:raise SystemExit('Nexus Hermes has one default profile; unknown legacy selector')
+  continue
+ if arg.startswith('--profile='):
+  if arg.split('=',1)[1] not in legacy:raise SystemExit('Nexus Hermes has one default profile; unknown legacy selector')
+  continue
+ args.append(arg)
+if not args:args=['chat']
+tty='-it' if sys.stdin.isatty() and sys.stdout.isatty() else '-i'
+cmd=['sudo','-n','docker','exec',tty,'-e','HERMES_HOME=/opt/data','-w','/opt/data/workspace','hermes','hermes',*args]
+os.execvp(cmd[0],cmd)

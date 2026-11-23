@@ -1,0 +1,6 @@
+{
+  "version": "v0.12.1",
+  "asset": "codebase-memory-mcp-linux-amd64-portable.tar.gz",
+  "sha256": "8c3d0341064301e78ecc84cf7348d4e2c6562a0f57448243ea560aaa34de36c1",
+  "source": "https://github.com/DeusData/codebase-memory-mcp/releases/download/v0.12.1/"
+}

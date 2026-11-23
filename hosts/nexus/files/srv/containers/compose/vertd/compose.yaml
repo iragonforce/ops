@@ -1,0 +1,46 @@
+name: vertd
+services:
+  vertd:
+    image: ghcr.io/vert-sh/vertd@sha256:492d17d1ce570e538a70efc3279c7208eb8b766889e8cedaa0aab93e29567a89
+    pull_policy: never
+    container_name: vertd
+    restart: always
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - sh -c "curl --fail --silent --output /dev/null http://localhost:$${PORT:-24153}/api/version
+        || exit 1"
+      interval: 30000000000ns
+      timeout: 10000000000ns
+      start_period: 5000000000ns
+      retries: 3
+    env_file:
+    - path: /etc/nexus/secrets/vertd/vertd.env
+      format: raw
+    volumes: []
+    shm_size: 67108864
+    mem_limit: 268435456
+    cpus: 1.0
+    devices:
+    - /dev/dri:/dev/dri:rwm
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.245
+        gw_priority: 300
+        mac_address: 62:85:88:61:30:20
+      proxy-backend:
+        aliases:
+        - vertd
+        ipv4_address: 172.16.11.32
+        mac_address: 3a:cb:3e:af:5d:d8
+    dns:
+    - 1.1.1.1
+    memswap_limit: 536870912
+    pids_limit: 256
+networks:
+  docker-vlan:
+    external: true
+  proxy-backend:
+    external: true
+  nexus-egress:
+    external: true

@@ -1,0 +1,31 @@
+#!/bin/bash
+# Use the existing Hermes login entry point and private credential stores. See hermes-login(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Use the existing Hermes login entry point and private credential stores.
+Usage: hermes-login  [ARGUMENT ...]
+
+Source: hosts/nexus/files/usr/local/bin/hermes-login in ~/ops
+See man hermes-login for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+set -euo pipefail
+mode=${1:-}
+if [[ -z $mode ]]; then
+ read -rp 'OpenAI authentication: [1] ChatGPT login [2] API key: ' choice
+ case "$choice" in 1) mode=chatgpt;; 2) mode=api;; *) exit 2;; esac
+fi
+case "$mode" in
+ chatgpt)
+  sudo -n /usr/bin/python3 /usr/local/libexec/hermes-auth-mode.py chatgpt
+  sudo -n docker exec -it hermes hermes auth add openai-codex --type oauth --label nexus-openai
+  ;;
+ api)
+  sudo -n /usr/bin/python3 /usr/local/libexec/hermes-auth-mode.py api
+  sudo -n docker exec -it hermes hermes auth add openai --type api-key --label nexus-openai
+  ;;
+ *) echo 'Use hermes-login chatgpt or hermes-login api' >&2;exit 2;;
+esac
+sudo -n docker restart hermes >/dev/null
+echo 'Hermes credentials saved; gateway restarted. Run hermes to begin.'

@@ -1,0 +1,11 @@
+[Unit]
+Description=Enable Wake-on-LAN on nexus
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c "/usr/sbin/ethtool -s enp6s0 wol g && echo enabled > /sys/class/net/enp6s0/device/power/wakeup"
+
+[Install]
+WantedBy=multi-user.target

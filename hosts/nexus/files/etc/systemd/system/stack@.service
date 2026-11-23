@@ -1,0 +1,14 @@
+[Unit]
+Description=Nexus Compose stack %i
+Requires=docker.service zfs-mount.service vlans.service
+After=docker.service zfs-mount.service vlans.service network-online.target
+ConditionPathExists=/srv/containers/compose/%i/compose.yaml
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/stack %i up
+ExecStop=/usr/local/sbin/stack %i stop
+TimeoutStartSec=900
+TimeoutStopSec=180
+[Install]
+WantedBy=multi-user.target

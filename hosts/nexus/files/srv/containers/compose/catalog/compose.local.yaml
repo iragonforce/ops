@@ -1,0 +1,27 @@
+services:
+  api-topology:
+    ports:
+    - 127.0.0.1:18092:80
+    networks:
+      proxy-backend:
+        aliases:
+        - api-map
+        ipv4_address: 172.16.11.103
+    restart: always
+    mem_limit: 268435456
+    memswap_limit: 536870912
+    cpus: 0.5
+    pids_limit: 256
+  api-reference:
+    ports:
+    - 127.0.0.1:18093:8080
+    networks:
+      proxy-backend:
+        aliases:
+        - api-docs
+        ipv4_address: 172.16.11.104
+    restart: always
+    mem_limit: 268435456
+    memswap_limit: 536870912
+    cpus: 0.5
+    pids_limit: 256

@@ -1,0 +1,22 @@
+.TH "SSD-IO.SH" "1" "2026-11-06" "Homelab ops"
+.SH NAME
+ssd-io.sh \- Report SSD I/O for the configured Waybar module.
+.SH SYNOPSIS
+.B ssd-io.sh
+[arguments]
+.SH DESCRIPTION
+Report SSD I/O for the configured Waybar module.
+Established names and consumer paths are preserved. No hardware or service action was executed for documentation verification.
+.SH INTERFACE
+.SS /home/iragonforce/.config/hypr/scripts/waybar/ssd-io.sh
+Source: hosts/tensor/files/.config/hypr/scripts/waybar/ssd-io.sh
+.nf
+read -r used_pct used size avail mount <<< "$(df -hP "$PATH_TO_CHECK" | awk 'NR==2 {gsub(/%/, "", $5); print $5, $3, $2, $4, $6}')"
+.fi
+
+.SH DEPENDENCIES
+Use the interpreter in the source shebang and the existing host packages and services referenced in that source. Host configuration and private credentials remain on their original host.
+.SH OPERATIONS
+Before changing behavior, inspect inventory/audit-2026-11-06/tensor.json for recorded consumers and the source above for exact dependency paths. Never invoke a power, desktop, network, credential, notification, or storage operation merely to test it.
+.SH SOURCE
+Private iragonforce/ops repository. Consult docs/workflow.md for deployment, verification, rollback, and change records.

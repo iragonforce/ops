@@ -1,0 +1,54 @@
+name: portainer
+services:
+  portainer:
+    image: portainer/portainer-ce:2.45.2@sha256:03f94a406496dc84d37b552795fc424ccad8d0d7200353b6a82915f6e8f73ab0
+    pull_policy: never
+    container_name: portainer
+    restart: always
+    env_file:
+    - path: /etc/nexus/secrets/portainer/portainer.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/portainer
+      target: /data
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /var/run/docker.sock
+      target: /var/run/docker.sock
+      read_only: false
+      bind:
+        create_host_path: false
+    shm_size: 67108864
+    mem_limit: 268435456
+    cpus: 0.25
+    networks:
+      portainer_default:
+        aliases:
+        - portainer
+        ipv4_address: 172.16.12.2
+        mac_address: 36:e0:1e:35:4b:7d
+      docker-vlan:
+        ipv4_address: 192.168.5.25
+        gw_priority: 300
+        mac_address: 2e:3d:f5:13:8e:df
+      proxy-backend:
+        aliases:
+        - portainer
+        ipv4_address: 172.16.11.33
+        mac_address: 72:31:af:59:bb:49
+    dns:
+    - 1.1.1.1
+    memswap_limit: 536870912
+    pids_limit: 256
+networks:
+  portainer_default:
+    external: true
+  docker-vlan:
+    external: true
+  proxy-backend:
+    external: true
+  nexus-egress:
+    external: true

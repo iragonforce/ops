@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+
+if __name__ == "__main__":
+    import sys as _ops_sys
+    if _ops_sys.argv[1:] == ["--help"]:
+        print('Report existing mail service monitoring data to Checkmk.\nUsage: blinkwired-mail-checkmk \n\nSource: hosts/nexus/files/usr/local/sbin/mail-checkmk in ~/ops\nSee man blinkwired-mail-checkmk for the existing call sites and argument handling.')
+        raise SystemExit(0)
+# Report existing mail service monitoring data to Checkmk. See blinkwired-mail-checkmk(1) for source and integration details.
+import json
+import subprocess
+
+def run(args, timeout=8):
+    try:
+        return subprocess.run(
+            args, capture_output=True, text=True,
+            timeout=timeout
+        )
+    except Exception:
+        return None
+
+def report(name, status, detail):
+    print(f'{status} "{name}" - {detail}')
+
+for name in ("authentik-server", "authentik-worker"):
+    p = run([
+        "docker", "inspect",
+        "--format", "{{.State.Health.Status}}", name
+    ])
+    health = p.stdout.strip() if p and p.returncode == 0 else "unknown"
+    status = 0 if health == "healthy" else (
+        1 if health == "starting" else 2
+    )
+    report("Blinkwired " + name, status, health)
+
+code = """
+import socket
+socket.getaddrinfo("smtp.protonmail.ch", 587)
+with socket.create_connection(
+    ("smtp.protonmail.ch", 587), timeout=5
+):
+    print("OK")
+"""
+
+p = run([
+    "docker", "exec", "authentik-worker",
+    "python3", "-c", code
+], timeout=10)
+
+if p and p.returncode == 0 and "OK" in p.stdout:
+    report("Blinkwired SMTP connection", 0, "DNS and TCP 587 reachable")
+else:
+    report("Blinkwired SMTP connection", 2, "Worker cannot reach Proton")
+
+p = run([
+    "docker", "logs", "--since", "15m",
+    "--tail", "2000", "authentik-worker"
+], timeout=10)
+
+if p is None or p.returncode != 0:
+    report("Blinkwired SMTP tasks", 3, "Unable to inspect worker logs")
+else:
+    count = 0
+    for line in (p.stdout + "\n" + p.stderr).splitlines():
+        try:
+            record = json.loads(line)
+        except ValueError:
+            continue
+
+        if (
+            record.get("level") == "error"
+            and "Failed to process message authentik.stages.email.tasks.send_mail"
+            in str(record.get("event", ""))
+        ):
+            count += 1
+
+    report(
+        "Blinkwired SMTP tasks",
+        2 if count else 0,
+        f"{count} failed attempts in 15 minutes"
+    )

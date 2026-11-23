@@ -1,0 +1,3 @@
+#!/bin/sh
+# Invoke the host-specific Tensor power shortcut; interfaces differ between deployments. See tensor(1) for source and integration details.
+exec /usr/local/bin/homelab-power tensor "$@"

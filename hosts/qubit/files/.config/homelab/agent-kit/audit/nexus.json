@@ -1,0 +1,36 @@
+{
+  "host": "nexus",
+  "config_files": [
+    {
+      "path": ".local/bin/nexus-login-tmux",
+      "bytes": 413,
+      "sha256": "ad9f0b20cedf9b6a3853b925fcd5cf2f604383f3dedca7fbd451fdd59904e0e9"
+    },
+    {
+      "path": ".tmux.conf",
+      "bytes": 1413,
+      "sha256": "b2a919fb758b6ac92fcd9399343b1ff0156db63d1fc569129fdabdd3fa8d3d55"
+    },
+    {
+      "path": ".zshrc",
+      "bytes": 4862,
+      "sha256": "3892bfa50926f96564a38301353e5e47382f21364150a43193ae1bcc65c1b512"
+    }
+  ],
+  "skills": [],
+  "commands": {
+    "codex": null,
+    "claude": null,
+    "hermes": "/usr/local/bin/hermes",
+    "tmux": "/usr/bin/tmux",
+    "nvim": "/usr/bin/nvim",
+    "spf": null,
+    "btop": "/usr/bin/btop"
+  },
+  "sessions": [
+    "nexus 1"
+  ],
+  "windows": [
+    "nexus:1 zsh sudo 1"
+  ]
+}

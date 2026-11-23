@@ -1,0 +1,1 @@
+iragonforce ALL=(root) NOPASSWD: /usr/local/sbin/tensor-standby-cpu enter, /usr/local/sbin/tensor-standby-cpu resume

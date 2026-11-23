@@ -1,0 +1,11 @@
+[Unit]
+Description=Reconcile Receipt Wrangler purchases with Wealthfolio
+Wants=network-online.target
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+User=root
+UMask=0077
+ExecStart=/usr/bin/python3 /usr/local/sbin/receipt-match-reconcile --save
+TimeoutStartSec=300

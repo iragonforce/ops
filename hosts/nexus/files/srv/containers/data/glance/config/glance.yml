@@ -1,0 +1,519 @@
+document:
+  head: "<style>\n  .services-monitor .monitor-site a {\n    align-items: flex-start;\n\
+    \  }\n  .services-monitor .monitor-site-title {\n    white-space: pre-line;\n\
+    \    line-height: 1.2;\n  }\n</style>\n\n<link rel=\"stylesheet\" href=\"/assets/glance-network.css?v=phase5\"\
+    >\n<script defer src=\"/assets/glance-network.js?v=phase5\"></script>\n"
+pages:
+- name: Home
+  columns:
+  - size: full
+    widgets:
+    - type: html
+      title: Services
+      source: <div data-homelab-services="all" data-featured="true"></div>
+- name: Gaming
+  columns:
+  - size: small
+    widgets:
+    - type: twitch-top-games
+      limit: 20
+      collapse-after: 13
+      exclude:
+      - just-chatting
+      - pools-hot-tubs-and-beaches
+      - music
+      - art
+      - asmr
+  - size: full
+    widgets:
+    - type: group
+      widgets:
+      - type: reddit
+        show-thumbnails: true
+        subreddit: pcgaming
+      - type: reddit
+        subreddit: games
+    - type: videos
+      style: grid-cards
+      collapse-after-rows: 3
+      channels:
+      - UCNvzD7Z-g64bPXxGzaQaa4g
+      - UCZ7AeeVbyslLM_8-nVy2B8Q
+      - UCHDxYLv8iovIbhrfl16CNyg
+      - UC9PBzalIcEQCsiIkq36PyUA
+  - size: small
+    widgets:
+    - type: reddit
+      subreddit: gamingnews
+      limit: 7
+      style: vertical-cards
+- name: Markets
+  columns:
+  - size: small
+    widgets:
+    - type: markets
+      title: Indices
+      markets:
+      - symbol: SPY
+        name: S&P 500
+      - symbol: DX-Y.NYB
+        name: Dollar Index
+    - type: markets
+      title: Crypto
+      markets:
+      - symbol: BTC-USD
+        name: Bitcoin
+      - symbol: ETH-USD
+        name: Ethereum
+    - type: markets
+      title: Stocks
+      sort-by: absolute-change
+      markets:
+      - symbol: NVDA
+        name: NVIDIA
+      - symbol: AAPL
+        name: Apple
+      - symbol: MSFT
+        name: Microsoft
+      - symbol: GOOGL
+        name: Google
+      - symbol: AMD
+        name: AMD
+      - symbol: RDDT
+        name: Reddit
+      - symbol: AMZN
+        name: Amazon
+      - symbol: TSLA
+        name: Tesla
+      - symbol: INTC
+        name: Intel
+      - symbol: META
+        name: Meta
+  - size: full
+    widgets:
+    - type: rss
+      title: News
+      style: horizontal-cards
+      feeds:
+      - url: https://feeds.bloomberg.com/markets/news.rss
+        title: Bloomberg
+      - url: https://moxie.foxbusiness.com/google-publisher/markets.xml
+        title: Fox Business
+      - url: https://moxie.foxbusiness.com/google-publisher/technology.xml
+        title: Fox Business
+    - type: group
+      widgets:
+      - type: reddit
+        show-thumbnails: true
+        subreddit: technology
+      - type: reddit
+        show-thumbnails: true
+        subreddit: wallstreetbets
+    - type: videos
+      style: grid-cards
+      collapse-after-rows: 3
+      channels:
+      - UCvSXMi2LebwJEM1s4bz5IBA
+      - UCV6KDgJskWaEckne5aPA0aQ
+      - UCAzhpt9DmG6PnHXjmJTvRGQ
+  - size: small
+    widgets:
+    - type: rss
+      title: News
+      limit: 30
+      collapse-after: 13
+      feeds:
+      - url: https://www.ft.com/technology?format=rss
+        title: Financial Times
+      - url: https://feeds.a.dj.com/rss/RSSMarketsMain.xml
+        title: Wall Street Journal
+- name: Directory
+  columns:
+  - size: full
+    widgets:
+    - type: bookmarks
+      title: All nginx web interfaces
+      groups:
+      - title: Available nginx web interfaces
+        same-tab: false
+        links:
+        - title: adguard.blinkwired.com
+          url: https://adguard.blinkwired.com
+        - title: n8n.blinkwired.com
+          url: https://n8n.blinkwired.com
+        - title: sync.blinkwired.com
+          url: https://sync.blinkwired.com
+        - title: iot.blinkwired.com
+          url: https://iot.blinkwired.com
+        - title: nginx.blinkwired.com
+          url: https://nginx.blinkwired.com
+        - title: vert.blinkwired.com
+          url: https://vert.blinkwired.com
+        - title: torrent.blinkwired.com
+          url: https://torrent.blinkwired.com
+        - title: auth.blinkwired.com
+          url: https://auth.blinkwired.com
+        - title: jellyfin.blinkwired.com
+          url: https://jellyfin.blinkwired.com
+        - title: prometheus.blinkwired.com
+          url: https://prometheus.blinkwired.com
+        - title: grafana.blinkwired.com
+          url: https://grafana.blinkwired.com
+        - title: ipx.blinkwired.com
+          url: https://ipx.blinkwired.com
+        - title: prowlarr.blinkwired.com
+          url: https://prowlarr.blinkwired.com
+        - title: sonarr.blinkwired.com
+          url: https://sonarr.blinkwired.com
+        - title: radarr.blinkwired.com
+          url: https://radarr.blinkwired.com
+        - title: lidarr.blinkwired.com
+          url: https://lidarr.blinkwired.com
+        - title: bazarr.blinkwired.com
+          url: https://bazarr.blinkwired.com
+        - title: cleanuparr.blinkwired.com
+          url: https://cleanuparr.blinkwired.com
+        - title: seerr.blinkwired.com
+          url: https://seerr.blinkwired.com
+        - title: dashboard.blinkwired.com
+          url: https://dashboard.blinkwired.com
+        - title: home.blinkwired.com
+          url: https://home.blinkwired.com
+        - title: homelable.blinkwired.com
+          url: https://homelable.blinkwired.com
+        - title: bambustudio.blinkwired.com
+          url: https://bambustudio.blinkwired.com
+        - title: calendar.blinkwired.com
+          url: https://calendar.blinkwired.com
+        - title: tasks.blinkwired.com
+          url: https://tasks.blinkwired.com
+        - title: blinkwired.com
+          url: https://blinkwired.com
+        - title: pdf.blinkwired.com
+          url: https://pdf.blinkwired.com
+        - title: checkmk.blinkwired.com
+          url: https://checkmk.blinkwired.com
+        - title: paperclip.blinkwired.com
+          url: https://paperclip.blinkwired.com
+        - title: cockpit.blinkwired.com
+          url: https://cockpit.blinkwired.com
+        - title: glance.blinkwired.com
+          url: https://glance.blinkwired.com
+        - title: archcore.blinkwired.com
+          url: https://archcore.blinkwired.com
+        - title: zigbee2mqtt.blinkwired.com
+          url: https://zigbee2mqtt.blinkwired.com
+      - title: Backend needs attention
+        same-tab: false
+        links:
+        - title: makersvault.blinkwired.com (backend check needed)
+          url: https://makersvault.blinkwired.com
+        - title: portainer.blinkwired.com (backend check needed)
+          url: https://portainer.blinkwired.com
+      - title: Disabled nginx entries
+        same-tab: false
+        links:
+        - title: api.blinkwired.com (disabled)
+          url: https://api.blinkwired.com
+        - title: obsidian.blinkwired.com (disabled)
+          url: https://obsidian.blinkwired.com
+      - title: Local-only nginx aliases
+        same-tab: false
+        links:
+        - title: nexus.tail4e4f0f.ts.net
+          url: https://nexus.tail4e4f0f.ts.net
+        - title: nexus.homelab.lan
+          url: http://nexus.homelab.lan
+    - type: bookmarks
+      title: Categorized bookmarks
+      groups:
+      - title: Secure Blinkwired access
+        same-tab: false
+        links:
+        - title: Paperclip
+          url: https://paperclip.blinkwired.com
+        - title: Cockpit (Nexus)
+          url: https://cockpit.blinkwired.com
+        - title: Grafana
+          url: https://grafana.blinkwired.com
+        - title: Glance
+          url: https://glance.blinkwired.com
+        - title: Authentik
+          url: https://auth.blinkwired.com
+      - title: Infrastructure
+        same-tab: false
+        links:
+        - title: Adguard
+          url: https://adguard.blinkwired.com
+        - title: Android
+          url: https://android.blinkwired.com
+        - title: Archcore
+          url: https://archcore.blinkwired.com
+        - title: Auth
+          url: https://auth.blinkwired.com
+        - title: Code
+          url: https://code.blinkwired.com
+        - title: Datacrafter
+          url: https://datacrafter.blinkwired.com
+        - title: Gitea
+          url: https://gitea.blinkwired.com
+        - title: Git
+          url: https://git.blinkwired.com
+        - title: Grafana
+          url: https://grafana.blinkwired.com
+        - title: Home
+          url: https://home.blinkwired.com
+        - title: IPX
+          url: https://ipx.blinkwired.com
+        - title: Makersvault
+          url: https://makersvault.blinkwired.com
+        - title: Nginx
+          url: https://nginx.blinkwired.com
+        - title: Ntfy
+          url: https://ntfy.blinkwired.com
+        - title: Obsidian
+          url: https://obsidian.blinkwired.com
+        - title: Prometheus
+          url: https://prometheus.blinkwired.com
+        - title: Sync
+          url: https://sync.blinkwired.com
+        - title: Vert
+          url: https://vert.blinkwired.com
+      - title: Media & Downloads
+        same-tab: false
+        links:
+        - title: Bazarr
+          url: https://bazarr.blinkwired.com
+        - title: Cleanuparr
+          url: https://cleanuparr.blinkwired.com
+        - title: Jellyfin
+          url: https://jellyfin.blinkwired.com
+        - title: Lidarr
+          url: https://lidarr.blinkwired.com
+        - title: Prowlarr
+          url: https://prowlarr.blinkwired.com
+        - title: Radarr
+          url: https://radarr.blinkwired.com
+        - title: Sonarr
+          url: https://sonarr.blinkwired.com
+        - title: Torrent
+          url: https://torrent.blinkwired.com
+      - title: Automation & AI
+        same-tab: false
+        links:
+        - title: Dashboard
+          url: https://dashboard.blinkwired.com
+        - title: N8N
+          url: https://n8n.blinkwired.com
+        - title: OpenWebUI
+          url: https://openwebui.blinkwired.com
+        - title: Termix
+          url: https://termix.blinkwired.com
+        - title: Zigbee2MQTT
+          url: https://zigbee2mqtt.blinkwired.com
+      - title: Archcore Services
+        same-tab: false
+        links:
+        - title: Cockpit
+          url: https://archcore.homelab.io
+        - title: Sunshine
+          url: https://sunshine.archcore.homelab.io
+        - title: Syncthing
+          url: https://sync.archcore.homelab.io
+        - title: Files
+          url: https://files.archcore.homelab.io
+        - title: btop
+          url: https://btop.archcore.homelab.io
+        - title: OpenLinkHub / RGB
+          url: https://rgb.archcore.homelab.io
+      - title: Datacrafter Services
+        same-tab: false
+        links:
+        - title: Syncthing
+          url: https://sync.mac.homelab.io
+        - title: Files
+          url: https://files.mac.homelab.io
+        - title: btop
+          url: https://btop.mac.homelab.io
+      - title: API & Git
+        same-tab: false
+        links:
+        - title: API (blinkwired)
+          url: https://api.blinkwired.com
+        - title: API (homelab.io)
+          url: https://api.homelab.io
+        - title: Git (homelab.io)
+          url: https://git.homelab.io
+    - type: bookmarks
+      title: All domain endpoints
+      groups:
+      - title: All Domain Endpoints
+        links:
+        - title: adguard.blinkwired.com
+          url: https://adguard.blinkwired.com
+        - title: adguard.homelab.io
+          url: https://adguard.homelab.io
+        - title: android.blinkwired.com
+          url: https://android.blinkwired.com
+        - title: android.homelab.io
+          url: https://android.homelab.io
+        - title: api.blinkwired.com
+          url: https://api.blinkwired.com
+        - title: api.homelab.io
+          url: https://api.homelab.io
+        - title: archcore.blinkwired.com
+          url: https://archcore.blinkwired.com
+        - title: archcore.homelab.io
+          url: https://archcore.homelab.io
+        - title: btop.archcore.homelab.io
+          url: https://btop.archcore.homelab.io
+        - title: btop.datacrafter.homelab.io
+          url: https://btop.datacrafter.homelab.io
+        - title: btop.mac.homelab.io
+          url: https://btop.mac.homelab.io
+        - title: files.archcore.homelab.io
+          url: https://files.archcore.homelab.io
+        - title: files.datacrafter.homelab.io
+          url: https://files.datacrafter.homelab.io
+        - title: files.mac.homelab.io
+          url: https://files.mac.homelab.io
+        - title: rgb.archcore.homelab.io
+          url: https://rgb.archcore.homelab.io
+        - title: sunshine.archcore.homelab.io
+          url: https://sunshine.archcore.homelab.io
+        - title: sync.archcore.homelab.io
+          url: https://sync.archcore.homelab.io
+        - title: sync.datacrafter.homelab.io
+          url: https://sync.datacrafter.homelab.io
+        - title: sync.mac.homelab.io
+          url: https://sync.mac.homelab.io
+        - title: auth.blinkwired.com
+          url: https://auth.blinkwired.com
+        - title: auth.homelab.io
+          url: https://auth.homelab.io
+        - title: bazarr.blinkwired.com
+          url: https://bazarr.blinkwired.com
+        - title: bazarr.homelab.io
+          url: https://bazarr.homelab.io
+        - title: cleanuparr.blinkwired.com
+          url: https://cleanuparr.blinkwired.com
+        - title: cleanuparr.homelab.io
+          url: https://cleanuparr.homelab.io
+        - title: code.blinkwired.com
+          url: https://code.blinkwired.com
+        - title: code.homelab.io
+          url: https://code.homelab.io
+        - title: datacrafter.blinkwired.com
+          url: https://datacrafter.blinkwired.com
+        - title: datacrafter.homelab.io
+          url: https://datacrafter.homelab.io
+        - title: git.blinkwired.com
+          url: https://git.blinkwired.com
+        - title: git.homelab.io
+          url: https://git.homelab.io
+        - title: gitea.blinkwired.com
+          url: https://gitea.blinkwired.com
+        - title: gitea.homelab.io
+          url: https://gitea.homelab.io
+        - title: grafana.blinkwired.com
+          url: https://grafana.blinkwired.com
+        - title: grafana.homelab.io
+          url: https://grafana.homelab.io
+        - title: home.blinkwired.com
+          url: https://home.blinkwired.com
+        - title: home.homelab.io
+          url: https://home.homelab.io
+        - title: ipx.blinkwired.com
+          url: https://ipx.blinkwired.com
+        - title: ipx.homelab.io
+          url: https://ipx.homelab.io
+        - title: jellyfin.blinkwired.com
+          url: https://jellyfin.blinkwired.com
+        - title: jellyfin.homelab.io
+          url: https://jellyfin.homelab.io
+        - title: lidarr.blinkwired.com
+          url: https://lidarr.blinkwired.com
+        - title: lidarr.homelab.io
+          url: https://lidarr.homelab.io
+        - title: makersvault.blinkwired.com
+          url: https://makersvault.blinkwired.com
+        - title: makersvault.homelab.io
+          url: https://makersvault.homelab.io
+        - title: n8n.blinkwired.com
+          url: https://n8n.blinkwired.com
+        - title: n8n.homelab.io
+          url: https://n8n.homelab.io
+        - title: nginx.blinkwired.com
+          url: https://nginx.blinkwired.com
+        - title: nginx.homelab.io
+          url: https://nginx.homelab.io
+        - title: ntfy.blinkwired.com
+          url: https://ntfy.blinkwired.com
+        - title: ntfy.homelab.io
+          url: https://ntfy.homelab.io
+        - title: obsidian.blinkwired.com
+          url: https://obsidian.blinkwired.com
+        - title: obsidian.homelab.io
+          url: https://obsidian.homelab.io
+        - title: openwebui.blinkwired.com
+          url: https://openwebui.blinkwired.com
+        - title: openwebui.homelab.io
+          url: https://openwebui.homelab.io
+        - title: prometheus.blinkwired.com
+          url: https://prometheus.blinkwired.com
+        - title: prometheus.homelab.io
+          url: https://prometheus.homelab.io
+        - title: prowlarr.blinkwired.com
+          url: https://prowlarr.blinkwired.com
+        - title: prowlarr.homelab.io
+          url: https://prowlarr.homelab.io
+        - title: radarr.blinkwired.com
+          url: https://radarr.blinkwired.com
+        - title: radarr.homelab.io
+          url: https://radarr.homelab.io
+        - title: sonarr.blinkwired.com
+          url: https://sonarr.blinkwired.com
+        - title: sonarr.homelab.io
+          url: https://sonarr.homelab.io
+        - title: sync.blinkwired.com
+          url: https://sync.blinkwired.com
+        - title: sync.homelab.io
+          url: https://sync.homelab.io
+        - title: torrent.blinkwired.com
+          url: https://torrent.blinkwired.com
+        - title: torrent.homelab.io
+          url: https://torrent.homelab.io
+        - title: vert.blinkwired.com
+          url: https://vert.blinkwired.com
+        - title: vert.homelab.io
+          url: https://vert.homelab.io
+        - title: zigbee2mqtt.blinkwired.com
+          url: https://zigbee2mqtt.blinkwired.com
+        - title: zigbee2mqtt.homelab.io
+          url: https://zigbee2mqtt.homelab.io
+- name: Services
+  width: wide
+  columns:
+  - size: full
+    widgets:
+    - type: html
+      title: Services
+      source: <div data-homelab-services="all"></div>
+- name: Nexus
+  columns:
+  - size: full
+    widgets:
+    - type: html
+      title: Services
+      source: <div data-homelab-services="nexus"></div>
+- name: Tensor
+  columns:
+  - size: full
+    widgets:
+    - type: html
+      title: Services
+      source: <div data-homelab-services="tensor"></div>
+server:
+  port: 8081
+  assets-path: /app/config/assets
+  proxied: true

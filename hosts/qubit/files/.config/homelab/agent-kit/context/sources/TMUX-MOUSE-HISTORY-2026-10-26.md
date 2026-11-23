@@ -1,0 +1,7 @@
+# Tmux and Neovim mouse behavior, 2026-10-26
+
+The user's requested current behavior supersedes the 2026-10-18 mouse-off clipboard note. Tmux mouse capture and Neovim `mouse=a` are enabled on Qubit, Tensor and Nexus. In shell panes, wheel up enters tmux copy mode to scroll screen history; wheel down at the live prompt is consumed rather than sent to Zsh. In copy mode, each wheel step scrolls three lines and a printable typed key cancels copy mode and goes to the live pane. When that pane is an idle shell, its cursor is at the prompt. Mouse-aware apps such as Neovim receive their own wheel input. Shift-drag can make a terminal-native text selection when mouse capture is active. Copy-mode vi letter navigation and its `c`/`y` copy shortcuts are replaced by type-to-prompt; mouse selection plus Shift-F1/Cmd+C remain available.
+
+Neovim application files on Tensor and Nexus matched before the change. Their `lazy.nvim` lockfile revisions differed and were not changed. Their live Neovim sessions reported `mouse=a`; Qubit's new-instance readback also reported `mouse=a`. Existing editors were not restarted. Tmux configs were sourced without killing sessions. Readback on all hosts showed mouse on and the new bindings. Physical use of wheel/click/typing is still pending user confirmation.
+
+The per-host prechange tmux and Neovim clipboard-module backups are under `~/.local/state/mouse-history-20261026/`. Nexus's old `.tmux.conf` target was broken and is recorded there; it now points to the active XDG tmux config. See the kit CHANGELOG entry for rollback.

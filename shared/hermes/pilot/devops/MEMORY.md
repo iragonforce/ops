@@ -1,0 +1,1 @@
+Verified shared infrastructure knowledge lives at /opt/data/workspace/ops/docs/START-HERE.md. Retrieve detailed facts and change records from Git; use native session search for this profile’s previous work. Keep memory concise and do not duplicate machine inventories.

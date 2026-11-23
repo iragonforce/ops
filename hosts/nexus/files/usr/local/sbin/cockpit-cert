@@ -1,0 +1,18 @@
+#!/bin/sh
+# Deploy the existing certificate into the Cockpit certificate location. See cockpit-cert(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Deploy the existing certificate into the Cockpit certificate location.
+Usage: cockpit-cert
+
+Source: hosts/nexus/files/usr/local/sbin/cockpit-cert in ~/ops
+See man cockpit-cert for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+set -eu
+tailscale cert --cert-file '/srv/containers/data/nginx/data/custom_tls/nexus.tail4e4f0f.ts.net.crt' --key-file '/srv/containers/data/nginx/data/custom_tls/nexus.tail4e4f0f.ts.net.key' 'nexus.tail4e4f0f.ts.net'
+chown 568:568 '/srv/containers/data/nginx/data/custom_tls/nexus.tail4e4f0f.ts.net.crt' '/srv/containers/data/nginx/data/custom_tls/nexus.tail4e4f0f.ts.net.key'
+chmod 600 '/srv/containers/data/nginx/data/custom_tls/nexus.tail4e4f0f.ts.net.crt' '/srv/containers/data/nginx/data/custom_tls/nexus.tail4e4f0f.ts.net.key'
+docker exec nginx-proxy-manager nginx -t
+docker exec nginx-proxy-manager nginx -s reload

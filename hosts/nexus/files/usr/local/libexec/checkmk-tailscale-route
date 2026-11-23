@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# Select the existing Tailscale route for monitoring traffic. See checkmk-tailscale-route(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Select the existing Tailscale route for monitoring traffic.
+Usage: checkmk-tailscale-route 
+
+Source: hosts/nexus/files/usr/local/libexec/checkmk-tailscale-route in ~/ops
+See man checkmk-tailscale-route for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+set -euo pipefail
+
+CHAIN="NEXUS_CMK_TS"
+GATEWAY="172.16.11.1"
+TARGETS=("100.114.178.50" "100.103.67.56")
+
+PID="$(docker inspect -f '{{.State.Pid}}' checkmk)"
+CMK_IP="$(docker inspect -f '{{with index .NetworkSettings.Networks "proxy-backend"}}{{.IPAddress}}{{end}}' checkmk)"
+TS_IP="$(tailscale ip -4)"
+
+[[ "$PID" =~ ^[0-9]+$ ]] && (( PID > 1 )) || exit 1
+[[ "$CMK_IP" == 172.16.11.* ]] || exit 1
+[[ "$TS_IP" =~ ^100\. ]] || exit 1
+
+IFACE="$(nsenter -t "$PID" -n ip -4 route get "$GATEWAY" |
+  awk '{for (i=1;i<=NF;i++) if ($i=="dev") {print $(i+1); exit}}')"
+
+[[ -n "$IFACE" ]] || exit 1
+
+# Restore routes inside the Checkmk network namespace.
+for target in "${TARGETS[@]}"; do
+  nsenter -t "$PID" -n ip -4 route replace \
+    "$target/32" via "$GATEWAY" dev "$IFACE" src "$CMK_IP"
+done
+
+# Manage only our dedicated NAT chain.
+if ! iptables -t nat -S "$CHAIN" >/dev/null 2>&1; then
+  iptables -t nat -N "$CHAIN"
+fi
+
+if ! iptables -t nat -C POSTROUTING \
+  -s 172.16.11.0/24 -o tailscale0 -j "$CHAIN" 2>/dev/null; then
+  iptables -t nat -I POSTROUTING 1 \
+    -s 172.16.11.0/24 -o tailscale0 -j "$CHAIN"
+fi
+
+iptables -t nat -F "$CHAIN"
+
+for target in "${TARGETS[@]}"; do
+  iptables -t nat -A "$CHAIN" \
+    -s "$CMK_IP/32" \
+    -d "$target/32" \
+    -o tailscale0 \
+    -p tcp -m multiport --dports 22,6556 \
+    -j SNAT --to-source "$TS_IP"
+
+  iptables -t nat -A "$CHAIN" \
+    -s "$CMK_IP/32" \
+    -d "$target/32" \
+    -o tailscale0 \
+    -p icmp \
+    -j SNAT --to-source "$TS_IP"
+done
+
+# Remove only the temporary rules created by the earlier test.
+for target in "${TARGETS[@]}"; do
+  old_rule=(
+    -s 172.16.11.46/32
+    -d "$target/32"
+    -o tailscale0
+    -p tcp
+    -m multiport --dports 22,6556
+    -j SNAT --to-source 100.96.255.81
+  )
+
+  while iptables -t nat -C POSTROUTING "${old_rule[@]}" 2>/dev/null; do
+    iptables -t nat -D POSTROUTING "${old_rule[@]}"
+  done
+done
+
+echo "Checkmk routing synchronized: $CMK_IP -> $TS_IP"

@@ -1,0 +1,25 @@
+.TH "TMUX-SSH-RELAY" "1" "2026-11-06" "Homelab ops"
+.SH NAME
+tmux-ssh-relay \- Run the retained tmux SSH relay integration.
+.SH SYNOPSIS
+.B tmux-ssh-relay
+[arguments]
+.SH DESCRIPTION
+Run the retained tmux SSH relay integration.
+Established names and consumer paths are preserved. No hardware or service action was executed for documentation verification.
+.SH INTERFACE
+.SS /home/iragonforce/.config/tmux/helpers/tmux-ssh-relay
+Source: hosts/nexus/files/.config/tmux/helpers/tmux-ssh-relay
+.nf
+host="${1:?host required}"
+connect_target="${2:?connect target required}"
+session_name="${3:?session name required}"
+window_index="${4:?window index required}"
+.fi
+
+.SH DEPENDENCIES
+Use the interpreter in the source shebang and the existing host packages and services referenced in that source. Host configuration and private credentials remain on their original host.
+.SH OPERATIONS
+Before changing behavior, inspect inventory/audit-2026-11-06/nexus.json for recorded consumers and the source above for exact dependency paths. Never invoke a power, desktop, network, credential, notification, or storage operation merely to test it.
+.SH SOURCE
+Private iragonforce/ops repository. Consult docs/workflow.md for deployment, verification, rollback, and change records.

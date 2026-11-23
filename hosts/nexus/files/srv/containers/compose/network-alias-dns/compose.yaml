@@ -1,0 +1,13 @@
+services:
+  alias-dns-pilot:
+    container_name: coredns
+    image: coredns/coredns:1.14.6
+    network_mode: host
+    restart: unless-stopped
+    command: ['-conf', '/config/Corefile']
+    volumes:
+      - /opt/data/network-alias-dns:/config:ro
+    logging:
+      options:
+        max-size: 5m
+        max-file: '2'

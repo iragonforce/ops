@@ -1,0 +1,12 @@
+[Unit]
+Description=Check Homelab step-ca Nginx certificates every four hours
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=4h
+Persistent=true
+RandomizedDelaySec=5min
+Unit=homelab-stepca-renew.service
+
+[Install]
+WantedBy=timers.target

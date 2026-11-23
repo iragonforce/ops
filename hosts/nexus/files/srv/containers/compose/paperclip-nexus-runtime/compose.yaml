@@ -1,0 +1,79 @@
+services:
+  nexus-runtime-proxy:
+    image: python@sha256:b658b05ce9c4eb97ec6fc19424818a1f31993659c2b505a532f470e83807815d
+    container_name: nexus-runtime-proxy
+    command:
+    - python
+    - -B
+    - /app/socket_proxy.py
+    read_only: true
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 268435456
+    volumes:
+    - ./socket_proxy.py:/app/socket_proxy.py:ro
+    - ./vendor:/app/vendor:ro
+    - /srv/containers/compose/monitoring/compose.yaml:/compose/monitoring.yaml:ro
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      paperclip-hermes: {}
+      proxy-backend:
+        ipv4_address: 172.16.11.110
+    restart: always
+    healthcheck:
+      test:
+      - CMD
+      - python
+      - -c
+      - import urllib.request; urllib.request.urlopen('http://127.0.0.1:2375/health',timeout=2)
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    memswap_limit: 536870912
+    cpus: 0.5
+  nexus-runtime-mcp:
+    image: python@sha256:b658b05ce9c4eb97ec6fc19424818a1f31993659c2b505a532f470e83807815d
+    container_name: nexus-runtime-mcp
+    command:
+    - python
+    - -B
+    - /app/mcp_server.py
+    user: 65532:65532
+    network_mode: service:nexus-runtime-proxy
+    depends_on:
+      nexus-runtime-proxy:
+        condition: service_healthy
+    read_only: true
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 268435456
+    volumes:
+    - ./mcp_server.py:/app/mcp_server.py:ro
+    - /srv/containers/data/glance/config:/bind-check/glance-config:ro
+    - /srv/containers/builds/glance-router:/bind-check/glance-router:ro
+    - /etc/nexus/secrets/paperclip/nexus-runtime-mcp-token:/run/secrets/mcp-token:ro
+    - /srv/containers/data/nginx/data/nginx/proxy_host:/npm/proxy_host:ro
+    - /srv/containers/data/nginx/data/logs:/npm/logs:ro
+    restart: always
+    healthcheck:
+      test:
+      - CMD
+      - python
+      - -c
+      - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8769/health',timeout=2)
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    memswap_limit: 536870912
+    cpus: 0.5
+networks:
+  paperclip-hermes:
+    external: true
+  proxy-backend:
+    external: true

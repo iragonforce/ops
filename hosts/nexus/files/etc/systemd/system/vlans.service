@@ -1,0 +1,11 @@
+[Unit]
+Description=Nexus VLAN and host macvlan interfaces
+Wants=network-online.target
+After=network-online.target
+Before=docker.service
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/vlans
+RemainAfterExit=yes
+[Install]
+WantedBy=multi-user.target

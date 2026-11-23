@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+	</dict>
+	<key>Label</key>
+	<string>com.blinkwired.qdrant-memory</string>
+	<key>ProcessType</key>
+	<string>Background</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>__HOME__/.local/bin/qdrant-memory</string>
+		<string>sync-inbox</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>__HOME__/.local/state/qdrant-memory/watch-error.log</string>
+	<key>StandardOutPath</key>
+	<string>__HOME__/.local/state/qdrant-memory/watch.log</string>
+	<key>StartInterval</key>
+	<integer>900</integer>
+	<key>WatchPaths</key>
+	<array>
+		<string>__HOME__/qdrant-inbox</string>
+	</array>
+</dict>
+</plist>

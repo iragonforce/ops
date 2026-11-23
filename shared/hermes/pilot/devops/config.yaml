@@ -1,0 +1,13 @@
+model:
+  provider: openai-codex
+  default: gpt-6-sol
+agent:
+  max_turns: 12
+platform_toolsets:
+  cli: [file, memory, session_search, kanban]
+mcp_servers: {}
+kanban:
+  dispatch_in_gateway: false
+  auto_decompose: false
+gateway:
+  multiplex_profiles: false

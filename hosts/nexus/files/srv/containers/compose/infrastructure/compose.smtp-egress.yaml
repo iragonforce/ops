@@ -1,0 +1,14 @@
+services:
+  authentik-worker:
+    dns:
+    - 1.1.1.1
+    networks:
+    - authentik-egress
+    restart: always
+    mem_limit: 1073741824
+    memswap_limit: 1610612736
+    cpus: 1.0
+    pids_limit: 256
+networks:
+  authentik-egress:
+    external: true

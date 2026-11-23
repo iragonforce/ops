@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# Legacy Codex state synchronization; copies live history and plugin trees. See codex-sync-tensor(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Legacy Codex state synchronization; copies live history and plugin trees.
+Usage: codex-sync-tensor 
+
+Source: hosts/qubit/files/.local/bin/codex-sync-tensor in ~/ops
+See man codex-sync-tensor for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+set -euo pipefail
+
+LOCAL_CODEX="${HOME}/.codex"
+REMOTE_HOST="tensor"
+REMOTE_HOME="/home/iragonforce"
+REMOTE_CODEX="${REMOTE_HOME}/.codex"
+STAMP="$(date +%Y%m%d)"
+WORK="$(mktemp -d)"
+
+cleanup() {
+  rm -rf "$WORK"
+}
+trap cleanup EXIT
+
+ssh "$REMOTE_HOST" "mkdir -p '${REMOTE_CODEX}' '${REMOTE_CODEX}/backups/sync-qubit-${STAMP}' '${REMOTE_HOME}/.cache/codex-runtimes/codex-primary-runtime/plugins'"
+ssh "$REMOTE_HOST" "cp -p '${REMOTE_CODEX}/config.toml' '${REMOTE_CODEX}/session_index.jsonl' '${REMOTE_CODEX}/history.jsonl' '${REMOTE_CODEX}/backups/sync-qubit-${STAMP}/' 2>/dev/null || true"
+
+mkdir -p "${LOCAL_CODEX}/backups/sync-tensor-${STAMP}"
+cp -p "${LOCAL_CODEX}/session_index.jsonl" "${LOCAL_CODEX}/history.jsonl" "${LOCAL_CODEX}/backups/sync-tensor-${STAMP}/" 2>/dev/null || true
+
+ssh "$REMOTE_HOST" "cat '${REMOTE_CODEX}/session_index.jsonl' 2>/dev/null || true" > "${WORK}/tensor-session_index.jsonl"
+ssh "$REMOTE_HOST" "cat '${REMOTE_CODEX}/history.jsonl' 2>/dev/null || true" > "${WORK}/tensor-history.jsonl"
+
+touch "${LOCAL_CODEX}/session_index.jsonl" "${LOCAL_CODEX}/history.jsonl"
+awk 'NF && !seen[$0]++' "${LOCAL_CODEX}/session_index.jsonl" "${WORK}/tensor-session_index.jsonl" > "${WORK}/session_index.merged.jsonl"
+awk 'NF && !seen[$0]++' "${LOCAL_CODEX}/history.jsonl" "${WORK}/tensor-history.jsonl" > "${WORK}/history.merged.jsonl"
+cp -p "${WORK}/session_index.merged.jsonl" "${LOCAL_CODEX}/session_index.jsonl"
+cp -p "${WORK}/history.merged.jsonl" "${LOCAL_CODEX}/history.jsonl"
+
+rsync -a --ignore-existing "${REMOTE_HOST}:${REMOTE_CODEX}/sessions/" "${LOCAL_CODEX}/sessions/"
+rsync -a "${LOCAL_CODEX}/sessions/" "${REMOTE_HOST}:${REMOTE_CODEX}/sessions/"
+scp -q "${LOCAL_CODEX}/session_index.jsonl" "${LOCAL_CODEX}/history.jsonl" "${REMOTE_HOST}:${REMOTE_CODEX}/"
+
+rsync -a --delete --exclude='.DS_Store' --exclude='._*' "${LOCAL_CODEX}/plugins/" "${REMOTE_HOST}:${REMOTE_CODEX}/plugins/"
+rsync -a --delete --exclude='.DS_Store' --exclude='._*' "${LOCAL_CODEX}/skills/" "${REMOTE_HOST}:${REMOTE_CODEX}/skills/"
+rsync -a --delete --exclude='.DS_Store' --exclude='._*' "${LOCAL_CODEX}/cache/" "${REMOTE_HOST}:${REMOTE_CODEX}/cache/"
+rsync -a --delete --exclude='.DS_Store' --exclude='._*' "${LOCAL_CODEX}/extensions/" "${REMOTE_HOST}:${REMOTE_CODEX}/extensions/" 2>/dev/null || true
+rsync -a --delete --exclude='.DS_Store' --exclude='._*' "${LOCAL_CODEX}/conductor/" "${REMOTE_HOST}:${REMOTE_CODEX}/conductor/" 2>/dev/null || true
+rsync -a --delete --exclude='.DS_Store' --exclude='._*' "${LOCAL_CODEX}/.tmp/bundled-marketplaces/" "${REMOTE_HOST}:${REMOTE_CODEX}/.tmp/bundled-marketplaces/"
+rsync -a --delete --exclude='.DS_Store' --exclude='._*' "${HOME}/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime/" "${REMOTE_HOST}:${REMOTE_HOME}/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime/" 2>/dev/null || true
+
+cat > "${WORK}/tensor-config.toml" <<'CONFIG'
+model = "gpt-5.5"
+model_reasoning_effort = "medium"
+approvals_reviewer = "user"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+
+[projects."/Users/iragonforce"]
+trust_level = "trusted"
+
+[projects."/home/iragonforce"]
+trust_level = "trusted"
+
+[tui]
+status_line = ["model-with-reasoning", "current-dir", "project-root", "context-remaining", "context-used", "five-hour-limit", "weekly-limit", "codex-version", "context-window-size", "used-tokens", "total-input-tokens", "total-output-tokens", "session-id"]
+
+[tui.model_availability_nux]
+"gpt-5.5" = 4
+
+[notice]
+hide_full_access_warning = true
+hide_rate_limit_model_nudge = true
+
+[notice.model_migrations]
+"gpt-5.1-codex-mini" = "gpt-5.4"
+"gpt-5.3-codex" = "gpt-5.4"
+"gpt-5.2" = "gpt-5.4"
+
+[marketplaces.openai-bundled]
+last_updated = "2026-04-28T16:17:22Z"
+source_type = "local"
+source = "/home/iragonforce/.codex/.tmp/bundled-marketplaces/openai-bundled"
+
+[marketplaces.openai-primary-runtime]
+last_updated = "2026-04-28T16:17:38Z"
+source_type = "local"
+source = "/home/iragonforce/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
+
+[plugins."browser-use@openai-bundled"]
+enabled = true
+
+[plugins."documents@openai-primary-runtime"]
+enabled = true
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = true
+CONFIG
+
+scp -q "${WORK}/tensor-config.toml" "${REMOTE_HOST}:${REMOTE_CODEX}/config.toml"

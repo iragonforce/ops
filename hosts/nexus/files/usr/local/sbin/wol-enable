@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+# Configure the existing Wake-on-LAN interface settings. See homelab-wol-enable(1) for source and integration details.
+"""Arm the recorded physical NIC and its PCIe wake forwarding path."""
+
+if __name__ == "__main__":
+    import sys as _ops_sys
+    if _ops_sys.argv[1:] == ["--help"]:
+        print('Configure the existing Wake-on-LAN interface settings.\nUsage: homelab-wol-enable \n\nSource: hosts/nexus/files/usr/local/sbin/wol-enable in ~/ops\nSee man homelab-wol-enable for the existing call sites and argument handling.')
+        raise SystemExit(0)
+import json,pathlib,shutil,subprocess,sys
+cfg=json.loads(pathlib.Path('/etc/homelab/wol-local.json').read_text())
+matches=[p for p in pathlib.Path('/sys/class/net').iterdir() if (p/'device').exists() and (p/'address').read_text().strip().lower()==cfg['mac'].lower()]
+if len(matches)!=1:sys.exit('Expected physical NIC MAC not found uniquely; no interfaces changed.')
+nic=matches[0]
+ethtool=shutil.which('ethtool') or '/usr/sbin/ethtool'
+subprocess.run([ethtool,'-s',nic.name,'wol','g'],check=True)
+device=(nic/'device').resolve()
+for ancestor in [device,*device.parents]:
+    wake=ancestor/'power/wakeup'
+    if wake.exists():
+        wake.write_text('enabled\n')
+        print('Wake enabled:',ancestor.name)
+print('Magic-packet wake enabled:',nic.name,cfg['mac'])

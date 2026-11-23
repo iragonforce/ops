@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+# Submit a prepared receipt JSON record through the existing local ingestion workflow. See receipt-json-submit(1) for source and integration details.
+"""Structured response adapter for Siri receipt ingestion."""
+
+if __name__ == "__main__":
+    import sys as _ops_sys
+    if _ops_sys.argv[1:] == ["--help"]:
+        print('Submit a prepared receipt JSON record through the existing local ingestion workflow.\nUsage: receipt-json-submit  [ARGUMENT ...]\nprint("Usage: receipt-json-submit --submit", file=sys.stderr)\nSource: hosts/nexus/files/usr/local/sbin/receipt-json-submit in ~/ops\nSee man receipt-json-submit for the existing call sites and argument handling.')
+        raise SystemExit(0)
+
+import json
+import re
+import subprocess
+import sys
+
+INGEST = "/usr/local/sbin/receipt-text-ingest"
+MAX_INPUT = 65536
+
+def classify(code, stdout, stderr):
+    output = stdout.strip()
+
+    if code == 0 and "Receipt already submitted" in output:
+        match = re.search(
+            r"Receipt already submitted:\s*ID=(\d+)",
+            output
+        )
+        return {
+            "status": "already_exists",
+            "created": False,
+            "receipt_id": int(match.group(1)) if match else None
+        }
+
+    if code == 0 and "Receipt draft created successfully" in output:
+        return {
+            "status": "created",
+            "created": True,
+            "receipt_id": None
+        }
+
+    if code == 3 and "Possible duplicate:" in stderr:
+        match = re.search(
+            r"Possible duplicate:\s*ID=(\d+)",
+            stderr
+        )
+        return {
+            "status": "review_required",
+            "created": False,
+            "receipt_id": int(match.group(1)) if match else None
+        }
+
+    return {
+        "status": "error",
+        "created": False,
+        "receipt_id": None,
+        "code": code
+    }
+
+def main():
+    if sys.argv[1:] == ["--self-test"]:
+        tests = [
+            (0, "Receipt draft created successfully", "", "created"),
+            (0, "Receipt already submitted", "", "already_exists"),
+            (0, "Receipt already submitted: ID=6", "", "already_exists"),
+            (3, "", "Possible duplicate: ID=6", "review_required"),
+            (1, "", "Processing failure", "error"),
+        ]
+        for code, out, err, expected in tests:
+            assert classify(code, out, err)["status"] == expected
+        print("SELF-TEST: PASS (5 cases, no submissions)")
+        return
+
+    if sys.argv[1:] != ["--submit"]:
+        print("Usage: receipt-json-submit --submit", file=sys.stderr)
+        sys.exit(2)
+
+    payload = sys.stdin.buffer.read(MAX_INPUT + 1)
+
+    if not payload or len(payload) > MAX_INPUT:
+        print(json.dumps({
+            "status": "error",
+            "created": False,
+            "message": "Invalid input length"
+        }))
+        return
+
+    try:
+        result = subprocess.run(
+            [INGEST, "--submit"],
+            input=payload,
+            capture_output=True,
+            timeout=180
+        )
+
+        response = classify(
+            result.returncode,
+            result.stdout.decode("utf-8", errors="replace"),
+            result.stderr.decode("utf-8", errors="replace")
+        )
+
+    except (OSError, subprocess.TimeoutExpired):
+        response = {
+            "status": "error",
+            "created": False,
+            "message": "Processing failed or timed out; verify before retrying"
+        }
+
+    print(json.dumps(response, separators=(",", ":")))
+
+if __name__ == "__main__":
+    main()

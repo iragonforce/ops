@@ -1,0 +1,13 @@
+[Unit]
+Description=Nexus early boot SSH and SMB restrictions
+DefaultDependencies=no
+After=local-fs.target
+Before=ssh.service ssh.socket smbd.service nfs-server.service
+Conflicts=shutdown.target
+Before=shutdown.target
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/access-guard host
+[Install]
+WantedBy=multi-user.target

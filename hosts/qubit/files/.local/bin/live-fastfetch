@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Refresh the existing Fastfetch terminal display. See live-fastfetch(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Refresh the existing Fastfetch terminal display.
+Usage: live-fastfetch  [ARGUMENT ...]
+
+Source: hosts/qubit/files/.local/bin/live-fastfetch in ~/ops
+See man live-fastfetch for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+
+CONFIG="${1:-$HOME/.config/fastfetch/config.jsonc}"
+INTERVAL="0.1"
+
+set_palette() {
+  printf '\033]4;0;#000000\033\\'
+  printf '\033]4;8;#808080\033\\'
+  printf '\033]4;1;#ff0000\033\\'
+  printf '\033]4;9;#ff3030\033\\'
+  printf '\033]4;2;#00ff00\033\\'
+  printf '\033]4;10;#30ff30\033\\'
+  printf '\033]4;3;#ffff00\033\\'
+  printf '\033]4;11;#ffff40\033\\'
+  printf '\033]4;4;#0000ff\033\\'
+  printf '\033]4;12;#4040ff\033\\'
+  printf '\033]4;5;#ff00ff\033\\'
+  printf '\033]4;13;#ff40ff\033\\'
+  printf '\033]4;6;#00ffff\033\\'
+  printf '\033]4;14;#40ffff\033\\'
+  printf '\033]4;7;#c0c0c0\033\\'
+  printf '\033]4;15;#ffffff\033\\'
+}
+
+cleanup() {
+  tput cnorm
+  tput sgr0
+  clear
+  exit
+}
+
+trap cleanup INT TERM EXIT
+
+set_palette
+tput civis
+clear
+
+while true; do
+  tput cup 0 0
+  fastfetch --config "$CONFIG"
+  tput ed
+  sleep "$INTERVAL"
+done

@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+# Send the existing authorized boot notification. See homelab-boot-notify(1) for source and integration details.
+"""One private Telegram notification per Linux boot, with safe retry logging."""
+
+if __name__ == "__main__":
+    import sys as _ops_sys
+    if _ops_sys.argv[1:] == ["--help"]:
+        print('Send the existing authorized boot notification.\nUsage: homelab-boot-notify \n\nSource: hosts/nexus/files/usr/local/sbin/boot-notify in ~/ops\nSee man homelab-boot-notify for the existing call sites and argument handling.')
+        raise SystemExit(0)
+import datetime,fcntl,json,os,pathlib,socket,sys,urllib.request,urllib.error,zoneinfo
+state=pathlib.Path('/var/lib/homelab-boot-notify');state.mkdir(mode=0o700,parents=True,exist_ok=True)
+lock=(state/'lock').open('a');fcntl.flock(lock,fcntl.LOCK_EX)
+boot_id=pathlib.Path('/proc/sys/kernel/random/boot_id').read_text().strip()
+stamp=state/'last-sent-boot-id'
+if stamp.exists() and stamp.read_text().strip()==boot_id:sys.exit(0)
+credentials=pathlib.Path(os.environ['CREDENTIALS_DIRECTORY'])/'telegram.json'
+try:
+    secret=json.loads(credentials.read_text());host=socket.gethostname().split('.')[0].lower()
+    cfg=json.loads(pathlib.Path('/etc/homelab/power-hosts.json').read_text())['hosts'][host]
+    btime=int(next(x.split()[1] for x in pathlib.Path('/proc/stat').read_text().splitlines() if x.startswith('btime ')))
+    boot=datetime.datetime.fromtimestamp(btime,zoneinfo.ZoneInfo('America/Toronto')).strftime('%Y-%m-%d %H:%M:%S %Z')
+    text=f"{host.capitalize()} is up.\nBoot: {boot}\nLAN: {cfg['lan']}\nTailscale: {cfg['tailscale']}\nHost is online; application startup may still be completing."
+    req=urllib.request.Request('https://api.telegram.org/bot'+secret['bot_token']+'/sendMessage',data=json.dumps({'chat_id':secret['chat_id'],'text':text}).encode(),headers={'Content-Type':'application/json'},method='POST')
+    with urllib.request.urlopen(req,timeout=20) as response:result=json.load(response)
+    if not result.get('ok'):sys.exit('Telegram rejected the startup notification; it will retry.')
+    temp=state/'last-sent-boot-id.tmp';temp.write_text(boot_id+'\n');temp.chmod(0o600);temp.replace(stamp)
+    print('Startup notification delivered for '+host)
+except urllib.error.HTTPError as e:sys.exit('Telegram startup notification HTTP error '+str(e.code)+'; it will retry.')
+except Exception:sys.exit('Startup notification could not be delivered; it will retry. Credentials were not logged.')

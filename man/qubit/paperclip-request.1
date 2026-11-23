@@ -1,0 +1,22 @@
+.TH "PAPERCLIP-REQUEST" "1" "2026-11-06" "Homelab ops"
+.SH NAME
+paperclip-request \- Query status or submit an explicitly requested task to the existing Paperclip bridge.
+.SH SYNOPSIS
+.B paperclip-request
+[arguments]
+.SH DESCRIPTION
+Query status or submit an explicitly requested task to the existing Paperclip bridge.
+Established names and consumer paths are preserved. No hardware or service action was executed for documentation verification.
+.SH INTERFACE
+.SS /Users/iragonforce/.local/bin/paperclip-request
+Source: hosts/qubit/files/.local/bin/paperclip-request
+.nf
+if action not in ['ask','status']:raise SystemExit('Usage: paperclip-request ask|status')
+.fi
+
+.SH DEPENDENCIES
+Use the interpreter in the source shebang and the existing host packages and services referenced in that source. Host configuration and private credentials remain on their original host.
+.SH OPERATIONS
+Before changing behavior, inspect inventory/audit-2026-11-06/qubit.json for recorded consumers and the source above for exact dependency paths. Never invoke a power, desktop, network, credential, notification, or storage operation merely to test it.
+.SH SOURCE
+Private iragonforce/ops repository. Consult docs/workflow.md for deployment, verification, rollback, and change records.

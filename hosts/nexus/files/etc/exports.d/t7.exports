@@ -1,0 +1,2 @@
+# Samsung T7; use existing NFS client allowlist
+/srv/nfs/t7 192.168.1.4(rw,sync,all_squash,anonuid=1000,anongid=1000,no_subtree_check,mp) 192.168.1.5(rw,sync,all_squash,anonuid=1000,anongid=1000,no_subtree_check,mp) 192.168.1.102(rw,sync,all_squash,anonuid=1000,anongid=1000,no_subtree_check,mp) 192.168.1.3(rw,sync,all_squash,anonuid=1000,anongid=1000,no_subtree_check,mp) 100.103.67.56(rw,sync,all_squash,anonuid=1000,anongid=1000,no_subtree_check,mp) 100.114.178.50(rw,sync,all_squash,anonuid=1000,anongid=1000,no_subtree_check,mp)

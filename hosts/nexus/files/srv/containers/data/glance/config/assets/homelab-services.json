@@ -1,0 +1,1209 @@
+{
+  "generated_at": "2026-11-11T19:20:48.416500+00:00",
+  "services": [
+    {
+      "id": "nexus-cockpit",
+      "host": "nexus",
+      "name": "Cockpit",
+      "featured": true,
+      "urls": {
+        "local": null,
+        "tailscale": "https://nexus.tail4e4f0f.ts.net",
+        "external": null
+      },
+      "aliases": []
+    },
+    {
+      "id": "nexus-adguard",
+      "host": "nexus",
+      "name": "AdGuard Home",
+      "urls": {
+        "local": "http://192.168.3.2:30004",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8701",
+        "external": "https://adguard.blinkwired.com"
+      },
+      "aliases": [
+        "adguard.blinkwired.com",
+        "adguard.homelab.io"
+      ],
+      "featured": false
+    },
+    {
+      "id": "n8n",
+      "host": "nexus",
+      "name": "n8n",
+      "urls": {
+        "local": "http://192.168.5.23:30109",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8702",
+        "external": "https://n8n.blinkwired.com"
+      },
+      "aliases": [
+        "n8n.blinkwired.com",
+        "n8n.homelab.io"
+      ],
+      "featured": false,
+      "note": "Authentication callbacks may use the configured blinkwired.com domain."
+    },
+    {
+      "id": "nexus-sync",
+      "host": "nexus",
+      "name": "Syncthing",
+      "urls": {
+        "local": "http://192.168.5.9:20910",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8703",
+        "external": "https://sync.blinkwired.com"
+      },
+      "aliases": [
+        "sync.blinkwired.com",
+        "sync.homelab.io"
+      ],
+      "featured": true
+    },
+    {
+      "id": "iot",
+      "host": "nexus",
+      "name": "Home Assistant",
+      "urls": {
+        "local": "http://192.168.4.22:30103",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8443",
+        "external": "https://iot.blinkwired.com"
+      },
+      "aliases": [
+        "iot.blinkwired.com",
+        "iot.homelab.io",
+        "home.blinkwired.com",
+        "home.homelab.io"
+      ],
+      "featured": true
+    },
+    {
+      "id": "nexus-nginx",
+      "host": "nexus",
+      "name": "Nginx Proxy Manager",
+      "urls": {
+        "local": "http://192.168.5.20:81",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8706",
+        "external": "https://nginx.blinkwired.com"
+      },
+      "aliases": [
+        "nginx.blinkwired.com",
+        "nginx.homelab.io"
+      ],
+      "featured": false
+    },
+    {
+      "id": "vert",
+      "host": "nexus",
+      "name": "Vert",
+      "urls": {
+        "local": "http://192.168.5.3:80",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8707",
+        "external": "https://vert.blinkwired.com"
+      },
+      "aliases": [
+        "vert.blinkwired.com",
+        "vert.homelab.io"
+      ],
+      "featured": false
+    },
+    {
+      "id": "nexus-torrent",
+      "host": "nexus",
+      "name": "qBittorrent",
+      "urls": {
+        "local": "http://192.168.2.10:30200",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8708",
+        "external": "https://torrent.blinkwired.com"
+      },
+      "aliases": [
+        "torrent.blinkwired.com",
+        "torrent.homelab.io"
+      ],
+      "featured": false
+    },
+    {
+      "id": "nexus-auth",
+      "host": "nexus",
+      "name": "Authentik",
+      "urls": {
+        "local": "http://192.168.5.21:30140",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8709",
+        "external": "https://auth.blinkwired.com"
+      },
+      "aliases": [
+        "auth.blinkwired.com",
+        "auth.homelab.io"
+      ],
+      "featured": false,
+      "note": "Authentication callbacks may use the configured blinkwired.com domain."
+    },
+    {
+      "id": "nexus-jellyfin",
+      "host": "nexus",
+      "name": "Jellyfin",
+      "urls": {
+        "local": "http://192.168.5.7:8096",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8710",
+        "external": "https://jellyfin.blinkwired.com"
+      },
+      "aliases": [
+        "jellyfin.blinkwired.com",
+        "jellyfin.homelab.io"
+      ],
+      "featured": true
+    },
+    {
+      "id": "nexus-prometheus",
+      "host": "nexus",
+      "name": "Prometheus",
+      "urls": {
+        "local": "http://192.168.5.2:30104",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8711",
+        "external": "https://prometheus.blinkwired.com"
+      },
+      "aliases": [
+        "prometheus.blinkwired.com",
+        "prometheus.homelab.io"
+      ],
+      "featured": false
+    },
+    {
+      "id": "nexus-grafana",
+      "host": "nexus",
+      "name": "Grafana",
+      "urls": {
+        "local": "http://192.168.5.6:30037",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8444",
+        "external": "https://grafana.blinkwired.com"
+      },
+      "aliases": [
+        "grafana.blinkwired.com",
+        "grafana.homelab.io"
+      ],
+      "featured": true
+    },
+    {
+      "id": "nexus-ipx",
+      "host": "nexus",
+      "name": "Netboot.xyz",
+      "urls": {
+        "local": "http://192.168.5.4:31010",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8713",
+        "external": "https://ipx.blinkwired.com"
+      },
+      "aliases": [
+        "ipx.blinkwired.com",
+        "ipx.homelab.io"
+      ],
+      "featured": false
+    },
+    {
+      "id": "nexus-prowlarr",
+      "host": "nexus",
+      "name": "Prowlarr",
+      "urls": {
+        "local": "http://192.168.2.3:30001",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8714",
+        "external": "https://prowlarr.blinkwired.com"
+      },
+      "aliases": [
+        "prowlarr.blinkwired.com",
+        "prowlarr.homelab.io"
+      ],
+      "featured": false
+    },
+    {
+      "id": "nexus-sonarr",
+      "host": "nexus",
+      "name": "Sonarr",
+      "urls": {
+        "local": "http://192.168.2.6:30113",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8715",
+        "external": "https://sonarr.blinkwired.com"
+      },
+      "aliases": [
+        "sonarr.blinkwired.com",
+        "sonarr.homelab.io"
+      ],
+      "featured": false
+    },
+    {
+      "id": "nexus-radarr",
+      "host": "nexus",
+      "name": "Radarr",
+      "urls": {
+        "local": "http://192.168.2.5:30025",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8716",
+        "external": "https://radarr.blinkwired.com"
+      },
+      "aliases": [
+        "radarr.blinkwired.com",
+        "radarr.homelab.io"
+      ],
+      "featured": false
+    },
+    {
+      "id": "nexus-lidarr",
+      "host": "nexus",
+      "name": "Lidarr",
+      "urls": {
+        "local": "http://192.168.2.2:30071",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8717",
+        "external": "https://lidarr.blinkwired.com"
+      },
+      "aliases": [
+        "lidarr.blinkwired.com",
+        "lidarr.homelab.io"
+      ],
+      "featured": false
+    },
+    {
+      "id": "nexus-bazarr",
+      "host": "nexus",
+      "name": "Bazarr",
+      "urls": {
+        "local": "http://192.168.2.11:30046",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8718",
+        "external": "https://bazarr.blinkwired.com"
+      },
+      "aliases": [
+        "bazarr.blinkwired.com",
+        "bazarr.homelab.io"
+      ],
+      "featured": false
+    },
+    {
+      "id": "nexus-cleanuparr",
+      "host": "nexus",
+      "name": "Cleanuparr",
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [
+        "cleanuparr.blinkwired.com",
+        "cleanuparr.homelab.io"
+      ],
+      "featured": false,
+      "note": "No matching Docker container detected on Nexus; links disabled pending deployment reconciliation."
+    },
+    {
+      "id": "makersvault",
+      "host": "nexus",
+      "name": "MakersVault",
+      "urls": {
+        "local": "http://192.168.5.32:5173",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8721",
+        "external": "https://makersvault.blinkwired.com"
+      },
+      "aliases": [
+        "makersvault.blinkwired.com",
+        "makersvault.homelab.io"
+      ],
+      "featured": false
+    },
+    {
+      "id": "nexus-zigbee2mqtt",
+      "host": "nexus",
+      "name": "Zigbee2MQTT",
+      "urls": {
+        "local": "http://192.168.4.5:8080",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8722",
+        "external": "https://zigbee2mqtt.blinkwired.com"
+      },
+      "aliases": [
+        "zigbee2mqtt.blinkwired.com",
+        "zigbee2mqtt.homelab.io"
+      ],
+      "featured": false
+    },
+    {
+      "id": "nexus-seerr",
+      "host": "nexus",
+      "name": "Seerr",
+      "urls": {
+        "local": "http://192.168.5.45:5055",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8723",
+        "external": "https://seerr.blinkwired.com"
+      },
+      "aliases": [
+        "seerr.blinkwired.com",
+        "seerr.homelab.io"
+      ],
+      "featured": false
+    },
+    {
+      "id": "homelable",
+      "host": "nexus",
+      "name": "Homelable",
+      "urls": {
+        "local": "http://192.168.5.50:80",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8724",
+        "external": "https://homelable.blinkwired.com"
+      },
+      "aliases": [
+        "homelable.blinkwired.com",
+        "homelable.homelab.io"
+      ],
+      "featured": false
+    },
+    {
+      "id": "bambustudio",
+      "host": "nexus",
+      "name": "Bambu Studio",
+      "urls": {
+        "local": "http://192.168.5.53:3000",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8725",
+        "external": "https://bambustudio.blinkwired.com"
+      },
+      "aliases": [
+        "bambustudio.blinkwired.com",
+        "bambustudio.homelab.io"
+      ],
+      "featured": false
+    },
+    {
+      "id": "nexus-calendar",
+      "host": "nexus",
+      "name": "Calendar",
+      "urls": {
+        "local": "http://192.168.5.42:80",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8726",
+        "external": "https://calendar.blinkwired.com"
+      },
+      "aliases": [
+        "calendar.blinkwired.com",
+        "calendar.homelab.io"
+      ],
+      "featured": false
+    },
+    {
+      "id": "nexus-tasks",
+      "host": "nexus",
+      "name": "Vikunja",
+      "urls": {
+        "local": "http://192.168.5.43:3456",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8727",
+        "external": "https://tasks.blinkwired.com"
+      },
+      "aliases": [
+        "tasks.blinkwired.com",
+        "tasks.homelab.io"
+      ],
+      "featured": false
+    },
+    {
+      "id": "portainer",
+      "host": "nexus",
+      "name": "Portainer",
+      "urls": {
+        "local": "https://192.168.5.25:9443",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8728",
+        "external": "https://portainer.blinkwired.com"
+      },
+      "aliases": [
+        "portainer.blinkwired.com",
+        "portainer.homelab.io"
+      ],
+      "featured": false,
+      "self_signed_local": true
+    },
+    {
+      "id": "nexus-pdf",
+      "host": "nexus",
+      "name": "Stirling PDF",
+      "urls": {
+        "local": "http://192.168.5.44:8080",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8729",
+        "external": "https://pdf.blinkwired.com"
+      },
+      "aliases": [
+        "pdf.blinkwired.com",
+        "pdf.homelab.io"
+      ],
+      "featured": false
+    },
+    {
+      "id": "checkmk",
+      "host": "nexus",
+      "name": "Checkmk",
+      "urls": {
+        "local": "http://192.168.5.56:5000/cmk/",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8730/cmk/",
+        "external": "https://checkmk.blinkwired.com/cmk/"
+      },
+      "aliases": [
+        "checkmk.blinkwired.com",
+        "checkmk.homelab.io"
+      ],
+      "featured": true
+    },
+    {
+      "id": "nexus-dashboard",
+      "host": "nexus",
+      "name": "Glance",
+      "featured": true,
+      "urls": {
+        "local": "http://nexus.homelab.lan",
+        "tailscale": "https://nexus.tail4e4f0f.ts.net:8448",
+        "external": "https://dashboard.blinkwired.com"
+      },
+      "checks": {
+        "local": "http://172.16.11.43:8080/"
+      },
+      "aliases": [
+        "dashboard.homelab.io",
+        "dashboard.blinkwired.com",
+        "blinkwired.com"
+      ]
+    },
+    {
+      "id": "tensor-cockpit",
+      "host": "tensor",
+      "name": "Cockpit",
+      "featured": true,
+      "urls": {
+        "local": null,
+        "tailscale": "https://tensor.tail4e4f0f.ts.net",
+        "external": null
+      },
+      "aliases": [
+        "archcore.homelab.io",
+        "archcore.blinkwired.com"
+      ]
+    },
+    {
+      "id": "tensor-syncthing",
+      "host": "tensor",
+      "name": "Syncthing",
+      "featured": true,
+      "urls": {
+        "local": "http://192.168.1.3:8384",
+        "tailscale": "https://tensor.tail4e4f0f.ts.net:8443",
+        "external": null
+      },
+      "aliases": []
+    },
+    {
+      "id": "tensor-openlinkhub",
+      "host": "tensor",
+      "name": "OpenLinkHub",
+      "featured": true,
+      "urls": {
+        "local": null,
+        "tailscale": "https://tensor.tail4e4f0f.ts.net:8444",
+        "external": null
+      },
+      "aliases": []
+    },
+    {
+      "id": "tensor-ollama",
+      "host": "tensor",
+      "name": "Ollama API",
+      "featured": false,
+      "urls": {
+        "local": "http://192.168.1.3:11434/api/tags",
+        "tailscale": "https://tensor.tail4e4f0f.ts.net:8445/api/tags",
+        "external": null
+      },
+      "aliases": []
+    },
+    {
+      "id": "tensor-notifications",
+      "host": "tensor",
+      "name": "Desktop notifications API",
+      "featured": false,
+      "urls": {
+        "local": "http://192.168.1.3:8787",
+        "tailscale": "https://tensor.tail4e4f0f.ts.net:8446",
+        "external": null
+      },
+      "aliases": []
+    },
+    {
+      "id": "tensor-controls",
+      "host": "tensor",
+      "name": "RGB / fans / monitors API",
+      "featured": false,
+      "urls": {
+        "local": "http://192.168.1.3:8769/state/rgb",
+        "tailscale": "https://tensor.tail4e4f0f.ts.net:8447/state/rgb",
+        "external": null
+      },
+      "aliases": []
+    },
+    {
+      "id": "nexus-container-api-gateway",
+      "host": "nexus",
+      "name": "Api Gateway",
+      "featured": false,
+      "urls": {
+        "local": "https://api.blinkwired.com",
+        "tailscale": null,
+        "external": "https://api.blinkwired.com"
+      },
+      "aliases": [
+        "api.blinkwired.com"
+      ],
+      "container": "api-gateway",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-authentik-postgres",
+      "host": "nexus",
+      "name": "Authentik Postgres",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "authentik-postgres",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-authentik-redis",
+      "host": "nexus",
+      "name": "Authentik Redis",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "authentik-redis",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-authentik-worker",
+      "host": "nexus",
+      "name": "Authentik Worker",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "authentik-worker",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-cadvisor",
+      "host": "nexus",
+      "name": "Cadvisor",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "cadvisor",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-cloudflared",
+      "host": "nexus",
+      "name": "Cloudflared",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "cloudflared",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-cups",
+      "host": "nexus",
+      "name": "Cups",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "cups",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-designer-browser",
+      "host": "nexus",
+      "name": "Designer Browser",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "designer-browser",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-finance-analytics-db",
+      "host": "nexus",
+      "name": "Finance Analytics Db",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "finance-analytics-db",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-flaresolverr",
+      "host": "nexus",
+      "name": "Flaresolverr",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "flaresolverr",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-glance-green-cicd",
+      "host": "nexus",
+      "name": "Glance Green Cicd",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "glance-green-cicd",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-glance-router",
+      "host": "nexus",
+      "name": "Glance Router",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "glance-router",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-glance-router-green-cicd",
+      "host": "nexus",
+      "name": "Glance Router Green Cicd",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "glance-router-green-cicd",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-gluetun",
+      "host": "nexus",
+      "name": "Gluetun",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "gluetun",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-hermes",
+      "host": "nexus",
+      "name": "Hermes",
+      "featured": false,
+      "urls": {
+        "local": "https://hermes.blinkwired.com",
+        "tailscale": null,
+        "external": "https://hermes.blinkwired.com"
+      },
+      "aliases": [
+        "hermes.blinkwired.com"
+      ],
+      "container": "hermes",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-home-assistant-postgres",
+      "host": "nexus",
+      "name": "Home Assistant Postgres",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "home-assistant-postgres",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-adguard-summary",
+      "host": "nexus",
+      "name": "Homelab Adguard Summary",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "adguard-summary",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-homelab-api-reference",
+      "host": "nexus",
+      "name": "Homelab Api Reference",
+      "featured": false,
+      "urls": {
+        "local": "https://api-docs.blinkwired.com",
+        "tailscale": null,
+        "external": "https://api-docs.blinkwired.com"
+      },
+      "aliases": [
+        "api-docs.blinkwired.com"
+      ],
+      "container": "homelab-api-reference",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-homelab-api-topology",
+      "host": "nexus",
+      "name": "Homelab Api Topology",
+      "featured": false,
+      "urls": {
+        "local": "https://api-map.blinkwired.com",
+        "tailscale": null,
+        "external": "https://api-map.blinkwired.com"
+      },
+      "aliases": [
+        "api-map.blinkwired.com"
+      ],
+      "container": "homelab-api-topology",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-npm-summary",
+      "host": "nexus",
+      "name": "Homelab Npm Summary",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "npm-summary",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-observability",
+      "host": "nexus",
+      "name": "Homelab Observability",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "observability",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-stepca-summary",
+      "host": "nexus",
+      "name": "Homelab Stepca Summary",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "stepca-summary",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-tensor-ollama-read",
+      "host": "nexus",
+      "name": "Homelab Tensor Ollama Read",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "tensor-ollama-read",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-homelable-backend",
+      "host": "nexus",
+      "name": "Homelable Backend",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "homelable-backend",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-ignis",
+      "host": "nexus",
+      "name": "Ignis",
+      "featured": false,
+      "urls": {
+        "local": "https://obsidian.blinkwired.com",
+        "tailscale": null,
+        "external": "https://obsidian.blinkwired.com"
+      },
+      "aliases": [
+        "obsidian.blinkwired.com"
+      ],
+      "container": "ignis",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-makersvault-api",
+      "host": "nexus",
+      "name": "Makersvault Api",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "makersvault-api",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-matter-server",
+      "host": "nexus",
+      "name": "Matter Server",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "matter-server",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-mcp-homelable",
+      "host": "nexus",
+      "name": "Mcp Homelable",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "mcp-homelable",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-minecraft-bedrock",
+      "host": "nexus",
+      "name": "Minecraft Bedrock",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "minecraft-bedrock",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-mosquitto",
+      "host": "nexus",
+      "name": "Mosquitto",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "mosquitto",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-n8n-postgres",
+      "host": "nexus",
+      "name": "N8N Postgres",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "n8n-postgres",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-n8n-redis",
+      "host": "nexus",
+      "name": "N8N Redis",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "n8n-redis",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-nexus-runtime-mcp",
+      "host": "nexus",
+      "name": "Nexus Runtime Mcp",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "nexus-runtime-mcp",
+      "note": "Docker state at inventory snapshot: exited"
+    },
+    {
+      "id": "nexus-container-nexus-runtime-proxy",
+      "host": "nexus",
+      "name": "Nexus Runtime Proxy",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "nexus-runtime-proxy",
+      "note": "Docker state at inventory snapshot: exited"
+    },
+    {
+      "id": "nexus-container-node-exporter",
+      "host": "nexus",
+      "name": "Node Exporter",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "node-exporter",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-obsidian",
+      "host": "nexus",
+      "name": "Obsidian Nexus",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "obsidian",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-otbr",
+      "host": "nexus",
+      "name": "Otbr",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "otbr",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-photon",
+      "host": "nexus",
+      "name": "Photon",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "photon",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-receipt-wrangler-db-1",
+      "host": "nexus",
+      "name": "Receipt Wrangler Db 1",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "receipt-wrangler-db-1",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-receipt-wrangler-redis-1",
+      "host": "nexus",
+      "name": "Receipt Wrangler Redis 1",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "receipt-wrangler-redis-1",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-receipt-wrangler-wrangler-1",
+      "host": "nexus",
+      "name": "Receipt Wrangler Wrangler 1",
+      "featured": false,
+      "urls": {
+        "local": "https://receipts.blinkwired.com",
+        "tailscale": null,
+        "external": "https://receipts.blinkwired.com"
+      },
+      "aliases": [
+        "receipts.blinkwired.com"
+      ],
+      "container": "receipt-wrangler-wrangler-1",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-step-ca",
+      "host": "nexus",
+      "name": "Step Ca",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "step-ca",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-telegram-gateway",
+      "host": "nexus",
+      "name": "Telegram Gateway",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "telegram-gateway",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-tg-bot",
+      "host": "nexus",
+      "name": "Tg Bot",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "tg-bot",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-vertd",
+      "host": "nexus",
+      "name": "Vertd",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "vertd",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-wealthfolio",
+      "host": "nexus",
+      "name": "Wealthfolio",
+      "featured": false,
+      "urls": {
+        "local": "https://finance.blinkwired.com",
+        "tailscale": null,
+        "external": "https://finance.blinkwired.com"
+      },
+      "aliases": [
+        "finance.blinkwired.com"
+      ],
+      "container": "wealthfolio",
+      "note": "Docker state at inventory snapshot: running"
+    },
+    {
+      "id": "nexus-container-webhook-notify",
+      "host": "nexus",
+      "name": "Webhook Notify",
+      "featured": false,
+      "urls": {
+        "local": null,
+        "tailscale": null,
+        "external": null
+      },
+      "aliases": [],
+      "container": "webhook-notify",
+      "note": "Docker state at inventory snapshot: running"
+    }
+  ]
+}

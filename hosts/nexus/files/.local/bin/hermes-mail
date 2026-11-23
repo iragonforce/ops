@@ -1,0 +1,43 @@
+#!/usr/bin/env python3
+# Use the existing mail integration for an explicitly authorized outbound message. See hermes-mail(1) for source and integration details.
+import argparse
+import smtplib
+import ssl
+import sys
+from pathlib import Path
+from email.message import EmailMessage
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--subject", required=True)
+parser.add_argument("--to", default="admin@blinkwired.com")
+args = parser.parse_args()
+
+allowed = {"admin@blinkwired.com"}
+
+if args.to.lower() not in allowed:
+    sys.exit("Recipient not permitted")
+
+body = sys.stdin.read(100001)
+if not body.strip() or len(body) > 100000:
+    sys.exit("Message body empty or too large")
+
+token = (
+    Path.home() / ".secrets/proton-ai-smtp"
+).read_text().strip()
+
+message = EmailMessage()
+message["From"] = "ai@blinkwired.com"
+message["To"] = args.to
+message["Subject"] = args.subject
+message.set_content(body)
+
+with smtplib.SMTP(
+    "smtp.protonmail.ch", 587, timeout=35
+) as smtp:
+    smtp.ehlo()
+    smtp.starttls(context=ssl.create_default_context())
+    smtp.ehlo()
+    smtp.login("ai@blinkwired.com", token)
+    smtp.send_message(message)
+
+print("Email submitted successfully")

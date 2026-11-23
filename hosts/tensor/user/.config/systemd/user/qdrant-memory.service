@@ -1,0 +1,10 @@
+[Unit]
+Description=Qdrant Memory (forward this host inbox to Nexus)
+ConditionPathIsDirectory=%h/qdrant-inbox
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h
+ExecStartPre=/usr/bin/sleep 2
+ExecStart=%h/.local/bin/qdrant-memory sync-inbox
+TimeoutStartSec=0

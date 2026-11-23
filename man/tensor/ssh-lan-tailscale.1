@@ -1,0 +1,24 @@
+.TH "SSH-LAN-TAILSCALE" "1" "2026-11-06" "Homelab ops"
+.SH NAME
+ssh-lan-tailscale \- Connect to LAN first, then Tailscale on TCP connection failure; used by SSH ProxyCommand.
+.SH SYNOPSIS
+.B ssh-lan-tailscale
+[arguments]
+.SH DESCRIPTION
+Connect to LAN first, then Tailscale on TCP connection failure; used by SSH ProxyCommand.
+Established names and consumer paths are preserved. No hardware or service action was executed for documentation verification.
+.SH INTERFACE
+.SS /home/iragonforce/.local/bin/ssh-lan-tailscale
+Source: shared/scripts/ssh-lan-tailscale
+.nf
+Usage: ssh_lan_tailscale.py LAN_IP TAILSCALE_IP PORT
+print('Connect to LAN first, then Tailscale on TCP connection failure; used by SSH ProxyCommand.\nUsage: ssh-lan-tailscale  [ARGUMENT ...]\nUsage: ssh_lan_tailscale.py LAN_IP TAILSCALE_IP PORT\nerr("Usage: ssh_lan_tailscale.py LAN_IP TAILSCALE_IP PORT")\nSource: shared/scripts/ssh-lan-tailscale in ~/ops\nSee man ssh-lan-tailscale for the existing call sites and argument handling.')
+err("Usage: ssh_lan_tailscale.py LAN_IP TAILSCALE_IP PORT")
+.fi
+
+.SH DEPENDENCIES
+Use the interpreter in the source shebang and the existing host packages and services referenced in that source. Host configuration and private credentials remain on their original host.
+.SH OPERATIONS
+Before changing behavior, inspect inventory/audit-2026-11-06/tensor.json for recorded consumers and the source above for exact dependency paths. Never invoke a power, desktop, network, credential, notification, or storage operation merely to test it.
+.SH SOURCE
+Private iragonforce/ops repository. Consult docs/workflow.md for deployment, verification, rollback, and change records.

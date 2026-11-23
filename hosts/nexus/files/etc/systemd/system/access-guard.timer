@@ -1,0 +1,8 @@
+[Unit]
+Description=Refresh Nexus access rules after container recreation
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=30s
+Unit=access-guard.service
+[Install]
+WantedBy=timers.target

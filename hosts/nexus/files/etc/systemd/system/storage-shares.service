@@ -1,0 +1,11 @@
+[Unit]
+Description=Bind verified Nexus shared data into NFS hierarchy
+Requires=zfs-mount.service zfs-unlock.service
+After=zfs-mount.service zfs-unlock.service
+Before=nfs-server.service
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/storage-shares
+RemainAfterExit=yes
+[Install]
+WantedBy=multi-user.target

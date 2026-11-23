@@ -1,0 +1,24 @@
+.TH "HOMELAB-SSH-CONNECT" "1" "2026-11-06" "Homelab ops"
+.SH NAME
+homelab-ssh-connect \- Connect SSH to the configured host endpoint, retaining the existing route policy.
+.SH SYNOPSIS
+.B homelab-ssh-connect
+[arguments]
+.SH DESCRIPTION
+Connect SSH to the configured host endpoint, retaining the existing route policy.
+Established names and consumer paths are preserved. No hardware or service action was executed for documentation verification.
+.SH INTERFACE
+.SS /home/iragonforce/.local/bin/homelab-ssh-connect
+Source: hosts/nexus/files/.local/bin/ssh-connect
+.nf
+parser.add_argument("--verbose", action="store_true")
+parser.add_argument("host", choices=ENDPOINTS)
+parser.add_argument("port", type=int)
+.fi
+
+.SH DEPENDENCIES
+Use the interpreter in the source shebang and the existing host packages and services referenced in that source. Host configuration and private credentials remain on their original host.
+.SH OPERATIONS
+Before changing behavior, inspect inventory/audit-2026-11-06/nexus.json for recorded consumers and the source above for exact dependency paths. Never invoke a power, desktop, network, credential, notification, or storage operation merely to test it.
+.SH SOURCE
+Private iragonforce/ops repository. Consult docs/workflow.md for deployment, verification, rollback, and change records.

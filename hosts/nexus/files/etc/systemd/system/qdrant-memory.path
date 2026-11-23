@@ -1,0 +1,9 @@
+[Unit]
+Description=Watch Qdrant inbox for added, edited, or deleted text files
+
+[Path]
+PathModified=/home/iragonforce/qdrant-inbox
+Unit=qdrant-memory.service
+
+[Install]
+WantedBy=paths.target

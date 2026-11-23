@@ -1,0 +1,45 @@
+.TH FINANCE-RECEIPT-MATCH 1 "2026-11-10" "Finance Infrastructure" "Nexus Host Utilities"
+.SH NAME
+finance-receipt-match \- stage one-to-one receipt and bank spending candidates
+.SH SYNOPSIS
+.B /opt/data/bin/finance-receipt-match
+.RB [ --preview | --apply ]
+.SH DESCRIPTION
+Reads validated, non-duplicate CAD purchase receipts from the existing
+finance-analytics PostgreSQL and Wealthfolio activities through the existing
+read-scoped Receipt Wrangler MCP credential. A candidate requires a CAD
+WITHDRAWAL with exactly the receipt total, a posting date within three days,
+strong normalized merchant agreement, and unique receipt and activity ownership.
+Ambiguous or unmatched receipts are not linked. Existing non-candidate links are
+preserved; drift in candidate links or bank snapshots stops the run.
+.PP
+The default
+.B --preview
+only reports aggregate candidates. With
+.B --apply
+it atomically inserts candidate-only rows into the existing
+.B bank_activity_snapshot
+and
+.B receipt_transaction_matches
+tables. Each activity and receipt has a unique key; repeated runs add no rows.
+The snapshot spending view is a partial, candidate-linked subset, not a complete
+bank ledger or a valid budget. The matcher never creates Wealthfolio expenses,
+confirms receipt ownership, or changes Receipt Wrangler or Proton email.
+.SH DEPENDENCIES
+Host Python 3.9+, Docker/psql, systemd-creds, bws,
+.B /usr/local/sbin/receipt-match-audit
+for its native MCP client, the existing Bitwarden
+.B WEALTHFOLIO_RECEIPT_MATCH_READ
+secret, local Wealthfolio, and finance-analytics PostgreSQL. Before applying,
+verify a protected finance-analytics backup and its second-host copy.
+.SH OUTPUT
+Only aggregate counts and generic error types. Exit nonzero means stop and
+review the exact protected database state; never infer a failed write was rolled
+back. The existing finance-intake systemd oneshot invokes this after receipt
+projection and authenticated mail staging.
+.SH ROLLBACK
+Inspect the exact candidate receipt/activity IDs, any owner confirmations or
+later dependencies, then delete only eligible candidate match rows and their
+orphaned snapshot rows transactionally. Never remove confirmed links or restore
+a whole live database over intervening owner writes. Git owns the executable,
+unit, and this manual.

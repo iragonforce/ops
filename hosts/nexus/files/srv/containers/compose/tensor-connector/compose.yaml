@@ -1,0 +1,36 @@
+name: tensor-connector
+services:
+  ollama-read:
+    image: nginx:alpine
+    container_name: tensor-ollama-read
+    restart: always
+    volumes:
+    - /opt/homelab-api/tensor-connector/ollama.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      proxy-backend:
+        ipv4_address: 172.16.11.107
+        aliases:
+        - homelab-tensor-ollama-read
+      nexus-egress:
+        gw_priority: 1
+        ipv4_address: 172.30.240.100
+        aliases:
+        - homelab-tensor-ollama-read
+    security_opt:
+    - no-new-privileges:true
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - wget -q -O /dev/null http://127.0.0.1:8080/api/version
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    mem_limit: 268435456
+    memswap_limit: 536870912
+    cpus: 0.5
+    pids_limit: 256
+networks:
+  proxy-backend:
+    external: true
+  nexus-egress:
+    external: true

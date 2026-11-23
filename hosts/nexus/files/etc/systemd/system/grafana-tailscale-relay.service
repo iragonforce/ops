@@ -1,0 +1,15 @@
+[Unit]
+Description=Loopback Grafana relay for private Tailscale HTTPS
+After=docker.service tailscaled.service
+Requires=docker.service
+[Service]
+DynamicUser=yes
+ExecStart=/usr/bin/socat TCP4-LISTEN:13037,bind=127.0.0.1,reuseaddr,fork TCP4:172.16.11.42:30037
+Restart=always
+RestartSec=2
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+[Install]
+WantedBy=multi-user.target

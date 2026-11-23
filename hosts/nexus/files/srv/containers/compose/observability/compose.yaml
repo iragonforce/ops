@@ -1,0 +1,30 @@
+services:
+  adapter:
+    image: python:3.12-alpine
+    container_name: observability
+    command:
+    - python
+    - -B
+    - /app/server.py
+    user: 10001:10001
+    restart: always
+    read_only: true
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 268435456
+    volumes:
+    - /opt/homelab-api/adapters/observability/server.py:/app/server.py:ro
+    - /opt/homelab-api/secrets/observability.json:/run/secrets/credentials.json:ro
+    networks:
+      proxy-backend:
+        aliases:
+          - homelab-observability
+        ipv4_address: 172.16.11.105
+    memswap_limit: 536870912
+    cpus: 0.5
+networks:
+  proxy-backend:
+    external: true

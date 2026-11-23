@@ -1,0 +1,215 @@
+/* blinkwired-glass v3
+   Authentik 2026.8 — native CSS
+   Glass Login Card + restrained UI motion
+*/
+
+:root {
+  --bw-accent: #86ceff;
+  --bw-accent-hover: #b7e5ff;
+  --bw-text: #f2f8ff;
+  --bw-muted: #afc4d8;
+  --bw-ease-out: cubic-bezier(.22, 1, .36, 1);
+  --bw-ease-in-out: cubic-bezier(.65, 0, .35, 1);
+
+  --ak-c-login--MaxWidth: 31rem;
+  --ak-c-login__main--BackgroundColor: #101a29;
+  --ak-c-login__main--Color: var(--bw-text);
+  --ak-c-login__main--BoxShadow:
+    0 32px 85px rgba(0, 0, 0, .62);
+}
+
+/* Inherited colors for Authentik components */
+ak-flow-executor {
+  color-scheme: dark;
+
+  --pf-global--primary-color--100: #86ceff;
+  --pf-global--primary-color--200: #51aeea;
+  --pf-global--Color--100: #eaf5ff;
+  --pf-global--Color--200: #afc4d8;
+
+  --ak-c-login--MaxWidth: 31rem;
+  --ak-c-login__main--Color: #f2f8ff;
+}
+
+/* Dark atmospheric canvas */
+body:has(ak-flow-executor) {
+  background: #030915 !important;
+}
+
+ak-flow-executor::part(login) {
+  background:
+    radial-gradient(
+      ellipse 50% 55% at 8% 12%,
+      rgba(62, 148, 255, .16),
+      transparent 76%
+    ),
+    radial-gradient(
+      ellipse 35% 45% at 92% 88%,
+      rgba(40, 95, 190, .10),
+      transparent 80%
+    ),
+    #030915 !important;
+}
+
+/* Main glass login card */
+ak-flow-executor::part(main) {
+  background:
+    radial-gradient(
+      ellipse at 0% 0%,
+      rgba(118, 197, 255, .23),
+      transparent 52%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(26, 43, 65, .93),
+      rgba(8, 16, 30, .96) 62%,
+      rgba(12, 25, 43, .94)
+    ) !important;
+
+  color: #f2f8ff !important;
+
+  border: 1px solid rgba(142, 207, 255, .23);
+  border-radius: 30px;
+
+  backdrop-filter: blur(28px) saturate(140%);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
+
+  box-shadow:
+    inset 0 1px 0 rgba(205, 234, 255, .17),
+    inset 1px 0 0 rgba(115, 196, 255, .06),
+    0 32px 90px rgba(0, 0, 0, .62),
+    0 0 75px rgba(83, 166, 255, .10) !important;
+
+  animation:
+    bw-card-enter 320ms var(--bw-ease-out) both;
+
+  transition:
+    border-color 180ms var(--bw-ease-in-out),
+    box-shadow 220ms var(--bw-ease-in-out);
+}
+
+ak-flow-executor::part(main):hover {
+  border-color: rgba(145, 210, 255, .35);
+}
+
+ak-flow-executor::part(main):focus-within {
+  border-color: rgba(145, 210, 255, .48);
+  box-shadow:
+    inset 0 1px 0 rgba(205, 234, 255, .20),
+    0 32px 90px rgba(0, 0, 0, .62),
+    0 0 85px rgba(83, 166, 255, .15) !important;
+}
+
+/* Stagger the exposed flow sections */
+ak-flow-executor::part(branding) {
+  animation:
+    bw-content-enter 320ms var(--bw-ease-out) 35ms both;
+}
+
+ak-flow-executor::part(challenge) {
+  animation:
+    bw-content-enter 300ms var(--bw-ease-out) 65ms both;
+}
+
+ak-flow-executor::part(footer) {
+  animation:
+    bw-content-enter 280ms var(--bw-ease-out) 95ms both;
+}
+
+/* Button motion on accessible/light-DOM controls */
+ak-flow-executor button,
+ak-flow-executor .pf-c-button {
+  transition:
+    transform 110ms var(--bw-ease-out),
+    background-color 180ms var(--bw-ease-in-out),
+    box-shadow 180ms var(--bw-ease-in-out);
+}
+
+ak-flow-executor button:active,
+ak-flow-executor .pf-c-button:active {
+  transform: scale(.97);
+}
+
+/* Card entrance with subtle mask reveal */
+@keyframes bw-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(.98);
+    filter: blur(5px);
+    clip-path: inset(5% 0 0 0 round 30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+    clip-path: inset(0 round 30px);
+  }
+}
+
+@keyframes bw-content-enter {
+  from {
+    opacity: 0;
+    transform: translateY(9px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile */
+@media (max-width: 560px) {
+  ak-flow-executor::part(main) {
+    border-radius: 22px;
+    max-width: calc(100vw - 20px);
+    margin-inline: auto;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  ak-flow-executor::part(main),
+  ak-flow-executor::part(branding),
+  ak-flow-executor::part(challenge),
+  ak-flow-executor::part(footer) {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  ak-flow-executor button,
+  ak-flow-executor .pf-c-button {
+    transition: none !important;
+  }
+}
+
+/* Glass v3 — replace login branding with greeting */
+
+ak-flow-executor::part(branding) {
+  display: none !important;
+}
+
+ak-flow-executor::part(main)::before {
+  content: "Welcome back";
+  display: block;
+  flex: 0 0 auto;
+
+  padding: clamp(2rem, 6vw, 3.5rem) 1.25rem .5rem;
+
+  color: #f2f8ff;
+  font-size: clamp(1.85rem, 5vw, 2.35rem);
+  font-weight: 700;
+  letter-spacing: -.035em;
+  line-height: 1.15;
+  text-align: center;
+
+  text-shadow: 0 0 35px rgba(135, 203, 255, .13);
+
+  animation:
+    bw-content-enter 320ms var(--bw-ease-out) 35ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ak-flow-executor::part(main)::before {
+    animation: none !important;
+  }
+}

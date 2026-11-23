@@ -1,0 +1,59 @@
+name: craftcontrol
+
+services:
+  craftcontrol-backend:
+    build:
+      context: /srv/containers/compose/craftcontrol
+      dockerfile: apps/server/controlplane/Dockerfile
+      args:
+        CRAFTCONTROL_BACKEND_VERSION: "0.1.0"
+    image: craftcontrol-backend:0.1.0
+    container_name: craftcontrol-backend
+    restart: unless-stopped
+    environment:
+      MINECRAFT_CONTAINER: minecraft-bedrock
+      MINECRAFT_PROJECT: /minecraft-project
+      MINECRAFT_COMPOSE_PROJECT: minecraft-bedrock
+      DATABASE_PATH: /data/manager.db
+      BACKUP_ROOT: /data/backups/coordinated
+      BOOTSTRAP_OPERATOR: iragonforce
+      AUTH_MODE: local
+      AUTH_COOKIE_SECURE: "false"
+      TZ: America/Toronto
+      CRAFTCONTROL_VERSION: "0.1.0"
+    expose:
+      - "8082"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /srv/containers/data/craftcontrol:/data
+      - /srv/containers/data/minecraft-server:/minecraft-project/data:ro
+      - craftcontrol-internal-tls:/tls
+    security_opt:
+      - no-new-privileges:true
+
+  craftcontrol-frontend:
+    build:
+      context: /srv/containers/compose/craftcontrol
+      dockerfile: apps/client/Dockerfile
+      args:
+        CRAFTCONTROL_FRONTEND_VERSION: "0.3.6"
+    image: craftcontrol-frontend:0.3.6
+    container_name: craftcontrol-frontend
+    restart: unless-stopped
+    depends_on:
+      craftcontrol-backend:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8082:8080"
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
+    volumes:
+      - craftcontrol-internal-tls:/tls:ro
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  craftcontrol-internal-tls:

@@ -1,0 +1,37 @@
+x-proton-email: &id001
+  AUTHENTIK_EMAIL__HOST: smtp.protonmail.ch
+  AUTHENTIK_EMAIL__PORT: '587'
+  AUTHENTIK_EMAIL__USERNAME: auth@blinkwired.com
+  AUTHENTIK_EMAIL__PASSWORD: ${AUTHENTIK_EMAIL_PASSWORD:?required-from-secret-store}
+  AUTHENTIK_EMAIL__USE_TLS: 'true'
+  AUTHENTIK_EMAIL__USE_SSL: 'false'
+  AUTHENTIK_EMAIL__FROM: auth@blinkwired.com
+  AUTHENTIK_EMAIL__TIMEOUT: '35'
+services:
+  authentik-server:
+    environment: *id001
+    volumes:
+    - /home/iragonforce/.secrets/proton-auth-smtp:/run/secrets/proton-auth-smtp:ro
+    restart: always
+    mem_limit: 1073741824
+    memswap_limit: 1610612736
+    cpus: 1.0
+    pids_limit: 256
+  authentik-worker:
+    environment: *id001
+    volumes:
+    - /home/iragonforce/.secrets/proton-auth-smtp:/run/secrets/proton-auth-smtp:ro
+    dns:
+    - 1.1.1.1
+    networks:
+    - authentik_default
+    - authentik-egress
+  adguard-home:
+    restart: always
+    mem_limit: 268435456
+    memswap_limit: 536870912
+    cpus: 0.5
+    pids_limit: 256
+networks:
+  authentik-egress:
+    external: true

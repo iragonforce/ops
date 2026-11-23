@@ -1,0 +1,23 @@
+.TH "RENEW-NGINX-HOMELAB.SH" "1" "2026-11-06" "Homelab ops"
+.SH NAME
+renew-nginx-homelab.sh \- Renew the existing local Nginx TLS certificates using the maintained CA workflow.
+.SH SYNOPSIS
+.B renew-nginx-homelab.sh
+[arguments]
+.SH DESCRIPTION
+Renew the existing local Nginx TLS certificates using the maintained CA workflow.
+Established names and consumer paths are preserved. No hardware or service action was executed for documentation verification.
+.SH INTERFACE
+.SS /srv/containers/compose/step-ca/renew-nginx-homelab.sh
+Source: hosts/nexus/files/srv/containers/compose/step-ca/renew-nginx-certificates.sh
+.nf
+p = Path(sys.argv[1])
+intermediate = Path(sys.argv[2])
+.fi
+
+.SH DEPENDENCIES
+Use the interpreter in the source shebang and the existing host packages and services referenced in that source. Host configuration and private credentials remain on their original host.
+.SH OPERATIONS
+Before changing behavior, inspect inventory/audit-2026-11-06/nexus.json for recorded consumers and the source above for exact dependency paths. Never invoke a power, desktop, network, credential, notification, or storage operation merely to test it.
+.SH SOURCE
+Private iragonforce/ops repository. Consult docs/workflow.md for deployment, verification, rollback, and change records.

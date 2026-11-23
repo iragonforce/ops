@@ -1,0 +1,22 @@
+.TH "NEXUS-CONTAINER-ROUTING" "1" "2026-11-06" "Homelab ops"
+.SH NAME
+container-routing \- Prepare or apply the existing container routes and IPv6 integration.
+.SH SYNOPSIS
+.B container-routing
+[arguments]
+.SH DESCRIPTION
+Prepare or apply the existing container routes and IPv6 integration.
+Established names and consumer paths are preserved. No hardware or service action was executed for documentation verification.
+.SH INTERFACE
+.SS /usr/local/sbin/container-routing
+Source: hosts/nexus/files/usr/local/sbin/container-routing
+.nf
+try:{'prepare':prepare,'ipv6':ipv6,'rollout':rollout,'routes':source_routes}[sys.argv[1]]()
+.fi
+
+.SH DEPENDENCIES
+Use the interpreter in the source shebang and the existing host packages and services referenced in that source. Host configuration and private credentials remain on their original host.
+.SH OPERATIONS
+Before changing behavior, inspect inventory/audit-2026-11-06/nexus.json for recorded consumers and the source above for exact dependency paths. Never invoke a power, desktop, network, credential, notification, or storage operation merely to test it.
+.SH SOURCE
+Private iragonforce/ops repository. Consult docs/workflow.md for deployment, verification, rollback, and change records.

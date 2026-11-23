@@ -1,0 +1,128 @@
+#!/usr/bin/env python3
+# Prepare, apply or verify existing fixed Docker addresses. See pin-docker-addresses(1) for source and integration details.
+"""Pin current IP/MAC addresses per interface; preserve runtime configuration."""
+
+if __name__ == "__main__":
+    import sys as _ops_sys
+    if _ops_sys.argv[1:] == ["--help"]:
+        print('Prepare, apply or verify existing fixed Docker addresses.\nUsage: pin-docker-addresses  [ARGUMENT ...]\n\nSource: hosts/nexus/files/usr/local/sbin/pin-docker-addresses in ~/ops\nSee man pin-docker-addresses for the existing call sites and argument handling.')
+        raise SystemExit(0)
+import collections, copy, ipaddress, json, os, pathlib, shutil, subprocess, sys, yaml
+os.umask(0o077)
+STATE=pathlib.Path('/var/lib/nexus-addresses-20261013')
+STATE.mkdir(mode=0o700,exist_ok=True)
+
+def run(*args):
+    p=subprocess.run(args,capture_output=True,text=True)
+    if p.returncode:
+        (STATE/'last-error.txt').write_text(p.stderr)
+        raise RuntimeError('Command failed: '+args[0]+'; private error recorded')
+    return p.stdout
+
+def inspect():return json.loads(run('docker','inspect',*run('docker','ps','-aq').split()))
+
+def save(p,d):
+    p.write_text(json.dumps(d,indent=2)+'\n');p.chmod(0o600)
+
+def prepare():
+    if (STATE/'plan.json').exists():
+        print('Existing address plan retained',flush=True);return
+    rows=inspect();save(STATE/'containers-before.json',rows)
+    networks={n['Name']:n for n in json.loads(run('docker','network','inspect',*run('docker','network','ls','-q').split()))}
+    macs={};ips={};plan=[];configs={};documents={}
+    for c in rows:
+        labels=c['Config'].get('Labels',{});files=labels.get('com.docker.compose.project.config_files','').split(',')
+        if len(files)!=1 or not files[0]:raise RuntimeError('Container requires explicit single Compose source: '+c['Name'])
+        p=pathlib.Path(files[0]);project=labels['com.docker.compose.project'];service=labels['com.docker.compose.service']
+        key=(str(p),project)
+        if key not in configs:configs[key]=json.loads(run('docker','compose','-p',project,'-f',str(p),'config','--format','json'))
+        cfg=configs[key]
+        if p not in documents:documents[p]=yaml.safe_load(p.read_text())
+        svc=documents[p]['services'][service]
+        bindings=svc.get('networks')
+        if isinstance(bindings,list):bindings={n:{} for n in bindings}
+        elif not bindings:bindings={'default':{}}
+        else:bindings=copy.deepcopy(bindings)
+        endpoints={}
+        for actual,e in c['NetworkSettings']['Networks'].items():
+            n=networks[actual]
+            if n['Driver'] in ['host','null']:continue
+            mac=e['MacAddress'].lower();ip=e['IPAddress']
+            if not mac or not ip:raise RuntimeError('Missing live address: '+c['Name'])
+            if mac in macs:raise RuntimeError('Duplicate live MAC detected')
+            if (actual,ip) in ips:raise RuntimeError('Duplicate live network IP detected')
+            macs[mac]=c['Name'];ips[(actual,ip)]=c['Name']
+            if not any(ipaddress.ip_address(ip) in ipaddress.ip_network(x['Subnet']) for x in n['IPAM']['Config']):
+                raise RuntimeError('Address outside Docker IPAM subnet')
+            name=next((k for k,v in cfg['networks'].items() if v['name']==actual),None)
+            if name is None or name not in bindings:raise RuntimeError('Compose/live network mismatch')
+            settings=bindings[name] or {}
+            if settings.get('ipv4_address') not in [None,ip]:raise RuntimeError('Configured IP differs from live IP')
+            settings['ipv4_address']=ip;settings['mac_address']=mac
+            if e.get('GlobalIPv6Address'):
+                ipv6=e['GlobalIPv6Address']
+                if settings.get('ipv6_address') not in [None,ipv6]:raise RuntimeError('Configured IPv6 differs from live IPv6')
+                settings['ipv6_address']=ipv6
+            bindings[name]=settings
+            endpoints[actual]={'ip':ip,'ipv6':e.get('GlobalIPv6Address'),'mac':mac,'compose_network':name}
+        svc.pop('mac_address',None)
+        svc['networks']=bindings
+        plan.append({'name':c['Name'].lstrip('/'),'file':str(p),'project':project,'service':service,
+                     'running':c['State']['Running'],'endpoints':endpoints})
+    # Backups precede writes. Keep private Compose environment values out of reports.
+    for p,data in documents.items():
+        b=STATE/'compose-before'/p.parent.name/'compose.yaml';b.parent.mkdir(parents=True,exist_ok=True)
+        if not b.exists():shutil.copy2(p,b)
+        p.write_text(yaml.safe_dump(data,sort_keys=False));p.chmod(0o600)
+    overrides=pathlib.Path('/var/lib/nexus-restoration/service-overrides.json')
+    if overrides.exists():
+        shutil.copy2(overrides,STATE/'service-overrides.before.json')
+        ov=json.loads(overrides.read_text())
+        for row in plan:ov.setdefault(row['name'],{})['networks']=documents[pathlib.Path(row['file'])]['services'][row['service']]['networks']
+        save(overrides,ov)
+    for p,project in configs:run('docker','compose','-p',project,'-f',p,'config','--quiet')
+    save(STATE/'plan.json',plan)
+    public=[{'container':row['name'],'network':n,'ip':e['ip'],'ipv6':e['ipv6'],'mac':e['mac']} for row in plan for n,e in row['endpoints'].items()]
+    save(STATE/'addresses.json',public)
+    print('Pinned configuration:',len(plan),'containers,',len(public),'interfaces',flush=True)
+
+def apply():
+    plan=json.loads((STATE/'plan.json').read_text());before=json.loads((STATE/'containers-before.json').read_text())
+    completed=json.loads((STATE/'completed.json').read_text()) if (STATE/'completed.json').exists() else []
+    for row in plan:
+        if not row['running'] or row['name'] in completed:continue
+        print('Applying persistent addresses:',row['name'],flush=True)
+        run('docker','compose','-p',row['project'],'-f',row['file'],'up','-d','--no-deps','--pull','never',row['service'])
+        c=json.loads(run('docker','inspect',row['name']))[0]
+        old=next(x for x in before if x['Name'].lstrip('/')==row['name'])
+        assert c['State']['Running'], 'Container did not start'
+        assert c['Image']==old['Image'], 'Image changed'
+        assert set(c['Config']['Env'])==set(old['Config']['Env']), 'Environment changed'
+        def mounts(x):return sorted((m['Type'],m['Source'],m['Destination'],m['RW']) for m in x['Mounts'])
+        assert mounts(c)==mounts(old), 'Persistent mounts changed'
+        for name,e in row['endpoints'].items():
+            live=c['NetworkSettings']['Networks'][name]
+            assert live['IPAddress']==e['ip'] and live['MacAddress'].lower()==e['mac'], 'IP/MAC changed'
+            if e['ipv6']:assert live['GlobalIPv6Address']==e['ipv6'], 'IPv6 changed'
+        run('/usr/local/sbin/container-routing','routes')
+        run('/usr/local/sbin/access-guard','refresh')
+        completed.append(row['name']);save(STATE/'completed.json',completed)
+    print('Persistent address rollout completed:',len(completed),'containers',flush=True)
+
+def verify():
+    rows=inspect();plan=json.loads((STATE/'plan.json').read_text());errors=[];healthy=0
+    for row in plan:
+        c=next(x for x in rows if x['Name'].lstrip('/')==row['name'])
+        if row['running'] and not c['State']['Running']:errors.append(row['name']+': stopped')
+        if c['State'].get('Health',{}).get('Status')=='unhealthy':errors.append(row['name']+': unhealthy')
+        if c['State'].get('Health',{}).get('Status')=='healthy':healthy+=1
+        for n,e in row['endpoints'].items():
+            v=c['NetworkSettings']['Networks'][n]
+            if v['IPAddress']!=e['ip'] or v['MacAddress'].lower()!=e['mac']:errors.append(row['name']+': endpoint mismatch')
+            if (v.get('IPAMConfig') or {}).get('IPv4Address')!=e['ip']:errors.append(row['name']+': unpinned IP')
+    result={'containers':len(rows),'pinned_interfaces':sum(len(x['endpoints']) for x in plan),
+            'healthy_checks':healthy,'errors':errors}
+    save(STATE/'verification.json',result);print(json.dumps(result),flush=True)
+    if errors:raise RuntimeError('Address validation failed')
+
+if __name__=='__main__':{'prepare':prepare,'apply':apply,'verify':verify}[sys.argv[1]]()

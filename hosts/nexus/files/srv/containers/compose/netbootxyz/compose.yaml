@@ -1,0 +1,76 @@
+name: netbootxyz
+services:
+  netbootxyz-netboot:
+    image: ghcr.io/netbootxyz/netbootxyz@sha256:1a12b38a290d8425d871ca48658c319671e03f8251345d4cbcd1f3328ca9d912
+    pull_policy: never
+    container_name: netbootxyz
+    restart: always
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - /healthcheck.sh
+      interval: 30000000000ns
+      timeout: 15000000000ns
+      start_period: 60000000000ns
+      retries: 3
+    env_file:
+    - path: /etc/nexus/secrets/netbootxyz-netboot/netbootxyz-netboot.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/netbootxyz/asset
+      target: /assets
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/netbootxyz/config
+      target: /config
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/netbootxyz/7913c921b1fda05889f3a039fec2285828d5690d1bbbcf2eff3c34fc838b77f8
+      target: /var/log/nginx
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/netbootxyz/1d79015f3901f07db13b39e7178bdeb93ae761ae9abddc8bcf0b4104aed8d3f6
+      target: /var/tmp/nginx
+      read_only: false
+      bind:
+        create_host_path: false
+    cap_add:
+    - CAP_CHOWN
+    - CAP_DAC_OVERRIDE
+    - CAP_FOWNER
+    - CAP_KILL
+    - CAP_NET_BIND_SERVICE
+    - CAP_SETGID
+    - CAP_SETUID
+    - CAP_SYS_CHROOT
+    shm_size: 67108864
+    mem_limit: 268435456
+    cpus: 0.5
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.4
+        gw_priority: 300
+        mac_address: aa:ff:4b:db:82:04
+      proxy-backend:
+        aliases:
+        - netbootxyz-netboot
+        ipv4_address: 172.16.11.24
+        mac_address: 5a:13:8b:29:53:23
+    dns:
+    - 1.1.1.1
+    memswap_limit: 536870912
+    pids_limit: 256
+networks:
+  docker-vlan:
+    external: true
+  proxy-backend:
+    external: true
+  nexus-egress:
+    external: true

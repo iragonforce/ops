@@ -1,0 +1,9 @@
+[Unit]
+Description=Configure Checkmk Tailscale routes and NAT
+Wants=docker.service tailscaled.service
+After=docker.service tailscaled.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/checkmk-tailscale-route
+TimeoutStartSec=30

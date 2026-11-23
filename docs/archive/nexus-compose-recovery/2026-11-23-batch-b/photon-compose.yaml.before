@@ -1,0 +1,76 @@
+name: photon
+
+services:
+  photon:
+    build:
+      context: ./app
+    container_name: photon
+    restart: unless-stopped
+    cpus: "1.0"
+    mem_limit: 768m
+    memswap_limit: 768m
+    pids_limit: 128
+
+    environment:
+      NODE_OPTIONS: "--max-old-space-size=384"
+
+
+    read_only: true
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    tmpfs:
+      - /tmp:size=32m
+
+    volumes:
+      - ./data:/app/data
+
+    secrets:
+      - project_id
+      - project_secret
+      - api_token
+
+    networks:
+      proxy-backend: {}
+      egress:
+        gw_priority: 1
+
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:30210/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+    logging:
+      driver: local
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+secrets:
+  project_id:
+    file: ./config/project-id
+
+  project_secret:
+    file: ./secrets/project-secret
+
+  api_token:
+    file: ./secrets/api-token
+
+networks:
+  proxy-backend:
+    external: true
+
+  egress:
+    name: photon-egress
+    driver: bridge
+    internal: false

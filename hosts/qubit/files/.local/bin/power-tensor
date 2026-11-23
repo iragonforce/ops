@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Invoke the host-specific Tensor power shortcut; interfaces differ between deployments. See tensor(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Invoke the host-specific Tensor power shortcut; interfaces differ between deployments.
+Usage: tensor  [ARGUMENT ...]
+echo "Usage: tensor {poweron|poweroff|reboot|status}"
+Source: hosts/qubit/files/.local/bin/power-tensor in ~/ops
+See man tensor for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+
+case "${1:-}" in
+    poweron|poweroff|reboot|status)
+        exec ssh nexus "\$HOME/.local/bin/tensor $1"
+        ;;
+    *)
+        echo "Usage: tensor {poweron|poweroff|reboot|status}"
+        exit 1
+        ;;
+esac

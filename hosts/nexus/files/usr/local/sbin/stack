@@ -1,0 +1,30 @@
+#!/bin/bash
+# Start or stop an existing Compose stack after the established storage preflight. See stack(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Start or stop an existing Compose stack after the established storage preflight.
+Usage: stack  [ARGUMENT ...]
+
+Source: hosts/nexus/files/usr/local/sbin/stack in ~/ops
+See man stack for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+set -Eeuo pipefail
+umask 077
+stack=$1
+action=$2
+[[ $stack =~ ^[a-z0-9-]+$ ]]
+file=/srv/containers/compose/$stack/compose.yaml
+[[ -f $file ]]
+if [[ $action == up ]]; then
+  [[ $(findmnt -n -o SOURCE /mnt/bulk) == bulk ]]
+  [[ $(findmnt -n -o SOURCE /srv/containers/data) == fast/debian-live ]]
+  [[ $(findmnt -n -o SOURCE /srv/containers/builds) == fast/debian-builds ]]
+  zpool status -x bulk fast | grep -q 'healthy'
+  python3 /usr/local/lib/stack-preflight.py "$file"
+  docker compose -p nexus-$stack -f "$file" config --quiet
+  exec docker compose -p nexus-$stack -f "$file" up -d --wait --wait-timeout 600
+else
+  exec docker compose -p nexus-$stack -f "$file" stop
+fi

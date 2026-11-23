@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+unset DOCKER_HOST DOCKER_CONTEXT DOCKER_CONFIG
+
+exec /usr/bin/docker \
+  --host unix:///var/run/docker.sock \
+  ps --format '{{.Names}} | {{.State}} | {{.Status}}'

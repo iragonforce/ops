@@ -1,0 +1,72 @@
+.TH FINANCE-MAIL-POST 1 "2026-11-11" "Finance Infrastructure" "Nexus Host Utilities"
+.SH NAME
+finance-mail-post \- post future, authenticated CIBC credit alerts as provisional Wealthfolio withdrawals
+.SH SYNOPSIS
+.B /opt/data/bin/finance-mail-post
+.RB [ --preview | --apply ]
+.SH DESCRIPTION
+Only the historically verified CIBC credit-card sender, subject, body, one
+card label and suffix may route to the protected Wealthfolio account mapping.
+The route lives in root-only
+.B /etc/nexus/secrets/finance-mail-route.json
+and was activated after 391 unique merchant/amount/date historical matches to
+the same CIBC credit account and none to the two other CIBC accounts. This is
+an evidence-based account inference, not an independently supplied card/account
+number. If account name, suffix, template, trusted Proton authentication-results
+or staged evidence changes, stop rather than guessing. No pre-activation
+messages are imported. Debit-card, other-bank and unknown-card templates are
+not supported.
+.PP
+The default
+.B --preview
+is read-only. With
+.B --apply
+it first checks the CIBC message against the staged authenticated alert and
+Proton Bridge mail, then searches the target account for an existing withdrawal
+with exact CAD cents, a near date and strongly matching merchant. A unique
+existing transaction is not re-posted; ambiguous or oversized purchases require
+review. New notifications are posted as
+.B provisional
+WITHDRAWAL activities with merchant and a deterministic source-key marker.
+The mail timestamp may precede settlement and is not a verified posting date.
+The statement importer must reconcile these records before adding the later
+bank ledger row; no automatic category or confirmed receipt link is inferred.
+.PP
+Each new source key receives a protected, fsynced pre-commit journal before
+Wealthfolio write, followed by saved activity-ID readback and a verified journal
+state. Uncertain commits are never blindly retried. One narrowly scoped
+accounts/activities temporary write token is issued only when needed and is
+revoked with readback; it expires after two hours if interrupted. The
+.B finance-intake.service
+runs receipt projection, mail evidence staging and receipt matching before this
+poster. A newly posted activity can therefore be considered by the matcher on
+the next hourly run, subject to exact amount, date, merchant and uniqueness.
+.SH DEPENDENCIES
+Host Python 3.9+, Docker and PostgreSQL client, systemd-creds, bws,
+Bitwarden-held Proton Bridge/Wealthfolio credentials, localhost IMAP 1143,
+finance-mail-ingest, /usr/local/sbin/receipt-match-audit, a healthy Wealthfolio
+3.12.0 native MCP/API and finance-analytics PostgreSQL. Run as root. Protect
+.B /var/lib/finance-mail-post
+(mode 0700, journals 0600), the 0600 route and an up-to-date encrypted
+Wealthfolio database recovery point. This is not a substitute for off-host
+and whole-appdata recovery.
+.SH OUTPUT
+Aggregate counts only; no message, merchant, account ID, card suffix or
+credential is printed. A nonzero exit leaves a protected journal for manual
+inspection and does not delete or overwrite existing Wealthfolio activities.
+.SH ROLLBACK
+Disable the poster's ExecStart in the Git-managed unit and guarded-deploy the
+change. For a journal stage
+.B posted,
+verify the exact saved Wealthfolio ID and dependent receipt candidate links,
+then delete only the reviewed provisional activity via the app's supported
+interface. Do not delete an activity classified as pre-existing. For
+.B precommit
+or
+.B committed_unverified,
+search the exact source marker first; a commit may have succeeded even if the
+process failed. Do not rerun the posting blindly. The older database-only GPG
+snapshot is a last-resort recovery aid, not permission to overwrite later owner
+transactions. The private
+.B iragonforce/ops
+repository owns the program, timer unit and manual.

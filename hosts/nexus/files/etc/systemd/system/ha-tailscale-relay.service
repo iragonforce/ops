@@ -1,0 +1,18 @@
+[Unit]
+Description=Loopback-only Home Assistant relay for Tailscale HTTPS
+After=docker.service vlans.service tailscaled.service
+Requires=docker.service
+Wants=tailscaled.service
+[Service]
+Type=simple
+DynamicUser=yes
+ExecStart=/usr/bin/socat TCP4-LISTEN:18123,bind=127.0.0.1,reuseaddr,fork TCP4:172.16.11.19:30103
+Restart=always
+RestartSec=2
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+[Install]
+WantedBy=multi-user.target

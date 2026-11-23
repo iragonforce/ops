@@ -1,0 +1,15 @@
+[Unit]
+Description=Project finance receipts, stage alerts, match candidates and post routed credit alerts
+Wants=network-online.target
+After=network-online.target docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=root
+UMask=0077
+ExecStart=/opt/data/bin/finance-receipt-sync --apply
+ExecStart=/opt/data/bin/finance-mail-ingest --apply
+ExecStart=/opt/data/bin/finance-receipt-match --apply
+ExecStart=/opt/data/bin/finance-mail-post --apply
+TimeoutStartSec=600

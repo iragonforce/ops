@@ -1,0 +1,61 @@
+name: stirling-pdf
+services:
+  stirling-pdf:
+    image: stirlingtools/stirling-pdf:3.1.0@sha256:b5b9e400c086e5334a4947a0d7cd589808f743f29267d7f41c18200cf4bc48b4
+    pull_policy: never
+    container_name: stirling-pdf
+    restart: always
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - curl -f http://localhost:8080/api/v1/info/status | grep -q 'UP'
+      interval: 30000000000ns
+      timeout: 10000000000ns
+      start_period: 120000000000ns
+      retries: 5
+    env_file:
+    - path: /etc/nexus/secrets/stirling-pdf/stirling-pdf.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /mnt/fast/docker/apps/stirling-pdf/config
+      target: /configs
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/fast/docker/apps/stirling-pdf/logs
+      target: /logs
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/fast/docker/apps/stirling-pdf/tessdata
+      target: /usr/share/tessdata
+      read_only: false
+      bind:
+        create_host_path: false
+    shm_size: 67108864
+    mem_limit: 2147483648
+    cpus: 2
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.44
+        gw_priority: 300
+        mac_address: 86:e9:74:44:85:c6
+      proxy-backend:
+        aliases:
+        - stirling-pdf
+        ipv4_address: 172.16.11.31
+        mac_address: c6:24:a3:36:7e:a9
+    dns:
+    - 1.1.1.1
+    memswap_limit: 2684354560
+    pids_limit: 1024
+networks:
+  docker-vlan:
+    external: true
+  proxy-backend:
+    external: true
+  nexus-egress:
+    external: true

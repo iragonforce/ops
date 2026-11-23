@@ -1,0 +1,11 @@
+[Unit]
+Description=Private compatibility route for archived Cloudflared origin
+After=docker.service
+Before=stack@infrastructure.service
+Requires=docker.service
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/tunnel-compat
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,259 @@
+#!/usr/bin/env python3
+# Purpose: Sync verified iPhone-scanned Receipt Wrangler purchases into existing finance analytics tables.
+# Inputs: --preview (default) or --apply; Receipt Wrangler PostgreSQL, protected normalized submission archives.
+# Outputs: Aggregate counts only; validated purchase_receipts, receipt_items and adjustments on --apply.
+# Dependencies: Python 3.9+, Docker CLI/daemon, PostgreSQL psql in the existing DB containers, root access to receipt archives.
+# Side effects: --apply inserts only new validated analytics records; never writes Receipt Wrangler or Wealthfolio.
+# Safety: Exact archive/receipt totals, tax, quantity and item identity required; ambiguous/changed sources fail closed.
+#         Verify the protected finance-analytics backup before --apply; rollback only recorded source keys, not a live DB restore.
+"""Validate normalized scanned receipts and idempotently project them to analytics."""
+import argparse
+import csv
+from datetime import date
+from decimal import Decimal, InvalidOperation
+import hashlib
+import io
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+import unicodedata
+
+ARCHIVES = Path('/opt/homelab-api/receipt-intake/submitted')
+RW_DB = ['docker', 'exec', 'receipt-wrangler-db-1', 'psql', '-X', '-A', '-t',
+         '-v', 'ON_ERROR_STOP=1', '-U', 'wrangler', '-d', 'wrangler']
+ANALYTICS_DB = ['docker', 'exec', 'finance-analytics-db', 'psql', '-X', '-A', '-t',
+                '-v', 'ON_ERROR_STOP=1', '-U', 'finance_analytics', '-d', 'finance_analytics']
+RW_QUERY = """SELECT COALESCE(json_agg(json_build_object(
+ 'id',r.id,'merchant',r.name,'total',r.amount::text,
+ 'date',(r.date AT TIME ZONE 'UTC')::date,
+ 'items',(SELECT COALESCE(json_agg(json_build_object('name',i.name,'amount',i.amount)
+          ORDER BY i.id),'[]'::json) FROM public.items i WHERE i.receipt_id=r.id))
+ ORDER BY r.id),'[]'::json)::text
+ FROM public.receipts r WHERE r.group_id=1;"""
+ANALYTICS_QUERY = """SELECT COALESCE(json_agg(json_build_object(
+ 'id',r.id,'source',r.source,'source_key',r.source_key,
+ 'merchant',r.merchant,'purchase_date',r.purchase_date,
+ 'total_cents',r.total_cents,'wrangler_receipt_id',r.wrangler_receipt_id,
+ 'source_data',r.source_data,
+ 'item_count',(SELECT count(*) FROM receipt_items i WHERE i.receipt_id=r.id))
+ ORDER BY r.id),'[]'::json)::text FROM purchase_receipts r;"""
+
+
+def normalized(value):
+    value = unicodedata.normalize('NFKD', str(value or '')).casefold()
+    value = ''.join(char for char in value if not unicodedata.combining(char))
+    return ' '.join(re.findall(r'[a-z0-9]+', value))
+
+
+def decimal(value):
+    try:
+        parsed = Decimal(str(value).replace('$', '').replace(',', ''))
+    except (InvalidOperation, TypeError):
+        raise ValueError('Unparseable amount') from None
+    if not parsed.is_finite():
+        raise ValueError('Non-finite amount')
+    return parsed
+
+
+def money_cents(value):
+    amount = decimal(value)
+    if amount != amount.quantize(Decimal('0.01')):
+        raise ValueError('Amount has sub-cent precision')
+    return int(amount * 100)
+
+
+def select_archive(receipt, archives):
+    """Return the sole exact archive; no date+amount-only deduplication."""
+    candidates = []
+    for archive, _sha in archives:
+        try:
+            if (date.fromisoformat(str(archive['date'])[:10]) == date.fromisoformat(receipt['date'])
+                    and money_cents(archive['total']) == money_cents(receipt['total'])
+                    and normalized(archive['merchant']) == normalized(receipt['merchant'])
+                    and len(archive['items']) == len(receipt['items'])
+                    and sorted((normalized(i['name']), money_cents(i['totalPrice'])) for i in archive['items'])
+                    == sorted((normalized(i['name']), money_cents(i['amount'])) for i in receipt['items'])):
+                candidates.append(archive)
+        except (KeyError, TypeError, ValueError):
+            continue
+    return candidates[0] if len(candidates) == 1 else None
+
+
+def validate_archive(receipt, archive, source_sha256):
+    if not re.fullmatch(r'[0-9a-f]{64}', source_sha256):
+        raise ValueError('Invalid source hash')
+    if archive.get('schemaVersion') != 1 or archive.get('source') != 'apple-cloud':
+        raise ValueError('Unsupported normalized archive schema')
+    if archive.get('currency') != 'CAD' or not str(receipt['id']).isdigit():
+        raise ValueError('Unsupported currency or receipt ID')
+    if select_archive(receipt, [(archive, source_sha256)]) is not archive:
+        raise ValueError('Receipt and archive differ')
+    items = []
+    for item in archive['items']:
+        quantity = decimal(item['quantity'])
+        if quantity <= 0 or quantity != quantity.quantize(Decimal('0.001')):
+            raise ValueError('Invalid quantity')
+        line_cents = money_cents(item['totalPrice'])
+        if line_cents < 0 or (quantity * decimal(item['unitPrice'])).quantize(Decimal('0.01')) != decimal(item['totalPrice']):
+            raise ValueError('Line price/quantity mismatch')
+        items.append({'name': item['name'].strip(), 'quantity': str(quantity),
+                      'line_total_cents': line_cents})
+    if not items or any(not x['name'] for x in items):
+        raise ValueError('Empty line items')
+    subtotal = money_cents(archive['subtotal'])
+    taxes = [{'name': x['name'].strip(), 'amount_cents': money_cents(x['amount'])}
+             for x in archive['taxes']]
+    discounts = [{'name': x['name'].strip(), 'amount_cents': money_cents(x['amount'])}
+                 for x in archive['discounts']]
+    if (sum(x['line_total_cents'] for x in items) != subtotal
+            or any(x['amount_cents'] < 0 or not x['name'] for x in taxes + discounts)):
+        raise ValueError('Item subtotal or adjustment mismatch')
+    total = money_cents(archive['total'])
+    if subtotal + sum(x['amount_cents'] for x in taxes) - sum(x['amount_cents'] for x in discounts) != total:
+        raise ValueError('Receipt total mismatch')
+    return {'source_key': str(receipt['id']), 'wrangler_receipt_id': int(receipt['id']),
+            'source_sha256': source_sha256, 'merchant': archive['merchant'].strip(),
+            'date': date.fromisoformat(str(archive['date'])[:10]).isoformat(),
+            'subtotal_cents': subtotal, 'tax_cents': sum(x['amount_cents'] for x in taxes),
+            'total_cents': total, 'items': items, 'discounts': discounts}
+
+
+def classify_existing(existing, payload):
+    if existing is None:
+        return 'new'
+    return ('already' if existing.get('source_data', {}).get('source_sha256')
+            == payload['source_sha256'] else 'changed')
+
+
+def build_insert_script(payload):
+    """Pass sensitive values only through psql stdin in one CSV/JSON COPY row."""
+    data = dict(payload)
+    output = io.StringIO(newline='')
+    csv.writer(output, lineterminator='\n').writerow([json.dumps(data, ensure_ascii=True, separators=(',', ':'))])
+    assert '\n' not in output.getvalue().rstrip('\n')
+    return ("""BEGIN;
+CREATE TEMP TABLE incoming (payload jsonb) ON COMMIT DROP;
+COPY incoming (payload) FROM STDIN WITH (FORMAT csv);
+""" + output.getvalue() + "\\.\n" + """CREATE TEMP TABLE created_receipt (id bigint) ON COMMIT DROP;
+WITH created AS (
+ INSERT INTO purchase_receipts
+ (source,source_key,merchant,purchase_date,currency,subtotal_cents,tax_cents,
+  total_cents,wrangler_receipt_id,status,source_data)
+ SELECT 'wrangler_scan',p.payload->>'source_key',p.payload->>'merchant',
+ (p.payload->>'date')::date,'CAD',
+ (p.payload->>'subtotal_cents')::bigint,(p.payload->>'tax_cents')::bigint,
+ (p.payload->>'total_cents')::bigint,(p.payload->>'wrangler_receipt_id')::bigint,
+ 'validated',jsonb_build_object('parser','finance-receipt-sync-v1',
+ 'source_sha256',p.payload->>'source_sha256','normalization','archive_and_wrangler')
+ FROM incoming p
+ ON CONFLICT (source, source_key) DO NOTHING RETURNING id
+) INSERT INTO created_receipt SELECT id FROM created;
+INSERT INTO receipt_items (receipt_id,line_number,raw_name,quantity,line_total_cents)
+SELECT c.id,i.n::integer,i.value->>'name',(i.value->>'quantity')::numeric,
+ (i.value->>'line_total_cents')::bigint
+FROM created_receipt c CROSS JOIN incoming p
+CROSS JOIN LATERAL jsonb_array_elements(p.payload->'items') WITH ORDINALITY AS i(value,n);
+INSERT INTO receipt_adjustments (receipt_id,description,adjustment_type,amount_cents)
+SELECT c.id,i.value->>'name','basket_discount',-(i.value->>'amount_cents')::bigint
+FROM created_receipt c CROSS JOIN incoming p
+CROSS JOIN LATERAL jsonb_array_elements(p.payload->'discounts') AS i(value);
+COMMIT;
+""")
+
+
+def query_json(command, query):
+    result = subprocess.run(command + ['-c', query], capture_output=True, text=True, timeout=45)
+    if result.returncode:
+        raise RuntimeError('Database read failed')
+    return json.loads(result.stdout.strip())
+
+
+def analytics_write_command():
+    return ANALYTICS_DB[:2] + ['-i'] + ANALYTICS_DB[2:] + ['-q']
+
+
+def archive_data():
+    if not ARCHIVES.is_dir() or ARCHIVES.stat().st_mode & 0o077:
+        raise RuntimeError('Protected archive directory absent or unsafe')
+    paths = sorted(ARCHIVES.glob('*.json'))
+    if len(paths) > 1000:
+        raise RuntimeError('Archive limit exceeded')
+    result = []
+    for path in paths:
+        if path.is_symlink() or path.stat().st_mode & 0o077:
+            raise RuntimeError('Unsafe archive file')
+        raw = path.read_bytes()
+        if len(raw) > 65536:
+            raise RuntimeError('Oversize normalized archive')
+        result.append((json.loads(raw), hashlib.sha256(raw).hexdigest()))
+    return result
+
+
+def run(apply):
+    receipts = query_json(RW_DB, RW_QUERY)
+    existing = query_json(ANALYTICS_DB, ANALYTICS_QUERY)
+    archives = archive_data()
+    counts = {'receipts': len(receipts), 'validated_new': 0,
+              'already': 0, 'needs_review': 0, 'applied': 0}
+    for receipt in receipts:
+        matched = select_archive(receipt, archives)
+        if matched is None:
+            counts['needs_review'] += 1
+            continue
+        source_hash = next(h for value, h in archives if value is matched)
+        payload = validate_archive(receipt, matched, source_hash)
+        old = [row for row in existing if row['source'] == 'wrangler_scan'
+               and row['source_key'] == payload['source_key']]
+        if len(old) > 1:
+            raise RuntimeError('Duplicate analytics source key')
+        state = classify_existing(old[0] if old else None, payload)
+        if state == 'changed':
+            raise RuntimeError('Previously synced source changed; review required')
+        if state == 'already':
+            counts['already'] += 1
+            continue
+        collisions = [row for row in existing if row['source'] != 'wrangler_scan'
+                      and row['total_cents'] == payload['total_cents']
+                      and row['purchase_date'] == payload['date']
+                      and normalized(row['merchant']) == normalized(payload['merchant'])]
+        if collisions:
+            counts['needs_review'] += 1
+            continue
+        counts['validated_new'] += 1
+        if not apply:
+            continue
+        script = build_insert_script(payload)
+        result = subprocess.run(analytics_write_command(), input=script,
+                                capture_output=True, text=True, timeout=45)
+        if result.returncode:
+            raise RuntimeError('Analytics insert failed; inspect protected database state')
+        updated = query_json(ANALYTICS_DB, ANALYTICS_QUERY)
+        saved = [row for row in updated if row['source'] == 'wrangler_scan'
+                 and row['source_key'] == payload['source_key']]
+        if (len(saved) != 1 or classify_existing(saved[0], payload) != 'already'
+                or saved[0]['item_count'] != len(payload['items'])
+                or saved[0]['total_cents'] != payload['total_cents']):
+            raise RuntimeError('Analytics readback differs; stop and review')
+        counts['applied'] += 1
+        existing = updated
+    print('receipt_sync', 'apply' if apply else 'preview', json.dumps(counts, sort_keys=True))
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Verify and project iPhone-scanned receipts to existing finance analytics; no financial rows printed.')
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument('--preview', action='store_true', help='Read-only checks (default)')
+    mode.add_argument('--apply', action='store_true', help='Insert only exact validated, previously unseen receipts; no Wealthfolio writes')
+    args = parser.parse_args()
+    run(args.apply)
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except (ValueError, KeyError, TypeError, RuntimeError) as error:
+        print('receipt_sync_error', type(error).__name__, file=sys.stderr)
+        raise SystemExit(1)

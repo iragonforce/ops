@@ -1,0 +1,7 @@
+services:
+  gateway:
+    container_name: api-gateway
+    environment:
+      KONG_UNTRUSTED_LUA: sandbox
+      KONG_NGINX_MAIN_ENV: "QBITTORRENT_API_KEY"
+      QBITTORRENT_API_KEY: "${QBITTORRENT_API_KEY:?Bitwarden injection required}"

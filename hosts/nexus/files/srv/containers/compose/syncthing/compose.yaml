@@ -1,0 +1,94 @@
+name: syncthing
+services:
+  syncthing:
+    image: syncthing/syncthing:2.1.6@sha256:4d0281bdcb4ed9baf503d251d0544ddd856f49fce3f114056257ae172b7fb670
+    pull_policy: never
+    container_name: syncthing
+    restart: always
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - curl -fkLsS -m 2 127.0.0.1:20910/rest/noauth/health | grep -o --color=never
+        OK || exit 1
+      interval: 60000000000ns
+      timeout: 10000000000ns
+    env_file:
+    - path: /etc/nexus/secrets/syncthing/syncthing.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /mnt/fast/3d-models
+      target: /data/3d-models
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/fast/documents
+      target: /data/documents
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/fast/downloads
+      target: /data/downloads
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /home/iragonforce/secondBrain
+      target: /data/secondBrain
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/fast/project
+      target: /data/project
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /mnt/fast/screenshots
+      target: /data/screnshots
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/syncthing/config
+      target: /var/syncthing
+      read_only: false
+      bind:
+        create_host_path: false
+    - /home/iragonforce/.config/homelab/unified:/data/homelab-unified
+    cap_add:
+    - CAP_CHOWN
+    - CAP_DAC_OVERRIDE
+    - CAP_FOWNER
+    - CAP_SETFCAP
+    - CAP_SETGID
+    - CAP_SETPCAP
+    - CAP_SETUID
+    - CAP_SYS_ADMIN
+    shm_size: 67108864
+    mem_limit: 805306368
+    cpus: 0.75
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.9
+        gw_priority: 300
+        mac_address: b6:9c:57:48:29:50
+      proxy-backend:
+        aliases:
+        - syncthing
+        ipv4_address: 172.16.11.25
+        mac_address: 9e:9b:a5:1e:cb:7c
+    dns:
+    - 1.1.1.1
+    memswap_limit: 1342177280
+    pids_limit: 256
+networks:
+  docker-vlan:
+    external: true
+  proxy-backend:
+    external: true
+  nexus-egress:
+    external: true

@@ -1,0 +1,53 @@
+name: telegram
+services:
+  tg-bot:
+    image: sha256:3b0e69342cd820c6f1f914fa3de730e280c3fb9a310ee6dd6d47ce243193aa5d
+    container_name: tg-bot
+    restart: always
+    mem_limit: 402653184
+    cpus: 0.5
+    env_file: /etc/nexus/secrets/telegram/runtime.env
+    volumes:
+    - type: bind
+      source: /srv/containers/builds/telegram-bot-logs
+      target: /app/logs
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /var/run/docker.sock
+      target: /var/run/docker.sock
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /usr/bin/docker
+      target: /usr/local/bin/docker
+      read_only: true
+      bind:
+        create_host_path: false
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.242
+        gw_priority: 300
+        mac_address: f2:21:fb:1c:36:03
+    healthcheck:
+      test:
+      - CMD
+      - python
+      - -c
+      - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/commands',timeout=3)
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+    pull_policy: never
+    dns:
+    - 1.1.1.1
+    environment:
+      TELEGRAM_POLLING: 'false'
+    memswap_limit: 805306368
+    pids_limit: 256
+networks:
+  docker-vlan:
+    external: true
+  nexus-egress:
+    external: true

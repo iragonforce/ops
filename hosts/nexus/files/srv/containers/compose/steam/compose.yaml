@@ -1,0 +1,67 @@
+name: steam
+
+services:
+  steam:
+    image: josh5/steam-headless:2@sha256:c60f4d7243a4d94515f722441fff90b752413bf6a45bb221c9a4ed55bc4d9108
+    container_name: steam
+    hostname: steam
+    restart: unless-stopped
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.59
+
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: America/Toronto
+
+    cap_add:
+      - DAC_READ_SEARCH
+      - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_NICE
+      - SYS_PTRACE
+
+    security_opt:
+      - apparmor:unconfined
+      - seccomp=unconfined
+      - systempaths=unconfined
+      - writable-cgroups=true
+
+    cgroup: private
+    stop_signal: SIGRTMIN+3
+    stop_grace_period: 30s
+    pids_limit: 8192
+    shm_size: 2gb
+    tty: true
+
+    group_add:
+      - "992"
+
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+      - /dev/fuse:/dev/fuse
+      - /dev/uinput:/dev/uinput
+      - /dev/uhid:/dev/uhid
+
+    device_cgroup_rules:
+      - "c 13:* rwm"
+
+    tmpfs:
+      - /run
+      - /run/lock
+      - /tmp
+      - /dev/input:rw,dev,mode=0755
+
+    volumes:
+      - /etc/localtime:/run/host-localtime:ro
+      - /sys/devices/virtual/input:/sys/devices/virtual/input:ro
+      - /mnt/fast/steam/home:/home/steamheadless
+      - /mnt/fast/steam/state:/var/lib/steam-headless
+      - /mnt/fast/steam/journal:/var/log/journal
+      - /mnt/bulk/steam:/mnt/games
+
+networks:
+  docker-vlan:
+    external: true
+    name: docker-vlan

@@ -1,0 +1,52 @@
+.:1053 {
+    bind 192.168.1.2 100.96.255.81
+    view tailnet {
+        expr incidr(client_ip(), '100.64.0.0/10')
+    }
+    errors
+    log
+    hosts /config/tail.hosts {
+        ttl 5
+        fallthrough
+    }
+    forward tail4e4f0f.ts.net 100.100.100.100
+    forward . 192.168.1.1
+}
+.:1053 {
+    bind 192.168.1.2 100.96.255.81
+    errors
+    log
+    hosts /config/lan.hosts {
+        ttl 5
+        fallthrough
+    }
+    forward tail4e4f0f.ts.net 100.100.100.100
+    forward . 192.168.1.1
+}
+
+# Standard port 53, mirrored from the verified port 1053 pilot.
+.:53 {
+    bind 192.168.1.2 100.96.255.81
+    view tailnet {
+        expr incidr(client_ip(), '100.64.0.0/10')
+    }
+    errors
+    log
+    hosts /config/tail.hosts {
+        ttl 5
+        fallthrough
+    }
+    forward tail4e4f0f.ts.net 100.100.100.100
+    forward . 192.168.1.1
+}
+.:53 {
+    bind 192.168.1.2 100.96.255.81
+    errors
+    log
+    hosts /config/lan.hosts {
+        ttl 5
+        fallthrough
+    }
+    forward tail4e4f0f.ts.net 100.100.100.100
+    forward . 192.168.1.1
+}

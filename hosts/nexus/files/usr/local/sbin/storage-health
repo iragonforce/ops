@@ -1,0 +1,17 @@
+#!/bin/bash
+# Report existing storage health through the maintained monitoring integration. See storage-health(1) for source and integration details.
+if [ "${1-}" = '--help' ] && [ "$#" -eq 1 ]; then
+  cat <<'OPS_USAGE_TEXT'
+Report existing storage health through the maintained monitoring integration.
+Usage: storage-health
+
+Source: hosts/nexus/files/usr/local/sbin/storage-health in ~/ops
+See man storage-health for the existing call sites and argument handling.
+OPS_USAGE_TEXT
+  exit 0
+fi
+set -euo pipefail
+zpool status -x bulk fast
+smartctl -H /dev/disk/by-id/ata-Patriot_P210_256GB_P210DDBA2504093106
+smartctl -H /dev/disk/by-id/ata-ST20000NT001-3MB101_ZYD0L4FN
+smartctl -H /dev/disk/by-id/nvme-Samsung_SSD_990_EVO_Plus_2TB_S7U6NJ0Y233332T

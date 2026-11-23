@@ -1,0 +1,9 @@
+[Unit]
+Description=Qdrant Memory (watch inbox on this host)
+
+[Path]
+PathModified=%h/qdrant-inbox
+Unit=qdrant-memory.service
+
+[Install]
+WantedBy=paths.target

@@ -1,0 +1,6 @@
+#!/bin/sh
+# Launch the installed Codex CLI with the pinned Node runtime available to plugins. See codex(1) for source and integration details.
+# Pinned Node runtime for Codex plugin subprocesses; provider settings stay in place.
+set -eu
+export PATH="/home/iragonforce/projects/agent-tools-stage1/node_modules/node/bin:$PATH"
+exec /usr/local/bin/codex "$@"

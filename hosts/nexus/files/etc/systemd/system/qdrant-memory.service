@@ -1,0 +1,16 @@
+[Unit]
+Description=Qdrant Memory
+ConditionPathIsDirectory=/home/iragonforce/qdrant-inbox
+ConditionPathExists=/home/iragonforce/qdrant-inbox/.qdrant-memory-inbox-v1
+
+[Service]
+Type=oneshot
+User=iragonforce
+Group=iragonforce
+WorkingDirectory=/home/iragonforce/ops
+Environment=HOME=/home/iragonforce
+UMask=0077
+NoNewPrivileges=true
+ExecStartPre=/usr/bin/sleep 2
+ExecStart=/usr/bin/python3 -u /home/iragonforce/ops/shared/scripts/qdrant-memory.py sync-inbox
+TimeoutStartSec=0

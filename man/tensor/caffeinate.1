@@ -1,0 +1,22 @@
+.TH "CAFFEINATE" "1" "2026-11-06" "Homelab ops"
+.SH NAME
+caffeinate \- Control the existing desktop idle inhibitor.
+.SH SYNOPSIS
+.B caffeinate
+[arguments]
+.SH DESCRIPTION
+Control the existing desktop idle inhibitor.
+Established names and consumer paths are preserved. No hardware or service action was executed for documentation verification.
+.SH INTERFACE
+.SS /home/iragonforce/.local/bin/caffeinate
+Source: hosts/tensor/files/.local/bin/caffeinate
+.nf
+echo "Usage: caffeinate {on|off|toggle|status}" >&2
+.fi
+
+.SH DEPENDENCIES
+Use the interpreter in the source shebang and the existing host packages and services referenced in that source. Host configuration and private credentials remain on their original host.
+.SH OPERATIONS
+Before changing behavior, inspect inventory/audit-2026-11-06/tensor.json for recorded consumers and the source above for exact dependency paths. Never invoke a power, desktop, network, credential, notification, or storage operation merely to test it.
+.SH SOURCE
+Private iragonforce/ops repository. Consult docs/workflow.md for deployment, verification, rollback, and change records.

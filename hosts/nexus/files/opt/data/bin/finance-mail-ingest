@@ -1,0 +1,413 @@
+#!/usr/bin/env python3
+# Purpose: Parse authenticated CIBC purchase-alert mail and stage receipt candidates without creating expenses.
+# Inputs: --preview (default) or --apply; local Proton Bridge, Bitwarden IMAP secret, protected IMAP user file.
+# Outputs: Aggregate counts only; --apply upserts alerts and candidate receipt links into existing finance analytics.
+# Dependencies: Python 3.9+, Docker/psql, systemd-creds, bws, Proton Bridge and validated finance analytics receipts.
+# Side effects: --apply extends the alert table and item-history view; no mail flags or bank writes.
+# Safety: Strict sender + aligned DKIM + template, Message-ID idempotency, one-to-one candidate matching;
+#         mail date is not proof of purchase date. Restore only targeted rows after reviewing live dependencies.
+"""Stage authenticated purchase-alert evidence and candidate receipt associations."""
+import argparse
+import collections
+import csv
+from datetime import date
+from decimal import Decimal, InvalidOperation
+from difflib import SequenceMatcher
+import email
+import email.header
+import email.utils
+from html.parser import HTMLParser
+import hashlib
+import imaplib
+import io
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+import unicodedata
+
+USER_FILE = Path('/etc/nexus/secrets/finance-imap-user')
+PATTERN = re.compile(
+    r"you(?:['\u2019]ve| have) recently made a purchase with your (?P<card>.+?) card "
+    r"ending in (?P<suffix>\d{4}) for (?P<currency>\$|CAD\s*\$?)"
+    r"(?P<amount>[0-9,]+\.[0-9]{2}) at (?P<merchant>.+)", re.I)
+ANALYTICS_DB = ['docker', 'exec', 'finance-analytics-db', 'psql', '-X', '-A', '-t',
+                '-v', 'ON_ERROR_STOP=1', '-U', 'finance_analytics', '-d', 'finance_analytics']
+ANALYTICS_RECEIPTS_QUERY = """SELECT COALESCE(json_agg(json_build_object(
+ 'id',r.id,'source',r.source,'merchant',r.merchant,
+ 'total_cents',r.total_cents,'date',r.purchase_date,
+ 'wrangler_receipt_id',r.wrangler_receipt_id) ORDER BY r.id),'[]'::json)::text
+ FROM purchase_receipts r WHERE r.status='validated'
+ AND r.duplicate_of_id IS NULL AND r.currency='CAD';"""
+TABLE = 'transaction_email_alerts'
+SCHEMA = """CREATE TABLE IF NOT EXISTS transaction_email_alerts (
+ source_key char(64) PRIMARY KEY,
+ source_sha256 char(64) NOT NULL,
+ message_id text NOT NULL,
+ uidvalidity bigint NOT NULL,
+ imap_uid bigint NOT NULL,
+ received_at timestamptz NOT NULL,
+ merchant text NOT NULL,
+ amount_cents bigint NOT NULL CHECK (amount_cents > 0),
+ currency char(3) NOT NULL CHECK (currency = 'CAD'),
+ wrangler_receipt_id bigint,
+ purchase_receipt_id bigint REFERENCES purchase_receipts(id),
+ match_state text NOT NULL CHECK (match_state IN ('unmatched','candidate','review')),
+ created_at timestamptz NOT NULL DEFAULT now(),
+ updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_transaction_email_alerts_received
+ ON transaction_email_alerts(received_at);
+ALTER TABLE transaction_email_alerts ADD COLUMN IF NOT EXISTS
+ purchase_receipt_id bigint REFERENCES purchase_receipts(id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_transaction_email_alerts_purchase_receipt
+ ON transaction_email_alerts(purchase_receipt_id)
+ WHERE purchase_receipt_id IS NOT NULL;
+CREATE OR REPLACE VIEW v_purchase_item_tracking AS
+SELECT r.id AS receipt_id,r.source AS receipt_source,r.purchase_date,
+ r.merchant,i.id AS receipt_item_id,i.line_number,i.raw_name,
+ COALESCE(p.canonical_name,i.raw_name) AS product,i.category,i.quantity,
+ i.line_total_cents,round(i.line_total_cents::numeric / i.quantity / 100,4)
+ AS observed_price_per_recorded_quantity_cad,
+ CASE WHEN a.source_key IS NULL THEN 'unmatched' ELSE a.match_state END
+ AS email_match_state,
+ CASE WHEN m.receipt_id IS NULL THEN 'unmatched' ELSE m.match_state END
+ AS bank_match_state,m.activity_id,b.account_name,b.bank_date
+FROM purchase_receipts r JOIN receipt_items i ON i.receipt_id=r.id
+LEFT JOIN products p ON p.id=i.product_id
+LEFT JOIN transaction_email_alerts a ON a.purchase_receipt_id=r.id
+ AND a.match_state='candidate'
+LEFT JOIN receipt_transaction_matches m ON m.receipt_id=r.id
+LEFT JOIN bank_activity_snapshot b ON b.activity_id=m.activity_id
+WHERE r.status='validated' AND r.duplicate_of_id IS NULL
+ AND r.currency='CAD' AND i.quantity>0;
+"""
+
+
+class HtmlText(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.parts = []
+
+    def handle_data(self, data):
+        if data.strip():
+            self.parts.append(data.strip())
+
+
+def normalized(value):
+    text = unicodedata.normalize('NFKD', str(value or '')).casefold()
+    text = ''.join(char for char in text if not unicodedata.combining(char))
+    return ' '.join(re.findall(r'[a-z0-9]+', text))
+
+
+def cents(value):
+    try:
+        amount = Decimal(str(value).replace('$', '').replace(',', ''))
+    except (InvalidOperation, TypeError):
+        raise ValueError('Invalid amount') from None
+    if not amount.is_finite() or amount != amount.quantize(Decimal('0.01')):
+        raise ValueError('Invalid currency precision')
+    return int(amount * 100)
+
+
+def parse_alert(raw, uid, uidvalidity):
+    """Return one authenticated structured alert or None for unrelated mail."""
+    if len(raw) > 1_000_000:
+        raise ValueError('Message too large')
+    message = email.message_from_bytes(raw)
+    sender = email.utils.parseaddr(message.get('From', ''))[1].lower()
+    if sender.rsplit('@', 1)[-1] != 'cibc.com':
+        return None
+    subject = str(email.header.make_header(email.header.decode_header(
+        message.get('Subject', '')))).strip().lower()
+    if subject != 'new purchase on your credit card':
+        return None
+    authentication = ' '.join(message.get_all('Authentication-Results', [])).lower()
+    segments = [piece for piece in authentication.split(';') if re.search(r'dkim=pass\b', piece)]
+    domains = [domain for piece in segments
+               for domain in re.findall(r'header\.d=([a-z0-9.-]+)', piece)]
+    if not any(d == 'cibc.com' or d.endswith('.cibc.com') for d in domains):
+        raise ValueError('Sender authentication not aligned')
+    html = next((part for part in message.walk()
+                 if part.get_content_type() == 'text/html'), None)
+    if html is None:
+        raise ValueError('Expected HTML body')
+    body = (html.get_payload(decode=True) or b'').decode(
+        html.get_content_charset() or 'utf-8', 'replace')
+    parser = HtmlText()
+    parser.feed(body)
+    lines = [line for line in parser.parts if 'recently made a purchase' in line.lower()]
+    if len(lines) != 1:
+        raise ValueError('Ambiguous purchase template')
+    found = PATTERN.search(lines[0])
+    if found is None:
+        raise ValueError('Unknown purchase template')
+    amount = cents(found['amount'])
+    merchant = ' '.join(found['merchant'].split())
+    ident = message.get('Message-ID', '').strip().lower()
+    if (amount <= 0 or not 2 <= len(merchant) <= 100
+            or any(c in ident for c in '\r\n') or not ident.startswith('<')
+            or not ident.endswith('>') or not 0 < int(uid) < 2**63
+            or not 0 < int(uidvalidity) < 2**63):
+        raise ValueError('Invalid alert fields')
+    when = email.utils.parsedate_to_datetime(message['Date'])
+    if when.tzinfo is None:
+        raise ValueError('Unzoned mail date')
+    received = when.isoformat()
+    key = hashlib.sha256(ident.encode()).hexdigest()
+    digest = hashlib.sha256(json.dumps(
+        [ident, received, merchant, amount], separators=(',', ':')).encode()).hexdigest()
+    return {'source_key': key, 'source_sha256': digest,
+            'message_id': ident, 'uidvalidity': int(uidvalidity),
+            'imap_uid': int(uid), 'received_at': received, 'merchant': merchant,
+            'amount_cents': amount, 'currency': 'CAD',
+            'wrangler_receipt_id': None, 'match_state': 'unmatched'}
+
+
+def strong(a, b):
+    left, right = normalized(a), normalized(b)
+    if not left or not right:
+        return False
+    if left == right or (len(left) >= 5 and left in right) or (len(right) >= 5 and right in left):
+        return True
+    return SequenceMatcher(None, left, right).ratio() >= 0.84
+
+
+def match_receipts(alerts, receipts):
+    """Suggest only one-to-one amount/merchant/near-date links; never confirm."""
+    result = [dict(x, wrangler_receipt_id=None, purchase_receipt_id=None,
+                   match_state='unmatched') for x in alerts]
+    owners = collections.defaultdict(list)
+    for index, alert in enumerate(result):
+        when = date.fromisoformat(alert['received_at'][:10])
+        candidates = [receipt for receipt in receipts
+                      if (receipt['total_cents'] == alert['amount_cents']
+                          and abs((when - date.fromisoformat(receipt['date'])).days) <= 3
+                          and strong(alert['merchant'], receipt['merchant']))]
+        if len(candidates) == 1:
+            receipt = candidates[0]
+            result[index]['match_state'] = 'candidate'
+            result[index]['purchase_receipt_id'] = int(receipt['id'])
+            result[index]['wrangler_receipt_id'] = (int(receipt['wrangler_receipt_id'])
+                if receipt['source'] == 'wrangler_scan' and receipt['wrangler_receipt_id'] is not None
+                else None)
+            owners[int(receipt['id'])].append(index)
+        elif candidates:
+            result[index]['match_state'] = 'review'
+    for indexes in owners.values():
+        if len(indexes) > 1:
+            for index in indexes:
+                result[index]['match_state'] = 'review'
+                result[index]['wrangler_receipt_id'] = None
+                result[index]['purchase_receipt_id'] = None
+    return result
+
+
+def analytics_write_command():
+    return ANALYTICS_DB[:2] + ['-i'] + ANALYTICS_DB[2:] + ['-q']
+
+
+def build_insert_script(alerts):
+    stream = io.StringIO(newline='')
+    writer = csv.writer(stream, lineterminator='\n')
+    for alert in alerts:
+        writer.writerow([json.dumps(alert, ensure_ascii=True, separators=(',', ':'))])
+    assert all('\n' not in line[:-1] for line in stream.getvalue().splitlines(keepends=True))
+    return ("BEGIN;\n" + SCHEMA +
+            'CREATE TEMP TABLE incoming (payload jsonb) ON COMMIT DROP;\n'
+            'COPY incoming (payload) FROM STDIN WITH (FORMAT csv);\n' +
+            stream.getvalue() + '\\.\n' + """
+INSERT INTO transaction_email_alerts
+ (source_key,source_sha256,message_id,uidvalidity,imap_uid,received_at,
+ merchant,amount_cents,currency,wrangler_receipt_id,purchase_receipt_id,match_state)
+SELECT p.payload->>'source_key',p.payload->>'source_sha256',
+ p.payload->>'message_id',(p.payload->>'uidvalidity')::bigint,
+ (p.payload->>'imap_uid')::bigint,(p.payload->>'received_at')::timestamptz,
+ p.payload->>'merchant',(p.payload->>'amount_cents')::bigint,'CAD',
+ (p.payload->>'wrangler_receipt_id')::bigint,
+ (p.payload->>'purchase_receipt_id')::bigint,p.payload->>'match_state'
+FROM incoming p ON CONFLICT (source_key) DO NOTHING;
+UPDATE transaction_email_alerts t SET
+ wrangler_receipt_id=(p.payload->>'wrangler_receipt_id')::bigint,
+ purchase_receipt_id=(p.payload->>'purchase_receipt_id')::bigint,
+ match_state=p.payload->>'match_state',updated_at=now()
+FROM incoming p
+WHERE t.source_key=p.payload->>'source_key'
+ AND t.source_sha256=p.payload->>'source_sha256'
+ AND t.match_state IN ('unmatched','candidate','review')
+ AND (t.wrangler_receipt_id IS DISTINCT FROM (p.payload->>'wrangler_receipt_id')::bigint
+      OR t.purchase_receipt_id IS DISTINCT FROM (p.payload->>'purchase_receipt_id')::bigint
+      OR t.match_state IS DISTINCT FROM p.payload->>'match_state');
+COMMIT;
+""")
+
+
+def query_json(command, query):
+    response = subprocess.run(command + ['-c', query], capture_output=True,
+                              text=True, timeout=45)
+    if response.returncode:
+        raise RuntimeError('Database read failed')
+    return json.loads(response.stdout.strip())
+
+
+def credentials():
+    if (not USER_FILE.is_file() or USER_FILE.is_symlink()
+            or USER_FILE.stat().st_mode & 0o077):
+        raise RuntimeError('Protected IMAP user file missing or unsafe')
+    user = USER_FILE.read_text().strip()
+    if '@' not in user or len(user) > 200:
+        raise RuntimeError('Invalid IMAP user configuration')
+    token = subprocess.run(['/usr/bin/systemd-creds','decrypt','--name=bws-access-token',
+                            '/etc/credstore.encrypted/bws-access-token','-'],
+                           capture_output=True,text=True,check=True,timeout=30).stdout.strip()
+    env = {**os.environ,'BWS_ACCESS_TOKEN':token}
+    listed = json.loads(subprocess.run(['/usr/local/bin/bws','secret','list','--output','json'],
+                                       capture_output=True,text=True,check=True,
+                                       timeout=45,env=env).stdout)
+    matches = [item for item in listed if item.get('key') == 'PROTON_BRIDGE_IMAP']
+    if len(matches) != 1:
+        raise RuntimeError('IMAP secret not uniquely available')
+    secret = json.loads(subprocess.run(['/usr/local/bin/bws','secret','get',
+                                       matches[0]['id'],'--output','json'],
+                                      capture_output=True,text=True,check=True,
+                                      timeout=45,env=env).stdout)
+    if secret.get('key') != 'PROTON_BRIDGE_IMAP':
+        raise RuntimeError('Unexpected secret key')
+    return user, secret['value']
+
+
+def read_alerts(user, password):
+    mailbox = imaplib.IMAP4('127.0.0.1', 1143, timeout=25)
+    counts = collections.Counter()
+    alerts = {}
+    try:
+        if mailbox.login(user, password)[0] != 'OK':
+            raise RuntimeError('IMAP login failed')
+        if mailbox.select('"All Mail"', readonly=True)[0] != 'OK':
+            raise RuntimeError('IMAP mailbox unavailable')
+        _, values = mailbox.response('UIDVALIDITY')
+        if not values or not values[0]:
+            raise RuntimeError('IMAP UIDVALIDITY missing')
+        validity = int(values[0])
+        typ, found = mailbox.uid('SEARCH', None, 'FROM', '"cibc.com"',
+                                 'SUBJECT', '"purchase"')
+        if typ != 'OK':
+            raise RuntimeError('IMAP search failed')
+        ids = (found[0] or b'').split()
+        if len(ids) > 2000:
+            raise RuntimeError('Bounded mail scan exceeded')
+        for uid in ids:
+            typ, result = mailbox.uid('FETCH', uid, '(BODY.PEEK[])')
+            if typ != 'OK':
+                raise RuntimeError('IMAP fetch failed')
+            raw = next((item[1] for item in result if isinstance(item, tuple)), None)
+            if raw is None:
+                raise RuntimeError('Malformed IMAP fetch')
+            try:
+                parsed = parse_alert(raw, int(uid), validity)
+            except (ValueError, TypeError, KeyError):
+                counts['review'] += 1
+                continue
+            if parsed is None:
+                counts['other_header'] += 1
+                continue
+            previous = alerts.get(parsed['source_key'])
+            if previous is not None and previous['source_sha256'] != parsed['source_sha256']:
+                raise RuntimeError('Message-ID collision or changed source')
+            alerts[parsed['source_key']] = parsed
+            counts['parsed'] += 1
+        mailbox.logout()
+    finally:
+        try:
+            mailbox.shutdown()
+        except Exception:
+            pass
+    return list(alerts.values()), counts
+
+
+def current_alerts():
+    exists = subprocess.run(ANALYTICS_DB + ['-c',
+        "SELECT to_regclass('public.transaction_email_alerts') IS NOT NULL"],
+        capture_output=True, text=True, timeout=30)
+    if exists.returncode:
+        raise RuntimeError('Analytics database unavailable')
+    if exists.stdout.strip() != 't':
+        return []
+    column = subprocess.run(ANALYTICS_DB + ['-c',
+        "SELECT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='public'"
+        " AND table_name='transaction_email_alerts' AND column_name='purchase_receipt_id')"],
+        capture_output=True, text=True, timeout=30)
+    if column.returncode or column.stdout.strip() not in ('t', 'f'):
+        raise RuntimeError('Alert schema inspection failed')
+    projection = 'purchase_receipt_id' if column.stdout.strip() == 't' else 'NULL::bigint'
+    return query_json(ANALYTICS_DB,
+        "SELECT COALESCE(json_agg(json_build_object("
+        "'source_key',source_key,'source_sha256',source_sha256,"
+        "'amount_cents',amount_cents,'merchant',merchant,"
+        "'wrangler_receipt_id',wrangler_receipt_id,'purchase_receipt_id'," + projection +
+        ",'match_state',match_state)"
+        " ORDER BY source_key),'[]'::json)::text FROM transaction_email_alerts")
+
+
+def run(apply):
+    user, password = credentials()
+    alerts, counts = read_alerts(user, password)
+    receipts = query_json(ANALYTICS_DB, ANALYTICS_RECEIPTS_QUERY)
+    proposals = match_receipts(alerts, receipts)
+    old = current_alerts()
+    indexed = {row['source_key'].strip(): row for row in old}
+    if len(indexed) != len(old):
+        raise RuntimeError('Duplicate stored alert source keys')
+    for proposal in proposals:
+        existing = indexed.get(proposal['source_key'])
+        if existing and (existing['source_sha256'].strip() != proposal['source_sha256']
+                         or existing['amount_cents'] != proposal['amount_cents']
+                         or existing['merchant'] != proposal['merchant']):
+            raise RuntimeError('Existing alert changed; manual review required')
+    if apply and counts['review']:
+        raise RuntimeError('New template/auth failure; no alerts applied')
+    if apply and proposals:
+        script = build_insert_script(proposals)
+        result = subprocess.run(analytics_write_command(), input=script,
+                                capture_output=True, text=True, timeout=90)
+        if result.returncode:
+            raise RuntimeError('Alert insert failed; inspect analytics database')
+        saved = {row['source_key'].strip(): row for row in current_alerts()}
+        if any((key not in saved or saved[key]['source_sha256'].strip() != value['source_sha256']
+                or saved[key]['amount_cents'] != value['amount_cents']
+                or saved[key]['merchant'] != value['merchant']
+                or saved[key]['wrangler_receipt_id'] != value['wrangler_receipt_id']
+                or saved[key]['purchase_receipt_id'] != value['purchase_receipt_id']
+                or saved[key]['match_state'] != value['match_state'])
+               for key, value in ((item['source_key'], item) for item in proposals)):
+            raise RuntimeError('Alert readback differs; stop and review')
+    match_counts = collections.Counter(x['match_state'] for x in proposals)
+    print('mail_ingest', 'apply' if apply else 'preview',
+          json.dumps({'candidate_headers': sum(counts.values()),
+                      'parsed': counts['parsed'], 'unique_messages': len(proposals),
+                      'other_headers': counts['other_header'], 'review': counts['review'],
+                      'new': sum(x['source_key'] not in indexed for x in proposals),
+                      'already': sum(x['source_key'] in indexed for x in proposals),
+                      'receipt_candidates': match_counts['candidate'],
+                      'receipt_review': match_counts['review'],
+                      'unmatched': match_counts['unmatched']}, sort_keys=True))
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Stage authenticated bank purchase-alert evidence without creating expenses; no financial values printed.')
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument('--preview', action='store_true', help='Read-only inventory (default)')
+    mode.add_argument('--apply', action='store_true', help='Insert idempotent alert records into existing analytics DB')
+    args = parser.parse_args()
+    run(args.apply)
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except (ValueError, TypeError, KeyError, RuntimeError, OSError,
+            subprocess.CalledProcessError, imaplib.IMAP4.error) as error:
+        print('mail_ingest_error', type(error).__name__, file=sys.stderr)
+        raise SystemExit(1)

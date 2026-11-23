@@ -1,0 +1,350 @@
+services:
+  node-exporter:
+    network_mode: host
+    pid: host
+    image: prom/node-exporter:v1.12.1@sha256:1b4e4438faca4dd7e001dd445d161a4a2091b0fededa84093b3a8dfeae1f1be0
+    pull_policy: never
+    container_name: node-exporter
+    restart: always
+    user: root
+    command:
+    - --path.procfs=/host/proc
+    - --path.rootfs=/rootfs
+    - --path.sysfs=/host/sys
+    - --collector.rapl
+    - --web.listen-address=172.16.11.1:9100
+    - --collector.textfile.directory=/textfile
+    - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)
+    env_file:
+    - path: /etc/nexus/secrets/monitoring/node-exporter.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /proc
+      target: /host/proc
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /sys
+      target: /host/sys
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /
+      target: /rootfs
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/node-exporter/textfile
+      target: /textfile
+      read_only: true
+      bind:
+        create_host_path: false
+    privileged: true
+    security_opt:
+    - label=disable
+    shm_size: 67108864
+    mem_limit: 268435456
+    cpus: 0.25
+    dns:
+    - 1.1.1.1
+    memswap_limit: 536870912
+    pids_limit: 256
+  prometheus:
+    image: prom/prometheus:v3.13.4@sha256:87861b8cf91579109319ebc300f3f1060e6da9c05d6ae8ad15a20c879e84e32e
+    pull_policy: never
+    container_name: prometheus
+    restart: always
+    user: 568:568
+    command:
+    - --web.listen-address=0.0.0.0:30104
+    - --storage.tsdb.path=/data
+    - --config.file=/config/prometheus.yml
+    - --storage.tsdb.retention.time=1d
+    - --storage.tsdb.wal-compression
+    env_file:
+    - path: /etc/nexus/secrets/monitoring/prometheus.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/prometheus/config
+      target: /config
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/prometheus/data
+      target: /data
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/prometheus/e25230218735fe9335d51c0d0f6e04bd0d29c433fe190b75a72b92e95fe7e0e5
+      target: /prometheus
+      read_only: false
+      bind:
+        create_host_path: false
+    shm_size: 67108864
+    mem_limit: 536870912
+    cpus: 0.5
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.2
+        gw_priority: 300
+        mac_address: a2:e0:ea:84:57:d8
+      proxy-backend:
+        aliases:
+        - prometheus
+        ipv4_address: 172.16.11.44
+        mac_address: ce:68:5a:ed:6f:6c
+    healthcheck:
+      test:
+      - CMD
+      - /bin/wget
+      - -q
+      - -O
+      - /dev/null
+      - http://127.0.0.1:30104/-/ready
+      interval: 30s
+      timeout: 6s
+      retries: 5
+      start_period: 90s
+    dns:
+    - 1.1.1.1
+    memswap_limit: 1073741824
+    pids_limit: 256
+  glance:
+    image: glanceapp/glance:v0.8.6@sha256:9dfb09470b207dcb67ac715994bdb1929374ba3f9c0d7df7462c24adf10fd073
+    pull_policy: never
+    container_name: glance
+    restart: always
+    env_file:
+    - path: /etc/nexus/secrets/monitoring/glance.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/glance/config
+      target: /app/config
+      read_only: true
+      bind:
+        create_host_path: false
+    shm_size: 67108864
+    mem_limit: 268435456
+    cpus: 0.25
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.41
+        gw_priority: 300
+        mac_address: 32:7b:70:b0:1c:14
+      proxy-backend:
+        aliases:
+        - glance
+        ipv4_address: 172.16.11.43
+        mac_address: 6e:ff:5a:df:ee:0c
+    healthcheck:
+      test:
+      - CMD
+      - /usr/bin/wget
+      - -q
+      - -O
+      - /dev/null
+      - http://127.0.0.1:8081/
+      interval: 30s
+      timeout: 6s
+      retries: 5
+      start_period: 90s
+    dns:
+    - 1.1.1.1
+    memswap_limit: 536870912
+    pids_limit: 256
+  grafana:
+    image: grafana/grafana:13.2.3@sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572
+    pull_policy: never
+    container_name: grafana
+    restart: always
+    user: 568:568
+    env_file:
+    - path: /etc/nexus/secrets/monitoring/grafana.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /srv/containers/data/grafana/data
+      target: /var/lib/grafana/data
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/grafana/plugins
+      target: /var/lib/grafana/plugins
+      read_only: false
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/grafana/provisioning
+      target: /etc/grafana/provisioning
+      read_only: true
+      bind:
+        create_host_path: false
+    shm_size: 67108864
+    mem_limit: 536870912
+    cpus: 0.5
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.6
+        gw_priority: 300
+        mac_address: 2e:6d:c3:4b:78:16
+      proxy-backend:
+        aliases:
+        - grafana
+        ipv4_address: 172.16.11.42
+        mac_address: d2:4d:2f:00:3b:33
+    healthcheck:
+      test:
+      - CMD
+      - /usr/bin/curl
+      - -fsS
+      - --max-time
+      - '4'
+      - http://127.0.0.1:30037/api/health
+      interval: 30s
+      timeout: 6s
+      retries: 5
+      start_period: 90s
+    dns:
+    - 1.1.1.1
+    memswap_limit: 1073741824
+    pids_limit: 256
+  cadvisor:
+    image: ghcr.io/google/cadvisor:0.60.6@sha256:b8e7d1093144fd088f425ff003d75a4aa405de075db78dae3bc563730b1bd07a
+    pull_policy: never
+    container_name: cadvisor
+    restart: always
+    command:
+    - --logtostderr
+    - --docker_only=true
+    - --disable_metrics=disk,diskIO,tcp,udp,percpu,sched,process,hugetlb,referenced_memory,resctrl,advtcp
+    - --housekeeping_interval=30s
+    - --storage_duration=2m0s
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - wget -q -O /dev/null http://127.0.0.1:8080/healthz
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    env_file:
+    - path: /etc/nexus/secrets/monitoring/cadvisor.env
+      format: raw
+    volumes:
+    - type: bind
+      source: /dev/disk
+      target: /dev/disk
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /
+      target: /rootfs
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /sys
+      target: /sys
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /var/lib/docker
+      target: /var/lib/docker
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /var/run
+      target: /var/run
+      read_only: true
+      bind:
+        create_host_path: false
+    privileged: true
+    security_opt:
+    - label=disable
+    shm_size: 67108864
+    mem_limit: 1073741824
+    cpus: 0.5
+    devices:
+    - /dev/kmsg:/dev/kmsg:rwm
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.48
+        gw_priority: 300
+        mac_address: b2:b8:29:53:10:f5
+      proxy-backend:
+        aliases:
+        - cadvisor
+        ipv4_address: 172.16.11.40
+        mac_address: 62:65:5a:9e:0d:73
+    dns:
+    - 1.1.1.1
+    memswap_limit: 1610612736
+    pids_limit: 256
+  glance-router:
+    image: python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170
+    pull_policy: never
+    container_name: glance-router
+    restart: always
+    network_mode: service:glance
+    depends_on:
+      glance:
+        condition: service_started
+    command:
+    - python
+    - /code/router.py
+    read_only: true
+    security_opt:
+    - no-new-privileges:true
+    cap_drop:
+    - ALL
+    mem_limit: 268435456
+    cpus: 0.35
+    volumes:
+    - type: bind
+      source: /srv/containers/builds/glance-router
+      target: /code
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /srv/containers/data/glance/config
+      target: /config
+      read_only: true
+      bind:
+        create_host_path: false
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+    healthcheck:
+      test:
+      - CMD
+      - python
+      - -c
+      - import urllib.request; urllib.request.urlopen("http://127.0.0.1:8080/__homelab/context",timeout=3)
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    memswap_limit: 536870912
+    pids_limit: 256
+networks:
+  docker-vlan:
+    external: true
+  proxy-backend:
+    external: true
+  nexus-egress:
+    external: true
+name: monitoring

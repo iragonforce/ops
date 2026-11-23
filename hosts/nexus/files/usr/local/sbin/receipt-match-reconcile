@@ -1,0 +1,259 @@
+#!/usr/bin/env python3
+# Reconcile receipt associations; source databases remain read-only. See receipt-match-reconcile(1) for source and integration details.
+"""Conservative receipt-to-Wealthfolio reconciliation.
+
+Reads Receipt Wrangler and Wealthfolio; --save only writes its own local SQLite file.
+Uses the existing receipt-match-audit library installed on nexus.
+"""
+import argparse
+import json
+import os
+import runpy
+import sqlite3
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from difflib import SequenceMatcher
+from collections import defaultdict
+
+LIBRARY = Path('/usr/local/sbin/receipt-match-audit')
+DATABASE = Path('/opt/homelab-api/receipt-intake/reconciliation/associations.sqlite3')
+PAGE_SIZE = 100
+MAX_PAGES = 50
+
+
+def normalize(value):
+    return LIB['normalize'](value)
+
+
+def merchant_strength(receipt_merchant, transaction_description):
+    r = normalize(receipt_merchant)
+    t = normalize(transaction_description)
+    if not r or not t:
+        return 0.0
+    if r == t:
+        return 1.0
+    if (len(r) >= 5 and (t.startswith(r + ' ') or (' ' + r + ' ') in (' ' + t + ' '))) or \
+       (len(t) >= 5 and (r.startswith(t + ' ') or (' ' + t + ' ') in (' ' + r + ' '))):
+        return 0.93
+    ratio = SequenceMatcher(None, r, t).ratio()
+    return ratio if ratio >= 0.86 else 0.0
+
+
+def collect(mcp, method, args):
+    """Exhaust each paginated search; fail closed if page consistency is unclear."""
+    gathered = []
+    for page in range(MAX_PAGES):
+        params = dict(args)
+        if method == 'search_activities':
+            params.update({'page': page + 1, 'pageSize': PAGE_SIZE})
+        else:
+            params.update({'offset': page * PAGE_SIZE, 'limit': PAGE_SIZE})
+        data = mcp.call(method, params)
+        if not isinstance(data, dict):
+            raise RuntimeError(f'{method}: unexpected response shape')
+        batch = LIB['rows'](data)
+        if not isinstance(batch, list):
+            raise RuntimeError(f'{method}: invalid rows')
+        gathered.extend(batch)
+        if method == 'search_activities':
+            total = data.get('totalRowCount')
+            pages = data.get('totalPages')
+            if total is not None and len(gathered) >= int(total):
+                return gathered
+            if pages is not None and page + 1 >= int(pages):
+                return gathered
+            if len(batch) < PAGE_SIZE:
+                return gathered
+        else:
+            total = data.get('totalCount')
+            more = data.get('hasMore')
+            if total is not None and len(gathered) >= int(total):
+                return gathered
+            if more is False:
+                return gathered
+            if len(batch) < PAGE_SIZE and more is not True:
+                return gathered
+        if not batch:
+            raise RuntimeError(f'{method}: pagination made no progress')
+    raise RuntimeError(f'{method}: exceeded {MAX_PAGES} pages; no associations saved')
+
+
+def classify(receipt, candidates):
+    eligible = []
+    for candidate in candidates:
+        strength = merchant_strength(receipt['merchant'], candidate['description'])
+        enriched = dict(candidate)
+        enriched['merchant_strength'] = round(strength, 3)
+        eligible.append(enriched)
+    strong = [c for c in eligible if c['days'] <= 3 and c['merchant_strength'] >= 0.86]
+    if len(strong) == 1:
+        return {'receipt_id': receipt['id'], 'status': 'AUTO_CANDIDATE',
+                'activity': strong[0], 'candidates': len(eligible)}
+    if eligible:
+        return {'receipt_id': receipt['id'], 'status': 'REVIEW',
+                'activity': None, 'candidates': len(eligible)}
+    return {'receipt_id': receipt['id'], 'status': 'UNMATCHED',
+            'activity': None, 'candidates': 0}
+
+
+def find_candidates(mcp, receipt):
+    from datetime import date, timedelta
+    day = date.fromisoformat(receipt['date'])
+    start = (day - timedelta(days=7)).isoformat()
+    end = (day + timedelta(days=7)).isoformat()
+    sources = [
+        ('search_activities', {'dateFrom': start, 'dateTo': end}),
+        ('search_spending_transactions', {
+            'startDate': start + 'T00:00:00Z', 'endDate': end + 'T23:59:59Z'}),
+    ]
+    candidates = {}
+    scanned = {}
+    for method, args in sources:
+        rows = collect(mcp, method, args)
+        scanned[method] = len(rows)
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            match = LIB['match'](receipt, row)
+            if match is None:
+                continue
+            if not match['id'] or match['id'] == 'unknown':
+                raise RuntimeError(f'{method}: candidate without activity ID')
+            key = str(match['id'])
+            # Keep the description with the best merchant identification across sources.
+            if key not in candidates or merchant_strength(receipt['merchant'], match['description']) > merchant_strength(receipt['merchant'], candidates[key]['description']):
+                candidates[key] = match
+    return list(candidates.values()), scanned
+
+
+def resolve_collisions(results):
+    owners = defaultdict(list)
+    for result in results:
+        if result['status'] == 'AUTO_CANDIDATE':
+            activity = result['activity']
+            owners[(str(activity['id']), str(activity.get('account', 'unknown')))].append(result)
+    for matches in owners.values():
+        if len(matches) > 1:
+            for result in matches:
+                result['status'] = 'REVIEW'
+                result['activity'] = None
+    return results
+
+
+def persist(results, path):
+    parent = path.parent
+    parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    os.chmod(parent, 0o700)
+    if path.is_symlink():
+        raise RuntimeError('Refusing symlink database')
+    connection = sqlite3.connect(str(path), timeout=30)
+    try:
+        os.chmod(path, 0o600)
+        connection.execute('PRAGMA journal_mode=DELETE')
+        connection.execute('''
+            CREATE TABLE IF NOT EXISTS receipt_associations (
+                receipt_id INTEGER PRIMARY KEY,
+                status TEXT NOT NULL,
+                activity_id TEXT,
+                account_id TEXT,
+                candidate_count INTEGER NOT NULL,
+                updated_at TEXT NOT NULL
+            )''')
+        now = datetime.now(timezone.utc).isoformat()
+        with connection:
+            for result in results:
+                activity = result['activity'] or {}
+                connection.execute('''
+                    INSERT INTO receipt_associations
+                    (receipt_id, status, activity_id, account_id, candidate_count, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(receipt_id) DO UPDATE SET
+                        status=excluded.status,
+                        activity_id=excluded.activity_id,
+                        account_id=excluded.account_id,
+                        candidate_count=excluded.candidate_count,
+                        updated_at=excluded.updated_at
+                ''', (int(result['receipt_id']), result['status'],
+                      str(activity.get('id')) if activity else None,
+                      str(activity.get('account')) if activity else None,
+                      int(result['candidates']), now))
+    finally:
+        connection.close()
+
+
+def self_test():
+    assert merchant_strength('HOMESENSE - YONGE - QUEEN', 'HOMESENSE') >= 0.86
+    assert merchant_strength('METRO', 'METRO TORONTO') >= 0.86
+    assert merchant_strength('METRO', 'APPLE') == 0.0
+    sample = {'merchant': 'HOMESENSE', 'id': 7}
+    old = {'id': 'bank-1', 'account': 'credit', 'description': 'HOMESENSE', 'days': 221}
+    assert classify(sample, [old])['status'] == 'REVIEW'  # date check happens upstream
+    nearby = dict(old, days=1)
+    assert classify(sample, [nearby])['status'] == 'AUTO_CANDIDATE'
+    assert classify(sample, [nearby, dict(nearby, id='bank-2')])['status'] == 'REVIEW'
+    results = [classify({'merchant': 'HOMESENSE', 'id': x}, [nearby]) for x in [6, 7]]
+    assert all(x['status'] == 'REVIEW' for x in resolve_collisions(results))
+    class Stub:
+        def call(self, method, params):
+            if method == 'search_activities':
+                page = params['page']
+                return {'activities': [{'id': i} for i in range((page-1)*100, min(page*100,223))], 'totalRowCount':223,'totalPages':3}
+            offset = params['offset']
+            return {'items':[{'id':i} for i in range(offset,min(offset+100,223))],'totalCount':223,'hasMore':offset+100<223}
+    assert len(collect(Stub(), 'search_activities', {})) == 223
+    assert len(collect(Stub(), 'search_spending_transactions', {})) == 223
+    print('SELF-TEST: PASS (merchant, ambiguity, collision, pagination); no live records or writes')
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--self-test', action='store_true')
+    parser.add_argument('--save', action='store_true', help='Save local association results to SQLite; never writes source databases')
+    args = parser.parse_args()
+    if args.self_test:
+        self_test()
+        return
+    if not LIBRARY.is_file():
+        raise RuntimeError(f'Missing prerequisite: {LIBRARY}')
+    receipts = LIB['get_receipts']()
+    print('=== RECEIPT RECONCILIATION ===')
+    print('Receipt count:', len(receipts))
+    if not receipts:
+        print('No receipts; no changes')
+        return
+    mcp = LIB['MCP'](LIB['get_token']())
+    mcp.initialize()
+    print('MCP: PASS')
+    results = []
+    for receipt in receipts:
+        candidates, counts = find_candidates(mcp, receipt)
+        outcome = classify(receipt, candidates)
+        outcome['scanned'] = counts
+        results.append(outcome)
+    resolve_collisions(results)
+    for result in results:
+        item = result['activity']
+        print('Receipt', result['receipt_id'], '|', result['status'], '| candidates', result['candidates'], '| scanned', result['scanned'])
+        if item:
+            print('  Wealthfolio activity:', item['id'], '| days:', item['days'], '| merchant strength:', item['merchant_strength'])
+    if args.save:
+        persist(results, DATABASE)
+        print('Local association DB:', DATABASE)
+        print('Status: AUTO_CANDIDATE is a local suggestion, not a Wealthfolio link')
+    else:
+        print('Dry run: no files written (use --save to persist local suggestions)')
+    print('Receipt Wrangler writes: NONE | Wealthfolio writes: NONE')
+
+
+LIB = runpy.run_path(str(LIBRARY), run_name='receipt_reconcile_import') if LIBRARY.is_file() else {
+    'normalize': lambda s: __import__('re').sub(r'\s+', ' ', s.lower()).strip(),
+    'rows': lambda d: d.get('activities', d.get('items', [])),
+}
+
+if __name__ == '__main__':
+    try:
+        main()
+    except Exception as exc:
+        print('ERROR:', type(exc).__name__, str(exc), file=sys.stderr)
+        sys.exit(1)

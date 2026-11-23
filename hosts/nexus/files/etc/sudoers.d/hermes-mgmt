@@ -1,0 +1,2 @@
+hermes-mgmt ALL=(root) NOPASSWD: /usr/local/sbin/hermes-docker-report ""
+hermes-mgmt ALL=(root) NOPASSWD: /usr/bin/docker --host unix\:///var/run/docker.sock restart npm-summary

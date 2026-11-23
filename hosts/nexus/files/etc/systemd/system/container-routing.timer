@@ -1,0 +1,8 @@
+[Unit]
+Description=Keep Nexus container routing valid after recreation
+[Timer]
+OnBootSec=20s
+OnUnitActiveSec=20s
+Unit=container-routing.service
+[Install]
+WantedBy=timers.target

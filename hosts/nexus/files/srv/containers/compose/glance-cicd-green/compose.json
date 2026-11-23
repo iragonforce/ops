@@ -1,0 +1,111 @@
+{
+  "services": {
+    "glance-green-cicd": {
+      "image": "glanceapp/glance:v0.8.6@sha256:9dfb09470b207dcb67ac715994bdb1929374ba3f9c0d7df7462c24adf10fd073",
+      "command": null,
+      "entrypoint": null,
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "/usr/bin/wget",
+          "-q",
+          "-O",
+          "/dev/null",
+          "http://127.0.0.1:8081/"
+        ],
+        "timeout": "6s",
+        "interval": "30s",
+        "retries": 5,
+        "start_period": "1m30s"
+      },
+      "volumes": [
+        {
+          "type": "bind",
+          "source": "/srv/containers/data/glance/cicd/green/config",
+          "target": "/app/config",
+          "read_only": true,
+          "bind": {
+            "create_host_path": false
+          }
+        }
+      ],
+      "container_name": "glance-green-cicd",
+      "restart": "always",
+      "networks": {
+        "proxy-backend": {
+          "aliases": [
+            "glance-green-cicd"
+          ]
+        }
+      }
+    },
+    "glance-router-green-cicd": {
+      "image": "python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "command": [
+        "python",
+        "/code/router.py"
+      ],
+      "entrypoint": null,
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen(\"http://127.0.0.1:8080/__homelab/context\",timeout=3)"
+        ],
+        "timeout": "5s",
+        "interval": "30s",
+        "retries": 3,
+        "start_period": "30s"
+      },
+      "volumes": [
+        {
+          "type": "bind",
+          "source": "/srv/containers/builds/glance-router-green-cicd",
+          "target": "/code",
+          "read_only": true,
+          "bind": {
+            "create_host_path": false
+          }
+        },
+        {
+          "type": "bind",
+          "source": "/srv/containers/data/glance/cicd/green/config",
+          "target": "/config",
+          "read_only": true,
+          "bind": {
+            "create_host_path": false
+          }
+        }
+      ],
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-file": "3",
+          "max-size": "10m"
+        }
+      },
+      "container_name": "glance-router-green-cicd",
+      "restart": "always",
+      "network_mode": "service:glance-green-cicd",
+      "depends_on": {
+        "glance-green-cicd": {
+          "condition": "service_healthy",
+          "required": true
+        }
+      }
+    }
+  },
+  "networks": {
+    "proxy-backend": {
+      "external": true
+    }
+  }
+}

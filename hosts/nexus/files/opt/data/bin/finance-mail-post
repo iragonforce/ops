@@ -1,0 +1,428 @@
+#!/usr/bin/env python3
+# Purpose: Post only newly authenticated CIBC credit purchase alerts to their verified Wealthfolio account.
+# Inputs: --preview (default) or --apply; protected route, Proton Bridge, staged analytics alerts.
+# Outputs: Aggregate counters only; per-message root-only journals and provisional Wealthfolio withdrawals on apply.
+# Dependencies: Python 3.9+, finance-mail-ingest, Docker/psql, systemd-creds, bws, Wealthfolio MCP helper.
+# Safety: Exact route/identity, future-only cutoff, strong existing-ledger dedup, journal-before-commit,
+#         crash uncertainty stops retries, temporary two-hour write PAT revoked after use.
+"""Future-only, source-key-journaled CIBC purchase posting; no debit/unknown-card inference."""
+import argparse
+import collections
+from contextlib import contextmanager
+from datetime import date, datetime, timedelta, timezone
+from decimal import Decimal, InvalidOperation
+import email
+import fcntl
+import hashlib
+import http.cookiejar
+import imaplib
+import json
+import os
+from pathlib import Path
+import re
+import runpy
+import stat
+import subprocess
+import sys
+import urllib.request
+import uuid
+
+ROUTE = Path('/etc/nexus/secrets/finance-mail-route.json')
+JOURNALS = Path('/var/lib/finance-mail-post')
+LOCK = Path('/run/lock/finance-mail-post.lock')
+MAIL_SOURCE = '/opt/data/bin/finance-mail-ingest'
+MCP_SOURCE = '/usr/local/sbin/receipt-match-audit'
+API = 'http://127.0.0.1:18088/api/v1'
+DB = ['docker', 'exec', 'finance-analytics-db', 'psql', '-X', '-A', '-t',
+      '-v', 'ON_ERROR_STOP=1', '-U', 'finance_analytics', '-d', 'finance_analytics']
+TAG = 'finance-mail:'
+
+
+def load_route(path=ROUTE):
+    if path.is_symlink():
+        raise ValueError('Route must not be a symlink')
+    info = path.stat()
+    if info.st_uid != 0 or stat.S_IMODE(info.st_mode) != 0o600:
+        raise ValueError('Route needs root and mode 0600')
+    cfg = json.loads(path.read_text())
+    when = datetime.fromisoformat(cfg['activated_at'])
+    if (cfg['schema'] != 'finance-mail-route-v1' or when.tzinfo is None
+            or cfg['sender_domain'] != 'cibc.com'
+            or not re.fullmatch(r'\d{4}', cfg['card_suffix'])
+            or not re.fullmatch(r'[a-z0-9 ]{3,100}', cfg['card_label'])
+            or cfg['historical_unique_strong_matches'] < 350
+            or cfg['historical_other_account_matches'] != 0
+            or not 0 < cfg['max_auto_amount_cents'] <= 500000
+            or not re.fullmatch(r'[a-f0-9]{64}', cfg['target_name_sha256'])):
+        raise ValueError('Unsupported route or mapping evidence')
+    uuid.UUID(cfg['target_account_id'])
+    cfg['activation_utc'] = when.astimezone(timezone.utc)
+    return cfg
+
+
+def validate_account(route, accounts):
+    targets = [a for a in accounts if a['id'] == route['target_account_id']]
+    if len(targets) != 1:
+        raise ValueError('Missing target account')
+    a = targets[0]
+    if (not a['isActive'] or a['accountType'] != 'CASH' or a['currency'] != 'CAD'
+            or 'cibc' not in a['name'].lower() or 'credit' not in a['name'].lower()
+            or hashlib.sha256(a['name'].encode()).hexdigest() != route['target_name_sha256']):
+        raise ValueError('Target account changed')
+    return a
+
+
+def route_from_message(raw, uid, uidvalidity, mail, route, expected):
+    parsed = mail['parse_alert'](raw, uid, uidvalidity)
+    if parsed is None or any(parsed[key] != expected[key]
+                             for key in ('source_key', 'source_sha256', 'amount_cents',
+                                         'merchant', 'received_at')):
+        raise ValueError('Mail source changed between scans')
+    msg = email.message_from_bytes(raw)
+    results = msg.get_all('Authentication-Results', [])
+    trusted = [r for r in results if r.split(';', 1)[0].strip().lower() == 'mail.protonmail.ch']
+    if len(trusted) != len(results) or not trusted or not any(
+            re.search(r'\bdkim=pass\b', r, re.I)
+            and re.search(r'\bheader\.d=(?:[a-z0-9-]+\.)*cibc\.com\b', r, re.I)
+            for r in trusted):
+        raise ValueError('Untrusted authentication provenance')
+    html = next((part for part in msg.walk() if part.get_content_type() == 'text/html'), None)
+    if html is None:
+        raise ValueError('Mail lost required HTML part')
+    parser = mail['HtmlText']()
+    parser.feed((html.get_payload(decode=True) or b'').decode(
+        html.get_content_charset() or 'utf-8', 'replace'))
+    lines = [line for line in parser.parts if 'recently made a purchase' in line.lower()]
+    if len(lines) != 1:
+        raise ValueError('Ambiguous card template')
+    match = mail['PATTERN'].search(lines[0])
+    if (match is None or match['suffix'] != route['card_suffix']
+            or mail['normalized'](match['card']) != route['card_label']):
+        raise ValueError('Unknown card identity')
+    return parsed
+
+
+def activity_cents(value):
+    try:
+        v = Decimal(str(value))
+        if v <= 0 or not v.is_finite() or v != v.quantize(Decimal('0.01')):
+            return None
+        return int(v * 100)
+    except (InvalidOperation, ValueError, TypeError):
+        return None
+
+
+def decide(alert, activities, strong):
+    marker = TAG + alert['source_key']
+    tagged = [a for a in activities if marker in (a.get('notes') or '')]
+    if tagged:
+        return ('tagged', tagged[0]) if len(tagged) == 1 else ('review', None)
+    when = date.fromisoformat(alert['received_at'][:10])
+    candidates = [a for a in activities
+                  if a['activityType'] == 'WITHDRAWAL' and a['currency'] == 'CAD'
+                  and activity_cents(a['amount']) == alert['amount_cents']
+                  and abs((date.fromisoformat(a['date'][:10]) - when).days) <= 3
+                  and strong(alert['merchant'], a.get('notes'))]
+    if len(candidates) == 1:
+        return 'preexisting', candidates[0]
+    if candidates:
+        return 'review', None
+    return 'new', None
+
+
+def validate_saved(saved, row, marker):
+    return (saved['accountId'] == row['accountId']
+            and saved['activityType'] == 'WITHDRAWAL' and saved['currency'] == 'CAD'
+            and saved['date'][:10] == row['date']
+            and activity_cents(saved['amount']) == int(Decimal(str(row['amount'])) * 100)
+            and marker in (saved.get('notes') or ''))
+
+
+def journal_path(key):
+    if not re.fullmatch(r'[a-f0-9]{64}', key):
+        raise ValueError('Invalid source key')
+    return JOURNALS / (key + '.json')
+
+
+def read_journal(key):
+    path = journal_path(key)
+    if not path.exists():
+        return None
+    if path.is_symlink() or path.stat().st_uid != 0 or stat.S_IMODE(path.stat().st_mode) != 0o600:
+        raise ValueError('Unsafe journal')
+    data = json.loads(path.read_text())
+    if data['source_key'] != key:
+        raise ValueError('Journal identity changed')
+    return data
+
+
+def journal_write(data, old_stage=None):
+    if JOURNALS.is_symlink() or JOURNALS.stat().st_uid != 0 or stat.S_IMODE(JOURNALS.stat().st_mode) != 0o700:
+        raise ValueError('Unsafe journal directory')
+    path = journal_path(data['source_key'])
+    old = read_journal(data['source_key'])
+    if (old_stage is None and old is not None) or (old_stage is not None and
+            (old is None or old['stage'] != old_stage or old['source_sha256'] != data['source_sha256'])):
+        raise ValueError('Journal state changed')
+    temp = path.with_suffix('.pending')
+    fd = os.open(temp, os.O_CREAT | os.O_EXCL | os.O_WRONLY | os.O_NOFOLLOW, 0o600)
+    with os.fdopen(fd, 'w') as stream:
+        json.dump(data, stream, separators=(',', ':'))
+        stream.flush()
+        os.fsync(stream.fileno())
+    os.replace(temp, path)
+    directory = os.open(JOURNALS, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(directory)
+    finally:
+        os.close(directory)
+    assert read_journal(data['source_key'])['stage'] == data['stage']
+
+
+def staged_alerts(activated):
+    cutoff = activated.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f+00:00')
+    sql = ("SELECT COALESCE(json_agg(json_build_object('source_key',source_key,"
+           "'source_sha256',source_sha256,'received_at',received_at,"
+           "'merchant',merchant,'amount_cents',amount_cents,'currency',currency)),"
+           "'[]'::json)::text FROM transaction_email_alerts "
+           "WHERE received_at >= '" + cutoff + "'::timestamptz")
+    result = subprocess.run(DB + ['-c', sql], capture_output=True, text=True, timeout=45)
+    if result.returncode:
+        raise RuntimeError('Staged alert read failed')
+    rows = json.loads(result.stdout.strip())
+    if len(rows) > 200:
+        raise ValueError('Future alert scope exceeded')
+    return {x['source_key'].strip(): dict(x, source_key=x['source_key'].strip(),
+                                        source_sha256=x['source_sha256'].strip()) for x in rows}
+
+
+def secret_by_key(key):
+    token = subprocess.run(['/usr/bin/systemd-creds', 'decrypt', '--name=bws-access-token',
+                            '/etc/credstore.encrypted/bws-access-token', '-'],
+                           capture_output=True, text=True, check=True, timeout=30).stdout.strip()
+    env = {**os.environ, 'BWS_ACCESS_TOKEN': token}
+    found = json.loads(subprocess.run(['/usr/local/bin/bws', 'secret', 'list', '--output', 'json'],
+                                      env=env, capture_output=True, text=True, check=True, timeout=45).stdout)
+    matches = [x for x in found if x.get('key') == key]
+    if len(matches) != 1:
+        raise RuntimeError('Secret not uniquely accessible')
+    item = json.loads(subprocess.run(['/usr/local/bin/bws', 'secret', 'get', matches[0]['id'],
+                                     '--output', 'json'], env=env, capture_output=True,
+                                     text=True, check=True, timeout=45).stdout)
+    if item['key'] != key:
+        raise RuntimeError('Secret identity changed')
+    return item['value']
+
+
+def all_activities(mcp, account_id):
+    result = []
+    for page in range(1, 51):
+        response = mcp.call('search_activities', {'accountId': account_id,
+                                                  'page': page, 'pageSize': 200})
+        if response['totalRowCount'] > 10000:
+            raise RuntimeError('Account activity scope exceeded')
+        result.extend(response['activities'])
+        if len(result) >= response['totalRowCount']:
+            break
+    if len(result) != response['totalRowCount'] or len({x['id'] for x in result}) != len(result):
+        raise RuntimeError('Incomplete account scan')
+    return result
+
+
+@contextmanager
+def temporary_write_client(helper):
+    password = secret_by_key('WEALTHFOLIO_LOGIN_PASSWORD')
+    jar = http.cookiejar.CookieJar()
+    client = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+    request = urllib.request.Request(API + '/auth/login',
+        data=json.dumps({'password': password}).encode(),
+        headers={'Content-Type': 'application/json'}, method='POST')
+    with client.open(request, timeout=20) as response:
+        if not json.load(response).get('authenticated') or len(jar) != 1:
+            raise RuntimeError('Owner session unavailable')
+    headers = {'Authorization': 'Bearer ' + next(iter(jar)).value,
+               'Content-Type': 'application/json'}
+    def api(path, method='GET', data=None):
+        req = urllib.request.Request(API + path,
+            data=json.dumps(data).encode() if data is not None else
+                 (b'' if method in ('POST', 'DELETE') else None),
+            headers=headers, method=method)
+        with client.open(req, timeout=30) as response:
+            return response.status, json.load(response) if response.status != 204 else None
+    token_id = None
+    try:
+        _, current = api('/agent-access/tokens')
+        if any(x['name'] == 'Finance transient mail posting' for x in current):
+            raise RuntimeError('Unrevoked mail-post token requires review')
+        expiry = (datetime.now(timezone.utc) + timedelta(hours=2)).isoformat()
+        status, created = api('/agent-access/tokens', 'POST', {
+            'name': 'Finance transient mail posting', 'expiresAt': expiry,
+            'scopes': ['accounts:read', 'activities:read', 'activities:draft', 'activities:write']})
+        if status != 201:
+            raise RuntimeError('Scoped temporary token creation failed')
+        token_id = created['id']
+        mcp = helper(created['token'])
+        mcp.initialize()
+        yield mcp
+    finally:
+        try:
+            if token_id:
+                status, _ = api('/agent-access/tokens/' + token_id, 'DELETE')
+                _, current = api('/agent-access/tokens')
+                if status != 204 or any(x['id'] == token_id for x in current):
+                    raise RuntimeError('Temporary write token revocation unverified')
+        finally:
+            api('/auth/logout', 'POST')
+
+
+def fetch_new_identity(alerts, user, password, mail, route):
+    if not alerts:
+        return
+    box = imaplib.IMAP4('127.0.0.1', 1143, timeout=25)
+    try:
+        if box.login(user, password)[0] != 'OK' or box.select('"All Mail"', readonly=True)[0] != 'OK':
+            raise RuntimeError('IMAP read unavailable')
+        validity = int(box.response('UIDVALIDITY')[1][0])
+        for alert in alerts:
+            if validity != alert['uidvalidity']:
+                raise ValueError('IMAP identity changed')
+            kind, parts = box.uid('FETCH', str(alert['imap_uid']), '(BODY.PEEK[])')
+            if kind != 'OK':
+                raise RuntimeError('IMAP UID fetch failed')
+            raw = next((part[1] for part in parts if isinstance(part, tuple)), None)
+            if raw is None:
+                raise RuntimeError('IMAP UID vanished')
+            route_from_message(raw, alert['imap_uid'], validity, mail, route, alert)
+    finally:
+        try:
+            box.logout()
+        except Exception:
+            pass
+        try:
+            box.shutdown()
+        except Exception:
+            pass
+
+
+def run(apply):
+    route = load_route()
+    mail = runpy.run_path(MAIL_SOURCE, run_name='finance_mail_post_lib')
+    user, password = mail['credentials']()
+    alerts, counts = mail['read_alerts'](user, password)
+    if counts['review']:
+        raise ValueError('Unreviewed authenticated mail template')
+    selected = [x for x in alerts if datetime.fromisoformat(x['received_at']).astimezone(timezone.utc)
+                >= route['activation_utc']]
+    if len(selected) > 200:
+        raise ValueError('Future mail scope exceeded')
+    staged = staged_alerts(route['activation_utc'])
+    keys = {x['source_key'] for x in selected}
+    if keys != set(staged):
+        raise ValueError('Staged and IMAP future mail diverged')
+    for alert in selected:
+        stored = staged[alert['source_key']]
+        if any(alert[k] != stored[k] for k in ('source_sha256', 'amount_cents', 'merchant', 'currency')):
+            raise ValueError('Staged mail evidence changed')
+    fetch_new_identity(selected, user, password, mail, route)
+    helper = runpy.run_path(MCP_SOURCE, run_name='finance_mail_post_mcp')['MCP']
+    draft = helper(secret_by_key('WEALTHFOLIO_TRANSFER_WRITE'))
+    draft.initialize()
+    validate_account(route, draft.call('get_accounts', {})['accounts'])
+    activities = all_activities(draft, route['target_account_id']) if selected else []
+    result = collections.Counter({'future': len(selected), 'posted': 0,
+                                  'already_posted': 0, 'preexisting': 0,
+                                  'pending': 0, 'review': 0})
+    for alert in sorted(selected, key=lambda a: (a['received_at'], a['source_key'])):
+        key = alert['source_key']
+        existing = read_journal(key)
+        action, candidate = decide(alert, activities, mail['strong'])
+        if existing is not None:
+            if (existing['source_sha256'] != alert['source_sha256']
+                    or existing['account_id'] != route['target_account_id']
+                    or existing['stage'] != 'posted'
+                    or action != 'tagged' or candidate['id'] != existing['activity_id']):
+                raise ValueError('Uncertain or drifted prior mail posting; review journal')
+            result['already_posted'] += 1
+            continue
+        if action == 'tagged':
+            raise ValueError('Unjournaled tagged Wealthfolio activity; review')
+        if action == 'preexisting':
+            result['preexisting'] += 1
+            continue
+        if action == 'review' or alert['amount_cents'] > route['max_auto_amount_cents']:
+            result['review'] += 1
+            continue
+        marker = TAG + key
+        row = {'accountId': route['target_account_id'], 'activityType': 'WITHDRAWAL',
+               'currency': 'CAD', 'date': alert['received_at'][:10],
+               'amount': alert['amount_cents'] / 100,
+               'comment': alert['merchant'] + ' [' + marker + ']',
+               'lineNumber': 1, 'forceImport': False}
+        preview = draft.call('prepare_activity_import', {'activities': [row]})
+        if preview['summary'] != {'total': 1, 'valid': 1, 'invalid': 0, 'duplicates': 0}:
+            result['review'] += 1
+            continue
+        result['pending'] += 1
+        if not apply:
+            continue
+        data = {'schema': 'finance-mail-post-journal-v1', 'stage': 'precommit',
+                'source_key': key, 'source_sha256': alert['source_sha256'],
+                'account_id': route['target_account_id'], 'date': row['date'],
+                'amount_cents': alert['amount_cents'], 'comment': row['comment'],
+                'captured_at': datetime.now(timezone.utc).isoformat(),
+                'cash_balance_verified': False}
+        with temporary_write_client(helper) as writer:
+            journal_write(data)
+            commit = writer.call('commit_activity_import', {'activities': [row]})
+            # A commit may have succeeded even if the call raises. Leave precommit as
+            # uncertain and never auto-retry; inspect the source marker and app journal.
+            financial = commit.get('financialRows', [])
+            if (commit['summary'].get('imported') != 1
+                    or len(financial) != 1
+                    or financial[0]['financialStatus'] != 'imported'
+                    or not financial[0].get('activityId')):
+                raise RuntimeError('Commit outcome uncertain; protected precommit journal retained')
+            ident = financial[0]['activityId']
+            data['activity_id'] = ident
+            data['stage'] = 'committed_unverified'
+            journal_write(data, 'precommit')
+            saved = {a['id']: a for a in all_activities(writer, route['target_account_id'])}
+            if ident not in saved or not validate_saved(saved[ident], row, marker):
+                raise RuntimeError('Committed activity readback uncertain')
+            data['stage'] = 'posted'
+            data['verified_at'] = datetime.now(timezone.utc).isoformat()
+            journal_write(data, 'committed_unverified')
+            activities.append(saved[ident])
+            result['posted'] += 1
+    print('finance_mail_post', 'apply' if apply else 'preview',
+          json.dumps(dict(result), sort_keys=True))
+    if result['review']:
+        raise ValueError('Unresolved mail posting candidates require review')
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Future-only CIBC credit alert posting with protected routing and journals.')
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument('--preview', action='store_true', help='Read-only routed/candidate census (default)')
+    mode.add_argument('--apply', action='store_true', help='Post only unrepresented future alerts with saved-ID readback')
+    args = parser.parse_args()
+    if os.geteuid() != 0:
+        parser.error('root required for protected routing and journals')
+    os.umask(0o077)
+    if args.apply:
+        fd = os.open(LOCK, os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
+        with os.fdopen(fd, 'r+') as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            JOURNALS.mkdir(mode=0o700, exist_ok=True)
+            run(True)
+    else:
+        run(False)
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except (OSError, ValueError, KeyError, TypeError, RuntimeError, subprocess.SubprocessError,
+            imaplib.IMAP4.error) as error:
+        print('finance_mail_post_error', type(error).__name__, file=sys.stderr)
+        raise SystemExit(1)

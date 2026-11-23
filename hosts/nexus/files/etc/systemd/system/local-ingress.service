@@ -1,0 +1,6 @@
+[Unit]
+Description=Synchronize Nexus local proxy names
+After=zfs-mount.service
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/local-ingress

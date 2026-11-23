@@ -1,0 +1,47 @@
+services:
+  telegram-gateway:
+    build: /srv/containers/builds/telegram-gateway
+    image: nexus-telegram-gateway:1
+    container_name: telegram-gateway
+    restart: always
+    init: true
+    mem_limit: 268435456
+    cpus: 0.5
+    env_file: /etc/nexus/secrets/telegram/gateway.env
+    environment:
+      GATEWAY_DB: /data/queue.sqlite3
+      GATEWAY_ACL: /run/secrets/acl.json
+    volumes:
+    - type: bind
+      source: /srv/containers/data/telegram-gateway
+      target: /data
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /etc/nexus/secrets/telegram/gateway-acl.json
+      target: /run/secrets/acl.json
+      read_only: true
+      bind:
+        create_host_path: false
+    networks:
+      docker-vlan:
+        ipv4_address: 192.168.5.243
+    healthcheck:
+      test:
+      - CMD
+      - python
+      - -c
+      - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/ready',timeout=3)
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    security_opt:
+    - no-new-privileges:true
+    cap_drop:
+    - ALL
+    memswap_limit: 536870912
+    pids_limit: 256
+networks:
+  docker-vlan:
+    external: true
