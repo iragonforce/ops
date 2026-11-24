@@ -93,6 +93,39 @@ class ExportTests(unittest.TestCase):
         conn.close()
         self.assertEqual(len(export.fetch_candidates(self.db, strict=False)[1]), 2)
 
+    def test_database_writer_between_lineage_queries_is_snapshot_isolated(self):
+        conn = sqlite3.connect(self.db)
+        conn.execute('PRAGMA journal_mode=WAL')
+        conn.close()
+        real_connect = sqlite3.connect
+        committed = []
+
+        def writer():
+            other = real_connect(self.db)
+            other.execute('INSERT INTO sessions VALUES (?,NULL,?,?,?)',
+                          ('new', 'compression', 1792778754, 4))
+            other.execute('INSERT INTO sessions VALUES (?,?,?,?,?)',
+                          ('newchild', 'new', None, None, 5))
+            other.execute('INSERT INTO messages VALUES (?,?,?,?)',
+                          ('two', 'newchild', self.summary(), 1))
+            other.commit()
+            other.close()
+            committed.append(True)
+
+        def traced_connect(*args, **kwargs):
+            connection = real_connect(*args, **kwargs)
+            def trace(statement):
+                if 'SELECT p.id, c.id' in statement and not committed:
+                    writer()
+            connection.set_trace_callback(trace)
+            return connection
+
+        with mock.patch.object(export.sqlite3, 'connect', side_effect=traced_connect):
+            boundaries, candidates = export.fetch_candidates(self.db)
+        self.assertTrue(committed)
+        self.assertEqual((boundaries, len(candidates)), (1, 1))
+        self.assertEqual(len(export.fetch_candidates(self.db)[1]), 2)
+
     def test_restart_and_failures(self):
         store = {}
         with mock.patch.object(core, 'INDEXERS', SCRIPTS), mock.patch.object(core, 'STATE', self.root), \
