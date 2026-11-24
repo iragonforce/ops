@@ -5,8 +5,9 @@ Purpose: let the owner drop UTF-8 .md/.txt files into a local inbox and index
 those passages using tensor's Ollama and Nexus's existing Qdrant collection.
 Inputs: inbox at ~/qdrant-inbox; optional file or source name (ops/nexus/tensor/
 obsidian); local indexers beside this script; existing private Qdrant endpoint.
-Outputs: source-linked origin=manual_inbox points and diagnostics. This tool
-never modifies the source text, Git checkouts or any other Qdrant origin.
+Outputs: source-linked origin=manual_inbox points and diagnostics. The separate
+sync-hermes command indexes conservatively filtered, historical main-profile
+compaction findings as origin=hermes_session; it never prunes other origins.
 Deletion: inbox reconciliation prunes stale manual_inbox points only, with
 empty-inbox and mass-purge guards. No secrets are intentionally emitted to logs.
 
@@ -27,6 +28,7 @@ import subprocess
 import sys
 import time
 import uuid
+from collections import Counter
 from urllib.request import Request, urlopen
 
 HOME = Path('/home/iragonforce')
@@ -369,7 +371,11 @@ def update_obsidian(dry_run):
 
 
 def lock():
+    if STATE.is_symlink():
+        raise RuntimeError('STOP: state directory must not be a symlink')
     STATE.mkdir(mode=0o700, parents=True, exist_ok=True)
+    if STATE.stat().st_uid != os.geteuid():
+        raise RuntimeError('STOP: state directory owner differs')
     os.chmod(STATE, 0o700)
     fd = os.open(STATE / 'index.lock', os.O_RDWR | os.O_CREAT, 0o600)
     try:
@@ -382,9 +388,111 @@ def lock():
 
 def show_status():
     verify_collection()
-    for origin in ('ops', 'git_history', 'obsidian_history', 'git_repo_snapshot', ORIGIN):
+    for origin in ('ops', 'git_history', 'obsidian_history', 'git_repo_snapshot', ORIGIN, 'hermes_session'):
         print(f'{origin}: {count_origin(origin)}')
     print(f'inbox: {INBOX}')
+
+
+def load_exporter():
+    path = INDEXERS / 'hermes-compaction-export.py'
+    spec = importlib.util.spec_from_file_location('hermes_compaction_export', path)
+    if not spec or not spec.loader:
+        raise RuntimeError('STOP: missing Hermes compaction exporter')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def checkpoint_read():
+    path = STATE / 'hermes-compaction-checkpoint.json'
+    if path.is_symlink():
+        raise RuntimeError('STOP: checkpoint symlink')
+    if not path.exists():
+        return {'version': 1, 'processed': {}}
+    if path.stat().st_mode & 0o077 or not path.is_file():
+        raise RuntimeError('STOP: checkpoint permissions too broad')
+    value = json.loads(path.read_text(encoding='utf-8'))
+    if value.get('version') != 1 or not isinstance(value.get('processed'), dict):
+        raise RuntimeError('STOP: incompatible checkpoint')
+    return value
+
+
+def checkpoint_write(value):
+    path = STATE / 'hermes-compaction-checkpoint.json'
+    tmp = STATE / 'hermes-compaction-checkpoint.tmp'
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, 'O_NOFOLLOW', 0), 0o600)
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as stream:
+            json.dump(value, stream, sort_keys=True)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(tmp, path)
+        directory = os.open(STATE, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+
+
+def sync_hermes(dry_run=False, limit=None):
+    """Idempotent main-profile reconciliation; no implicit deletion or DB writes."""
+    exporter = load_exporter()
+    database = Path(os.environ.get('QDRANT_MEMORY_HERMES_DB', '/opt/data/state.db'))
+    repository = Path(os.environ.get('QDRANT_MEMORY_OPS', '/opt/data/workspace/ops'))
+    if database.is_symlink() or not database.is_file():
+        raise RuntimeError('STOP: main Hermes session database missing or linked')
+    if not (repository / '.git').exists():
+        raise RuntimeError('STOP: public ops checkout missing')
+    _, candidates = exporter.fetch_candidates(database, strict=False)
+    scanner_path = INDEXERS / 'git-snapshot-index.py'
+    scanner_spec = importlib.util.spec_from_file_location('git_snapshot_scanner', scanner_path)
+    if scanner_spec is None or scanner_spec.loader is None:
+        raise RuntimeError('STOP: missing Git credential scanner')
+    scanner = importlib.util.module_from_spec(scanner_spec)
+    scanner_spec.loader.exec_module(scanner)
+    scanners = (SENSITIVE, scanner.SENSITIVE)
+    dates = exporter.observation_dates(database)
+    if dry_run:
+        checkpoint = {'version': 1, 'processed': {}}
+        existing = {}
+    else:
+        verify_collection()
+        checkpoint = checkpoint_read()
+        existing = existing_points('hermes_session')
+    counts = Counter()
+    seen = {p.get('content_sha256') for p in existing.values()}
+    for parent, child, message_id, content in candidates[:limit]:
+        records, rejected = exporter.build_findings((parent, child, message_id, content), repository, scanners)
+        counts.update(rejected)
+        fresh = []
+        for pid, payload in records:
+            payload['observed_at'] = dates.get(parent)
+            if payload['content_sha256'] in seen and pid not in existing:
+                counts['duplicate'] += 1
+                continue
+            seen.add(payload['content_sha256'])
+            if existing.get(pid, {}).get('content_sha256') != payload['content_sha256']:
+                fresh.append((pid, payload))
+        counts['eligible'] += len(records)
+        counts['new_or_changed'] += len(fresh)
+        if not dry_run:
+            upsert(fresh)
+            if fresh:
+                observed = existing_points('hermes_session')
+                if any(observed.get(pid, {}).get('content_sha256') != payload['content_sha256']
+                       for pid, payload in fresh):
+                    raise RuntimeError('STOP: Hermes point readback differs; checkpoint not advanced')
+            for pid, payload in fresh:
+                existing[pid] = payload
+            checkpoint['processed'][parent] = message_id
+            checkpoint_write(checkpoint)
+        counts['processed'] += 1
+    print('HERMES ' + ' '.join(f'{k}={v}' for k, v in sorted(counts.items())), flush=True)
+    if dry_run:
+        print('DRY RUN: no embeddings, Qdrant writes or checkpoint writes', flush=True)
 
 
 def main():
@@ -392,6 +500,9 @@ def main():
     sub = ap.add_subparsers(dest='cmd', required=True)
     sub.add_parser('init', help='Initialize the private watched inbox with a marker')
     sub.add_parser('status', help='Display Qdrant point counts by origin')
+    hermes_parser = sub.add_parser('sync-hermes', help='Reconcile historical main-profile compaction findings')
+    hermes_parser.add_argument('--dry-run', action='store_true')
+    hermes_parser.add_argument('--limit', type=int, help='Pilot only the first N completed compactions')
     inbox_parser = sub.add_parser('sync-inbox', help='Reconcile the entire inbox; including deletions')
     inbox_parser.add_argument('--dry-run', action='store_true')
     inbox_parser.add_argument('--allow-empty', action='store_true', help='Explicitly allow an emptied inbox / large prune')
@@ -405,6 +516,9 @@ def main():
     if args.cmd == 'status':
         show_status()
         return
+    if args.cmd == 'sync-hermes' and args.dry_run:
+        sync_hermes(dry_run=True, limit=args.limit)
+        return
     if args.cmd == 'sync-inbox' and args.dry_run:
         update_inbox(dry_run=True, allow_empty=args.allow_empty)
         return
@@ -414,6 +528,8 @@ def main():
     with os.fdopen(lock(), 'r+') as _held_lock:
         if args.cmd == 'sync-inbox':
             update_inbox(allow_empty=args.allow_empty)
+        elif args.cmd == 'sync-hermes':
+            sync_hermes(limit=args.limit)
         elif args.cmd == 'update':
             run_update(args.target, dry_run=False)
 

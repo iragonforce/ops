@@ -1,0 +1,52 @@
+.TH QDRANT-MEMORY 1 "2026-11-23" "Homelab" "User Commands"
+.SH NAME
+qdrant-memory \- reconcile the existing Nexus Qdrant knowledge collection
+.SH SYNOPSIS
+.B qdrant-memory.py status
+.br
+.B qdrant-memory.py sync-inbox [--dry-run] [--allow-empty]
+.br
+.B qdrant-memory.py sync-hermes [--dry-run] [--limit N]
+.br
+.B qdrant-memory.py update TARGET [--dry-run]
+.SH DESCRIPTION
+The existing inbox and repository indexers use the same Qdrant collection and
+Tensor Ollama embeddings. The separate
+.B sync-hermes
+command reads only completed default-profile Hermes compactions, applies
+conservative item-level safety and provenance filters, then upserts
+historically labelled records under
+.BR origin=hermes_session .
+It does not index full transcripts or modify other origins. The original inbox
+command retains its previous semantics.
+.SH ENVIRONMENT
+.B QDRANT_MEMORY_INDEXERS
+specifies the sibling script directory. In the Hermes container set
+.B QDRANT_MEMORY_QDRANT=http://qdrant:6333
+and
+.B QDRANT_MEMORY_OPS=/opt/data/workspace/ops
+and
+.B QDRANT_MEMORY_STATE=/opt/data/state/qdrant-memory .
+The database defaults to
+.B /opt/data/state.db
+and can be selected with
+.BR QDRANT_MEMORY_HERMES_DB .
+.SH SECURITY
+The database is read-only. The private checkpoint is mode 0600; the state
+directory is mode 0700. The process lock rejects overlapping runs. Missing
+Qdrant or Tensor Ollama leaves unconfirmed compactions for a later retry.
+Only filtered, low-confidence historical findings are stored; validate
+against authoritative Git and live state before applying them.
+.SH FILES
+.TP
+/opt/data/state/qdrant-memory/hermes-compaction-checkpoint.json
+Private per-compaction reconciliation state on the Hermes container.
+.TP
+shared/scripts/hermes-compaction-export.py
+Read-only source parser and conservative finding extractor.
+.SH SEE ALSO
+.BR qdrant-memory.service (5)
+.PP
+Full architecture, verification and scoped rollback:
+.B docs/current/hermes-qdrant-memory.md
+in public iragonforce/ops.

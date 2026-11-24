@@ -6,6 +6,8 @@ Read the repository's `AGENTS.md`, then the relevant `docs/current`, `inventory/
 
 Native Hermes `session_search` retrieves conversation context. The private Codex import ledger is `/opt/data/import-ledger/codex.json`; the older Paperclip archive remains a fallback. Historical claims need current source confirmation before promotion into current facts.
 
+Default-profile completed-compaction Qdrant findings, their private checkpoint, scheduler and historical-only authority boundary: `docs/current/hermes-qdrant-memory.md`. Implementation and acceptance: `docs/changes/2026-11-23-hermes-qdrant-memory.md`.
+
 Legacy kit changelogs and context are dated evidence. Their original contents are preserved in Git history or private `iragonforce/backup`, branch `unified-infra-2026-11-06`. New meaningful outcomes belong in the ops repository, not another mirrored changelog. Use `docs/current/host-operations.md` for operating boundaries and preserve existing pending physical validations.
 
 Specialist evaluation and current execution boundary: `docs/current/specialists.md`. The November 7 specialist pilot remains archived. As of November 8, Nexus Hermes native Kanban is the selected task system; Paperclip and its relays are retired, with historical data preserved. Hermes model inference is verified on Nexus and Tensor, but automatic specialist routing and recovery have not completed production acceptance tests. Do not activate autonomous specialist workers without a separately authorized, bounded test.
