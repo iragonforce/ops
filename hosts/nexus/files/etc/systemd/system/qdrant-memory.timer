@@ -1,9 +1,9 @@
 [Unit]
-Description=Periodic reconciliation for Qdrant memory inbox (missed filesystem changes)
+Description=Hourly reconciliation for Qdrant memory inbox and Hermes findings
 
 [Timer]
 OnBootSec=3min
-OnUnitInactiveSec=15min
+OnUnitInactiveSec=1h
 AccuracySec=1min
 Unit=qdrant-memory.service
 

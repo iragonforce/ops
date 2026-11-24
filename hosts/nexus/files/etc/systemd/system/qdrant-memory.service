@@ -16,4 +16,8 @@ ExecStart=/usr/bin/python3 -u /home/iragonforce/ops/shared/scripts/qdrant-memory
 # Root privileges are used only to enter the existing Hermes container; the
 # exporter and Qdrant writer run as Hermes UID 10000 with its private DB.
 ExecStartPost=+/usr/bin/docker exec --user 10000 -e QDRANT_MEMORY_QDRANT=http://qdrant:6333 -e QDRANT_MEMORY_INDEXERS=/opt/data/workspace/ops/shared/scripts -e QDRANT_MEMORY_OPS=/opt/data/workspace/ops -e QDRANT_MEMORY_STATE=/opt/data/state/qdrant-memory hermes /usr/bin/python3 -u /opt/data/workspace/ops/shared/scripts/qdrant-memory.py sync-hermes
+# Reuse the same timer and collection; isolate agy HOME discovery to this
+# second post-step. It selects only settled default-profile turns after an
+# explicit forward-only checkpoint bootstrap. No credential files are copied.
+ExecStartPost=+/usr/bin/docker exec --user 10000 -e HOME=/opt/data -e AGY_CLI_PATH=/opt/data/.local/bin/agy -e QDRANT_MEMORY_QDRANT=http://qdrant:6333 -e QDRANT_MEMORY_INDEXERS=/opt/data/workspace/ops/shared/scripts -e QDRANT_MEMORY_STATE=/opt/data/state/qdrant-memory hermes /usr/bin/python3 -u /opt/data/workspace/ops/shared/scripts/qdrant-memory.py sync-chat
 TimeoutStartSec=0

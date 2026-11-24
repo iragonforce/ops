@@ -8,6 +8,8 @@ obsidian); local indexers beside this script; existing private Qdrant endpoint.
 Outputs: source-linked origin=manual_inbox points and diagnostics. The separate
 sync-hermes command indexes conservatively filtered, historical main-profile
 compaction findings as origin=hermes_session; it never prunes other origins.
+sync-chat selects narrow settled-turn findings with the existing Antigravity
+Gemini provider, then embeds/upserts origin=hermes_chat without pruning.
 Deletion: inbox reconciliation prunes stale manual_inbox points only, with
 empty-inbox and mass-purge guards. No secrets are intentionally emitted to logs.
 
@@ -34,6 +36,7 @@ from urllib.request import Request, urlopen
 # The remote receiver also imports this file directly via importlib.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from heading_chunk_filter import heading_only, merge_heading_only_chunks
+import hermes_chat_memory as chat
 
 HOME = Path('/home/iragonforce')
 INBOX = Path(os.environ.get('QDRANT_MEMORY_INBOX', str(HOME / 'qdrant-inbox')))
@@ -457,7 +460,7 @@ def lock():
 
 def show_status():
     verify_collection()
-    for origin in ('ops', 'git_history', 'obsidian_history', 'git_repo_snapshot', ORIGIN, 'hermes_session'):
+    for origin in ('ops', 'git_history', 'obsidian_history', 'git_repo_snapshot', ORIGIN, 'hermes_session', chat.ORIGIN):
         print(f'{origin}: {count_origin(origin)}')
     print(f'inbox: {INBOX}')
 
@@ -580,6 +583,118 @@ def sync_hermes(dry_run=False, limit=None):
     if dry_run:
         print('DRY RUN: no embeddings, Qdrant writes or checkpoint writes', flush=True)
 
+def chat_checkpoint_read():
+    path = STATE / 'hermes-chat-checkpoint.json'
+    if path.is_symlink():
+        raise RuntimeError('STOP: chat checkpoint symlink')
+    if not path.exists():
+        return None
+    info = path.stat()
+    if not path.is_file() or info.st_uid != os.geteuid() or info.st_mode & 0o077 or info.st_size > 4096:
+        raise RuntimeError('STOP: unsafe chat checkpoint')
+    value = json.loads(path.read_text(encoding='utf-8'))
+    if (set(value) != {'version', 'last_id', 'sha256'} or value['version'] != 1
+            or type(value['last_id']) is not int or value['last_id'] < 0
+            or value['sha256'] != hashlib.sha256(str(value['last_id']).encode()).hexdigest()):
+        raise RuntimeError('STOP: chat checkpoint integrity mismatch')
+    return value['last_id']
+
+def chat_checkpoint_write(last_id):
+    path = STATE / 'hermes-chat-checkpoint.json'
+    tmp = STATE / 'hermes-chat-checkpoint.tmp'
+    if path.is_symlink():
+        raise RuntimeError('STOP: chat checkpoint symlink')
+    if tmp.exists() or tmp.is_symlink():
+        info = tmp.lstat()
+        if tmp.is_symlink() or not tmp.is_file() or info.st_uid != os.geteuid() or info.st_mode & 0o077:
+            raise RuntimeError('STOP: unsafe interrupted chat checkpoint')
+        # The exclusive index.lock makes a private leftover a killed-run artifact.
+        tmp.unlink()
+    value = {'version': 1, 'last_id': last_id,
+             'sha256': hashlib.sha256(str(last_id).encode()).hexdigest()}
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, 'O_NOFOLLOW', 0), 0o600)
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as out:
+            json.dump(value, out, sort_keys=True)
+            out.flush()
+            os.fsync(out.fileno())
+        os.replace(tmp, path)
+        directory = os.open(STATE, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+
+def sync_chat(*, dry_run=False, bootstrap=False, limit=12):
+    """Forward-only, default-profile settled chats; model failures remain retryable."""
+    database = Path(os.environ.get('QDRANT_MEMORY_HERMES_DB', '/opt/data/state.db'))
+    if database.is_symlink() or not database.is_file() or not 1 <= limit <= 30:
+        raise RuntimeError('STOP: invalid Hermes chat database or limit')
+    last_id = chat_checkpoint_read()
+    if bootstrap:
+        if last_id is not None or dry_run:
+            raise RuntimeError('STOP: bootstrap requires a missing checkpoint and apply mode')
+        cursor = chat.newest_message_id(database)
+        chat_checkpoint_write(cursor)
+        print(f'CHAT bootstrap_last_id={cursor} (forward-only; no historical chat sent to model)', flush=True)
+        return
+    if last_id is None:
+        raise RuntimeError('STOP: chat checkpoint missing; explicit --bootstrap required')
+    turns = chat.settled_turns(database, last_id, limit=limit)
+    if dry_run:
+        print(f'CHAT dry_run candidates={len(turns)} last_id={last_id}; no model/embedding/Qdrant writes', flush=True)
+        return
+    verify_collection()
+    scanner_path = INDEXERS / 'git-snapshot-index.py'
+    spec = importlib.util.spec_from_file_location('git_snapshot_chat_scanner', scanner_path)
+    if not spec or not spec.loader:
+        raise RuntimeError('STOP: missing Git credential scanner')
+    scanner = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(scanner)
+    scanners = (SENSITIVE, scanner.SENSITIVE)
+    existing = existing_points(chat.ORIGIN)
+    seen = {p.get('content_sha256') for p in existing.values()}
+    seen.update(p.get('content_sha256') for p in existing_points('hermes_session').values())
+    counts = Counter()
+    for turn in turns:
+        answer_id, _, _, user, answer, _, _ = turn
+        if not chat.safe_pair(user, answer, scanners):
+            counts['skipped_input'] += 1
+            records = []
+        else:
+            try:
+                facts = chat.select_facts(user, answer)
+            except Exception as exc:
+                # Provider errors can include private prompt excerpts; never
+                # send their messages or chained tracebacks to journalctl.
+                raise RuntimeError(f'STOP: chat selector failed ({type(exc).__name__}); cursor unchanged') from None
+            records = chat.build_records(turn, facts, scanners)
+            counts['selected'] += len(records)
+        fresh = []
+        for pid, payload in records:
+            content_hash = payload['content_sha256']
+            if content_hash in seen and pid not in existing:
+                counts['duplicate'] += 1
+                continue
+            seen.add(content_hash)
+            if existing.get(pid, {}).get('content_sha256') != content_hash:
+                fresh.append((pid, payload))
+        upsert(fresh)
+        if fresh:
+            observed = existing_points(chat.ORIGIN)
+            if any(observed.get(pid, {}).get('content_sha256') != payload['content_sha256']
+                   for pid, payload in fresh):
+                raise RuntimeError('STOP: chat point readback differs; checkpoint not advanced')
+            for pid, payload in fresh:
+                existing[pid] = payload
+        chat_checkpoint_write(answer_id)
+        counts['processed'] += 1
+        counts['new_or_changed'] += len(fresh)
+    print('CHAT ' + ' '.join(f'{k}={v}' for k, v in sorted(counts.items())), flush=True)
+
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
@@ -589,6 +704,10 @@ def main():
     hermes_parser = sub.add_parser('sync-hermes', help='Reconcile historical main-profile compaction findings')
     hermes_parser.add_argument('--dry-run', action='store_true')
     hermes_parser.add_argument('--limit', type=int, help='Pilot only the first N completed compactions')
+    chat_parser = sub.add_parser('sync-chat', help='Select future completed default-profile chat findings (no raw transcript stored)')
+    chat_parser.add_argument('--bootstrap', action='store_true', help='Set a forward-only cursor at the current message ID without inference/writes')
+    chat_parser.add_argument('--dry-run', action='store_true', help='Count eligible turns without model, embedding or Qdrant writes')
+    chat_parser.add_argument('--limit', type=int, default=12, help='Maximum settled chat turns per invocation (1–30)')
     inbox_parser = sub.add_parser('sync-inbox', help='Reconcile the entire inbox; including deletions')
     inbox_parser.add_argument('--dry-run', action='store_true')
     inbox_parser.add_argument('--allow-empty', action='store_true', help='Explicitly allow an emptied inbox / large prune')
@@ -609,6 +728,9 @@ def main():
     if args.cmd == 'sync-hermes' and args.dry_run:
         sync_hermes(dry_run=True, limit=args.limit)
         return
+    if args.cmd == 'sync-chat' and args.dry_run:
+        sync_chat(dry_run=True, limit=args.limit)
+        return
     if args.cmd == 'sync-inbox' and args.dry_run:
         update_inbox(dry_run=True, allow_empty=args.allow_empty)
         return
@@ -620,6 +742,8 @@ def main():
             update_inbox(allow_empty=args.allow_empty, prune_manifest=args.prune_manifest)
         elif args.cmd == 'sync-hermes':
             sync_hermes(limit=args.limit)
+        elif args.cmd == 'sync-chat':
+            sync_chat(bootstrap=args.bootstrap, limit=args.limit)
         elif args.cmd == 'update':
             run_update(args.target, dry_run=False)
 

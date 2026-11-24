@@ -26,7 +26,7 @@ MODEL = 'qwen3-embedding:8b-fp16'
 COLLECTION = 'qdrant_memory'
 ALLOWED_ORIGINS = (
     'ops', 'git_repo_snapshot', 'manual_inbox', 'obsidian_history',
-    'git_history', 'git_repo_ephemeral', 'hermes_session',
+    'git_history', 'git_repo_ephemeral', 'hermes_session', 'hermes_chat',
 )
 MAX_REQUEST_BYTES = 256 * 1024
 MAX_PASSAGE_CHARS = 900
@@ -108,6 +108,7 @@ def origin_authority(p):
         'manual_inbox': 'user_supplied_unverified',
         'git_repo_ephemeral': 'external_snapshot_unverified',
         'hermes_session': 'agent_summary_historical_unverified',
+        'hermes_chat': 'conversation_historical_unverified',
     }.get(origin, 'unverified')
 
 
@@ -124,7 +125,8 @@ def format_point(hit, *, full=False):
     ]
     for k in ('heading', 'repository', 'indexed_snapshot_commit', 'line_start', 'line_end',
               'observed_at', 'verification', 'confidence', 'parent_session_id',
-              'compaction_session_id', 'evidence_paths'):
+              'compaction_session_id', 'evidence_paths', 'session_id',
+              'user_message_id', 'assistant_message_id'):
         if p.get(k) is not None:
             lines.append(f'{k}={str(p[k])[:180]}')
     lines += ['text:', text]

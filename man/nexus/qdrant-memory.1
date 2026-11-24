@@ -1,4 +1,4 @@
-.TH QDRANT-MEMORY 1 "2026-11-23" "Homelab" "User Commands"
+.TH QDRANT-MEMORY 1 "2026-11-24" "Homelab" "User Commands"
 .SH NAME
 qdrant-memory \- reconcile the existing Nexus Qdrant knowledge collection
 .SH SYNOPSIS
@@ -7,6 +7,8 @@ qdrant-memory \- reconcile the existing Nexus Qdrant knowledge collection
 .B qdrant-memory.py sync-inbox [--dry-run] [--allow-empty]
 .br
 .B qdrant-memory.py sync-hermes [--dry-run] [--limit N]
+.br
+.B qdrant-memory.py sync-chat [--bootstrap | --dry-run] [--limit N]
 .br
 .B qdrant-memory.py update TARGET [--dry-run]
 .SH DESCRIPTION
@@ -19,6 +21,18 @@ historically labelled records under
 .BR origin=hermes_session .
 It does not index full transcripts or modify other origins. The original inbox
 command retains its previous semantics.
+.B sync-chat
+starts only after an explicit forward-only bootstrap (no historical chat
+backfill). It reads settled default-profile CLI/TUI/Photon user and final-answer
+pairs from a read-only SQLite snapshot, skipping recent, failed, other-profile,
+cron and delegated turns. It screens sensitive text before sending bounded
+pairs to the existing Gemini 3.8 Flash provider; accepted historical findings
+are embedded with the existing Ollama model and stored separately as
+.BR origin=hermes_chat .
+Raw chats and model rejects are not exported or logged. No automatic deletion.
+The
+.B --dry-run
+mode performs no model calls or Qdrant writes.
 .SH ENVIRONMENT
 .B QDRANT_MEMORY_INDEXERS
 specifies the sibling script directory. In the Hermes container set
@@ -31,6 +45,13 @@ The database defaults to
 .B /opt/data/state.db
 and can be selected with
 .BR QDRANT_MEMORY_HERMES_DB .
+For the chat selector set
+.B HOME=/opt/data
+and
+.B AGY_CLI_PATH=/opt/data/.local/bin/agy
+only on the container's chat post-step. This selects the existing protected
+Antigravity credential without copying or changing it. The installed
+Antigravity plugin is required; Gemini output is validated before indexing.
 .SH SECURITY
 The database is read-only. The private checkpoint is mode 0600; the state
 directory is mode 0700. The process lock rejects overlapping runs. Missing
@@ -41,6 +62,12 @@ against authoritative Git and live state before applying them.
 .TP
 /opt/data/state/qdrant-memory/hermes-compaction-checkpoint.json
 Private per-compaction reconciliation state on the Hermes container.
+.TP
+/opt/data/state/qdrant-memory/hermes-chat-checkpoint.json
+Private forward-only chat cursor and integrity digest; no transcript text.
+.TP
+shared/scripts/hermes_chat_memory.py
+Read-only settled-turn scanner, privacy gate and isolated Gemini selector.
 .TP
 shared/scripts/hermes-compaction-export.py
 Read-only source parser and conservative finding extractor.
