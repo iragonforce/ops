@@ -1,6 +1,6 @@
-# Qdrant heading-only parser remediation — staged, not deployed
+# Qdrant heading-only parser remediation — November 23 staging record
 
-Date: November 23, 2026 (Nexus EST). Scope: public `iragonforce/ops` and the three existing Markdown origins; no production indexer source or Qdrant point was changed by the parser work at this stage. The separate, unchanged Hermes compaction timer processed a real new lineage during this investigation (see `2026-11-23-hermes-qdrant-memory.md`).
+Date: November 23, 2026 (Nexus EST). This record describes the **preapproval staging state**: no production indexer source or Qdrant point was changed by the parser work at that stage. The subsequent approved production migration and current status are in `2026-11-24-qdrant-heading-migration.md`. The separate, unchanged Hermes compaction timer processed a real new lineage during this investigation (see `2026-11-23-hermes-qdrant-memory.md`).
 
 ## Reconciliation and source
 
@@ -29,7 +29,7 @@ The four `ops` records missing from current parser output are substantive histor
 - Restored that exact snapshot by checksum into an **ephemeral** same-image Qdrant container bound only to host loopback port 6334. The restored isolated collection became green with all 5,239 points at 4,096 dimensions. A source-selected changed record from each of the three affected origins was embedded by the existing Tensor model and upserted **only to the isolated container**. The original UUIDs, changed hashes, full payload readback, fresh MCP exact read and origin-filtered semantic search all passed; each selected ID appeared in search results. The container used `--rm` and exited; no persistent canary collection or service remains. No raw passages appeared in public logs.
 - **Snapshot time boundary:** while the canary ran, the normal production timer safely indexed three new `hermes_session` findings, raising production from 5,239 to 5,242. The snapshot therefore **must not** be restored wholesale over current production: doing so would discard those legitimate newer points. If the later controlled migration proceeds, create and verify a fresh snapshot immediately before any write. For targeted rollback, use this manifest to identify only touched IDs and restore their original payloads **and vectors** from a safely restored snapshot in isolation; never restore the entire collection or delete another origin.
 
-## Deployment and approval gate
+## Deployment and approval gate at staging (later fulfilled)
 
 No parser code, extra unit, timer, MCP bridge, collection, or profile was deployed/modified. The active `qdrant-memory.service` still runs the original inbox writer and Hermes post-step; the `.timer` and `.path` remain enabled and active. To migrate production, obtain **explicit separate approval for the exact consequential point deletion**: 80 `ops`, 103 `obsidian_history`, and 235 `manual_inbox` heading-only IDs in the protected manifest. Do not include the four substantive `ops` IDs. Refresh the read-only manifest and snapshot if sources or origin IDs/hashes drift. Pause only the existing writer timer/path, wait for the unit to be inactive, deploy reviewed source through the guarded Git workflow, migrate one origin at a time with exact pre/post ID+hash checks and MCP retrieval, then restore and observe unattended scheduling. If approval is withheld, leave the existing production writer running unchanged and keep this source staged. Public inventory mapping for these scripts is currently absent; add mappings only with an actual deployment.
 
