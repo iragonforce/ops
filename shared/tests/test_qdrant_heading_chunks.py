@@ -205,6 +205,36 @@ class HeadingChunkTests(unittest.TestCase):
             self.assertIn('retained 1 stale points', output.getvalue())
             self.assertEqual(len(called), 1)
 
+    def test_inbox_approved_prune_rejects_extra_and_substantive_ids(self):
+        guard = self.modules['inbox']['approved_heading_deletions']
+        pid = self.expected_id('inbox', 0)
+        source = 'qdrant-inbox/fixture.md'
+        digest = 'a' * 64
+        item = {'id': pid, 'source': source, 'content_sha256': digest}
+        payload = dict(item, origin='manual_inbox', text='# Header\n')
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'prune.json'
+            path.write_text(json.dumps({'origin': 'manual_inbox', 'points': [item]}))
+            path.chmod(0o600)
+            globals_ = guard.__globals__
+            with mock.patch.dict(globals_, {'request': lambda *args, **kwargs: {
+                'result': [{'id': pid, 'payload': payload}]
+            }}):
+                guard(path, [pid], {pid: {'source': source, 'content_sha256': digest}}, set())
+                with self.assertRaisesRegex(RuntimeError, 'differ'):
+                    guard(path, [pid, self.expected_id('inbox', 1)],
+                          {pid: {'source': source, 'content_sha256': digest}}, set())
+                with self.assertRaisesRegex(RuntimeError, 'mismatch'):
+                    guard(path, [pid], {pid: {'source': source, 'content_sha256': 'b' * 64}}, set())
+                for changed in ({'origin': 'ops'}, {'text': '# Header\nBody\n'},
+                                {'source': 'qdrant-inbox/other.md'}):
+                    with self.subTest(changed=changed):
+                        payload.update(changed)
+                        with self.assertRaisesRegex(RuntimeError, 'changed or substantive'):
+                            guard(path, [pid], {pid: {'source': source,
+                                                     'content_sha256': digest}}, set())
+                        payload.update(dict(item, origin='manual_inbox', text='# Header\n'))
+
 
 if __name__ == '__main__':
     unittest.main()

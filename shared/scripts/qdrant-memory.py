@@ -33,7 +33,7 @@ from urllib.request import Request, urlopen
 
 # The remote receiver also imports this file directly via importlib.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from heading_chunk_filter import merge_heading_only_chunks
+from heading_chunk_filter import heading_only, merge_heading_only_chunks
 
 HOME = Path('/home/iragonforce')
 INBOX = Path(os.environ.get('QDRANT_MEMORY_INBOX', str(HOME / 'qdrant-inbox')))
@@ -306,7 +306,59 @@ def delete_stale(ids):
             raise RuntimeError('STOP: Qdrant refused stale-point deletion')
 
 
-def update_inbox(specific=None, dry_run=False, allow_empty=False):
+def approved_heading_deletions(manifest_path, stale, existing, desired):
+    """Require an exact protected manifest for a large manual-inbox prune."""
+    if (manifest_path.is_symlink() or not manifest_path.is_file()
+            or manifest_path.stat().st_uid != os.geteuid()
+            or manifest_path.stat().st_mode & 0o077
+            or manifest_path.stat().st_size > 128 * 1024):
+        raise RuntimeError('STOP: invalid or unprotected inbox prune manifest')
+    manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+    if set(manifest) != {'origin', 'points'} or manifest['origin'] != ORIGIN:
+        raise RuntimeError('STOP: wrong inbox prune origin/schema')
+    points = manifest['points']
+    if not isinstance(points, list) or not 0 < len(points) <= 500:
+        raise RuntimeError('STOP: inbox prune manifest needs 1–500 exact points')
+    approved = {}
+    for item in points:
+        if not isinstance(item, dict) or set(item) != {'id', 'source', 'content_sha256'}:
+            raise RuntimeError('STOP: malformed inbox prune item')
+        pid, source, digest = item['id'], item['source'], item['content_sha256']
+        if not all(isinstance(x, str) for x in (pid, source, digest)):
+            raise RuntimeError('STOP: invalid inbox prune item')
+        try:
+            if str(uuid.UUID(pid)) != pid or len(digest) != 64:
+                raise ValueError('invalid id or hash')
+            int(digest, 16)
+        except ValueError as exc:
+            raise RuntimeError('STOP: invalid inbox prune ID/hash') from exc
+        if (pid in approved or pid in desired or pid not in existing
+                or existing[pid].get('source') != source
+                or existing[pid].get('content_sha256') != digest
+                or not source.startswith('qdrant-inbox/')
+                or source == 'qdrant-inbox/'):
+            raise RuntimeError('STOP: inbox prune source/hash/ID mismatch')
+        approved[pid] = item
+    if set(approved) != set(stale):
+        raise RuntimeError('STOP: inbox stale IDs differ from reviewed manifest')
+    for index in range(0, len(stale), 100):
+        batch = stale[index:index + 100]
+        live = request(f'{QDRANT}/collections/{COLLECTION}/points', {
+            'ids': batch, 'with_payload': True, 'with_vector': False,
+        })['result']
+        if len(live) != len(batch):
+            raise RuntimeError('STOP: inbox prune point missing')
+        for point in live:
+            pid, payload = str(point['id']), point['payload']
+            item = approved.get(pid)
+            if (item is None or payload.get('origin') != ORIGIN
+                    or payload.get('source') != item['source']
+                    or payload.get('content_sha256') != item['content_sha256']
+                    or not heading_only(payload.get('text', ''))):
+                raise RuntimeError('STOP: inbox prune point changed or substantive')
+
+
+def update_inbox(specific=None, dry_run=False, allow_empty=False, prune_manifest=None):
     records, files, excluded = source_records(specific)
     if len(records) > 5000:
         raise RuntimeError('STOP: more than 5000 inbox passages; review before indexing')
@@ -327,11 +379,15 @@ def update_inbox(specific=None, dry_run=False, allow_empty=False):
     print(f'existing={len(existing)} changed/new={len(changed)} stale={len(stale)}', flush=True)
     if not specific and len(existing) and not files and not allow_empty:
         raise RuntimeError('STOP: inbox is empty; refusing to remove all records without --allow-empty')
+    if prune_manifest is not None:
+        approved_heading_deletions(prune_manifest, stale, existing, desired)
     max_prune = max(25, len(existing) // 10)
-    if len(stale) > max_prune and not allow_empty:
+    if len(stale) > max_prune and not allow_empty and prune_manifest is None:
         raise RuntimeError(f'STOP: {len(stale)} stale points exceeds safe pruning threshold {max_prune}')
     upsert(changed)
     if stale:
+        if prune_manifest is not None:
+            approved_heading_deletions(prune_manifest, stale, existing_points(), desired)
         delete_stale(stale)
     after = existing_points()
     if specific:
@@ -536,10 +592,14 @@ def main():
     inbox_parser = sub.add_parser('sync-inbox', help='Reconcile the entire inbox; including deletions')
     inbox_parser.add_argument('--dry-run', action='store_true')
     inbox_parser.add_argument('--allow-empty', action='store_true', help='Explicitly allow an emptied inbox / large prune')
+    inbox_parser.add_argument('--prune-manifest', type=Path,
+                              help='Protected exact-ID manifest for a reviewed heading-only migration')
     update_parser = sub.add_parser('update', help='Index one inbox file or named source')
     update_parser.add_argument('target', help='inbox filename/path, ops, nexus, tensor, obsidian, or all')
     update_parser.add_argument('--dry-run', action='store_true')
     args = ap.parse_args()
+    if args.cmd == 'sync-inbox' and args.prune_manifest and (args.dry_run or args.allow_empty):
+        ap.error('--prune-manifest requires apply mode without --allow-empty')
     if args.cmd == 'init':
         init_inbox()
         return
@@ -557,7 +617,7 @@ def main():
         return
     with os.fdopen(lock(), 'r+') as _held_lock:
         if args.cmd == 'sync-inbox':
-            update_inbox(allow_empty=args.allow_empty)
+            update_inbox(allow_empty=args.allow_empty, prune_manifest=args.prune_manifest)
         elif args.cmd == 'sync-hermes':
             sync_hermes(limit=args.limit)
         elif args.cmd == 'update':
