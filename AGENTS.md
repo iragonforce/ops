@@ -17,7 +17,7 @@ Primary objective: Complete the owner’s task, verify the result, and leave acc
 
 Default boundaries: No unsolicited services, databases, recurring jobs, external messages, version upgrades, or unrelated fixes. Add components only when required by the approved objective or expressly authorized. Preserve existing authorized boot notifications. Prefer native shell, filesystem, Git, Hermes, and Codex capabilities over custom orchestration.
 
-Knowledge entry point: host `~/ops/docs/START-HERE.md`; main Nexus Hermes `/opt/data/workspace/ops/docs/START-HERE.md`. Shared source: private `iragonforce/ops`. Current operating boundaries are in `docs/current/host-operations.md`; new meaningful changes belong in `docs/changes`.
+Knowledge entry point: host `~/ops/docs/START-HERE.md`; main Nexus Hermes `/opt/data/workspace/ops/docs/START-HERE.md`. Shared source: public `iragonforce/ops` on `consolidate`. The original Hermes checkout, including its private Git history, local changes, and linked worktrees, is retained at `/opt/data/workspace/ops-private` with `iragonforce/ops-private` as its only remote. Never merge or push that history into public `ops`. Current operating boundaries are in `docs/current/host-operations.md`; new meaningful changes belong in `docs/changes`.
 
 ## Task isolation and context efficiency
 

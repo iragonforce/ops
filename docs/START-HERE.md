@@ -1,6 +1,6 @@
 # Infrastructure knowledge
 
-Current source and change history: private `iragonforce/ops`. Host checkout: `~/ops`. Main Nexus Hermes checkout: `/opt/data/workspace/ops`.
+Current source and change history: public `iragonforce/ops` (`consolidate`). Host checkout: `~/ops`. Main Nexus Hermes checkout: `/opt/data/workspace/ops`. Original private Hermes history and local work remain in `/opt/data/workspace/ops-private`, whose remote is `iragonforce/ops-private`; see `docs/changes/2026-11-23-hermes-public-ops-cutover.md`. Never merge private history into public `ops`.
 
 Read the repository's `AGENTS.md`, then the relevant `docs/current`, `inventory/current.json`, and newest matching entry in `docs/changes`. Use `git log` and `rg` before repeating live discovery. `inventory/deployments.json` maps source to installed paths; `docs/workflow.md` explains guarded deployment and rollback.
 
