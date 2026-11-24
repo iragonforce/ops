@@ -150,7 +150,8 @@ def main():
     desired = {point_id for point_id, _ in documents}
     todo = [(point_id, p) for point_id, p in documents
             if previous.get(point_id) != p['content_sha256']]
-    print(f'Existing: {len(previous)}; changed/new: {len(todo)}; stale: {len(set(previous)-desired)}', flush=True)
+    stale = sorted(set(previous) - desired)
+    print(f'Existing: {len(previous)}; changed/new: {len(todo)}; stale retained: {len(stale)}', flush=True)
     for index in range(0, len(todo), BATCH):
         batch = todo[index:index+BATCH]
         texts = [f'Source: {p["source"]}\nHeading: {p["heading"]}\n{p["text"]}' for _, p in batch]
@@ -164,16 +165,10 @@ def main():
         if result.get('status') != 'ok':
             raise SystemExit(f'STOP: Qdrant upsert rejected at {index}')
         print(f'Upserted: {index+len(batch)}/{len(todo)}', flush=True)
-    stale = sorted(set(previous) - desired)
-    for i in range(0, len(stale), 100):
-        result = request(f'{QDRANT}/collections/{COLLECTION}/points/delete?wait=true',
-                         {'points': stale[i:i+100]})
-        if result.get('status') != 'ok':
-            raise SystemExit('STOP: stale-point deletion failed')
     after = existing_points()
-    if set(after) != desired:
-        raise SystemExit(f'STOP: expected {len(desired)} ops points, got {len(after)}')
-    print(f'PASS: indexed {len(after)} ops passages; removed {len(stale)} stale points', flush=True)
+    if not desired.issubset(after) or any(after[pid] != payload['content_sha256'] for pid, payload in documents):
+        raise SystemExit('STOP: intended ops points not confirmed')
+    print(f'PASS: indexed {len(desired)} intended ops passages; retained {len(stale)} stale points for explicit review', flush=True)
 
 
 if __name__ == '__main__':

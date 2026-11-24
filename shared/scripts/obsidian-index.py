@@ -12,6 +12,7 @@ Paperclip/HOM-related, ambiguous and sensitive documents are deferred for review
 import argparse
 import hashlib
 import json
+import os
 import re
 import sys
 import uuid
@@ -20,7 +21,7 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from heading_chunk_filter import merge_heading_only_chunks
+from heading_chunk_filter import heading_only, merge_heading_only_chunks
 
 ROOT = Path('/home/iragonforce/secondBrain/Homelab')
 QDRANT = 'http://127.0.0.1:6333'
@@ -149,6 +150,51 @@ def existing_obsidian():
             return points
 
 
+def verified_stale_heading_ids(manifest_path, root, selected, desired, previous):
+    """Preflight an explicit, bounded list of old heading-only points."""
+    if (manifest_path.is_symlink() or not manifest_path.is_file()
+            or manifest_path.stat().st_size > 64 * 1024
+            or manifest_path.stat().st_uid != os.geteuid()
+            or manifest_path.stat().st_mode & 0o077):
+        raise RuntimeError('STOP: invalid or oversized prune manifest')
+    manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+    if set(manifest) != {'origin', 'points'} or manifest['origin'] != 'obsidian_history':
+        raise RuntimeError('STOP: wrong prune manifest origin/schema')
+    points = manifest['points']
+    if not isinstance(points, list) or not 0 < len(points) <= 100:
+        raise RuntimeError('STOP: prune manifest must contain 1–100 exact IDs')
+    allowed_sources = {f'secondBrain/Homelab/{path.relative_to(root).as_posix()}' for path in selected}
+    ids = []
+    for item in points:
+        if not isinstance(item, dict) or set(item) != {'id', 'source', 'content_sha256'}:
+            raise RuntimeError('STOP: malformed prune manifest item')
+        pid, source, digest = item['id'], item['source'], item['content_sha256']
+        if not isinstance(pid, str) or not isinstance(source, str) or not isinstance(digest, str):
+            raise RuntimeError('STOP: invalid prune manifest fields')
+        try:
+            if str(uuid.UUID(pid)) != pid or len(digest) != 64 or int(digest, 16) < 0:
+                raise ValueError('invalid digest or ID')
+        except ValueError as exc:
+            raise RuntimeError('STOP: invalid prune manifest ID/hash') from exc
+        if source not in allowed_sources or pid in desired or previous.get(pid) != digest or pid in ids:
+            raise RuntimeError('STOP: prune scope, hash, or ID mismatch')
+        ids.append(pid)
+    live = request(f'{QDRANT}/collections/{COLLECTION}/points', {
+        'ids': ids, 'with_payload': True, 'with_vector': False,
+    })['result']
+    if len(live) != len(ids):
+        raise RuntimeError('STOP: prune point missing')
+    by_id = {item['id']: item for item in points}
+    for point in live:
+        item = by_id.get(str(point['id']))
+        payload = point['payload']
+        if item is None or (payload.get('origin'), payload.get('source'), payload.get('content_sha256')) != (
+            'obsidian_history', item['source'], item['content_sha256']
+        ) or not heading_only(payload.get('text', '')):
+            raise RuntimeError('STOP: prune point changed or substantive')
+    return ids
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group(required=True)
@@ -157,7 +203,11 @@ def main():
     parser.add_argument('--root', type=Path, default=ROOT)
     parser.add_argument('--only', action='append', default=[], metavar='RELATIVE_MD_PATH',
                         help='Limit selected files; repeat for multiple paths')
+    parser.add_argument('--prune-manifest', type=Path,
+                        help='Reviewed 1–100 old heading IDs and hashes; requires --apply --only')
     args = parser.parse_args()
+    if args.prune_manifest and (not args.apply or not args.only):
+        parser.error('--prune-manifest requires --apply and explicit --only source paths')
     root = args.root
     if not root.is_dir():
         parser.error(f'Obsidian Homelab directory missing: {root}')
@@ -182,6 +232,8 @@ def main():
     if cfg.get('size') != DIMENSIONS or cfg.get('distance') != 'Cosine':
         raise SystemExit('STOP: wrong Qdrant collection dimensions/distance')
     prev = existing_obsidian()
+    desired = {pid for pid, _ in records}
+    stale = verified_stale_heading_ids(args.prune_manifest, root, selected, desired, prev) if args.prune_manifest else []
     todo = [(pid, p) for pid, p in records if prev.get(pid) != p['content_sha256']]
     print(f'Existing Obsidian: {len(prev)}; changed/new: {len(todo)}', flush=True)
     for i in range(0, len(todo), BATCH):
@@ -196,7 +248,18 @@ def main():
         if result.get('status') != 'ok':
             raise SystemExit(f'STOP: Qdrant refused upsert at batch {i}')
         print(f'Upserted: {i + len(batch)}/{len(todo)}', flush=True)
-    print('COMPLETE: Obsidian eligible passages indexed (no deletions)', flush=True)
+    if stale:
+        # A second read guards against concurrent writers before deletion.
+        latest = existing_obsidian()
+        if any(latest.get(pid) != prev[pid] for pid in stale):
+            raise RuntimeError('STOP: prune points changed during indexing')
+        verified_stale_heading_ids(args.prune_manifest, root, selected, desired, prev)
+        result = request(f'{QDRANT}/collections/{COLLECTION}/points/delete?wait=true',
+                         {'points': stale})
+        if result.get('status') != 'ok' or any(pid in existing_obsidian() for pid in stale):
+            raise RuntimeError('STOP: scoped heading deletion not confirmed')
+        print(f'Pruned: {len(stale)} reviewed heading-only IDs', flush=True)
+    print('COMPLETE: Obsidian eligible passages indexed', flush=True)
 
 
 if __name__ == '__main__':

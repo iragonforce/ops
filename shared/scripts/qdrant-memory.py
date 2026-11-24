@@ -239,7 +239,12 @@ def _original_chunks(path, text):
 
 
 def chunks(path, text):
-    yield from merge_heading_only_chunks(_original_chunks(path, text), MAX_CHARS)
+    original = _original_chunks(path, text)
+    if path.suffix.lower() == '.md':
+        yield from merge_heading_only_chunks(original, MAX_CHARS)
+    else:
+        # A hash-prefixed line in plain text is content, not a Markdown heading.
+        yield from original
 
 
 def source_records(specific=None):

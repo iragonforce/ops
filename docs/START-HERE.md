@@ -7,6 +7,7 @@ Read the repository's `AGENTS.md`, then the relevant `docs/current`, `inventory/
 Native Hermes `session_search` retrieves conversation context. The private Codex import ledger is `/opt/data/import-ledger/codex.json`; the older Paperclip archive remains a fallback. Historical claims need current source confirmation before promotion into current facts.
 
 Default-profile completed-compaction Qdrant findings, their private checkpoint, scheduler and historical-only authority boundary: `docs/current/hermes-qdrant-memory.md`. Implementation and acceptance: `docs/changes/2026-11-23-hermes-qdrant-memory.md`.
+The staged heading-only chunk remediation, protected point-level migration manifest, isolated Qdrant recovery test, and production deletion approval gate: `docs/changes/2026-11-23-qdrant-heading-chunks.md`. This parser revision is not deployed yet.
 
 Legacy kit changelogs and context are dated evidence. Their original contents are preserved in Git history or private `iragonforce/backup`, branch `unified-infra-2026-11-06`. New meaningful outcomes belong in the ops repository, not another mirrored changelog. Use `docs/current/host-operations.md` for operating boundaries and preserve existing pending physical validations.
 
