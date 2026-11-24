@@ -1,5 +1,6 @@
 """Regression checks for conservative Hermes compaction export and reconciliation."""
 import importlib.util
+import fcntl
 import json
 import os
 from pathlib import Path
@@ -104,6 +105,7 @@ class ExportTests(unittest.TestCase):
             self.assertEqual(len(store), 1)
             checkpoint = self.root / 'hermes-compaction-checkpoint.json'
             self.assertEqual(json.loads(checkpoint.read_text())['processed']['parent'], 'one')
+            self.assertEqual(json.loads(checkpoint.read_text())['version'], 2)
             self.assertEqual(checkpoint.stat().st_mode & 0o777, 0o600)
             core.sync_hermes()
             self.assertEqual(len(store), 1)
@@ -125,6 +127,21 @@ class ExportTests(unittest.TestCase):
             self.assertEqual(len(store), 1)
             self.assertTrue(checkpoint.exists())
 
+    def test_checkpoint_integrity_and_interrupted_write(self):
+        with mock.patch.object(core, 'STATE', self.root):
+            core.checkpoint_write({'version': 1, 'processed': {'parent': 42}})
+            checkpoint = self.root / 'hermes-compaction-checkpoint.json'
+            self.assertEqual(core.checkpoint_read()['processed']['parent'], 42)
+            value = json.loads(checkpoint.read_text())
+            value['processed']['parent'] = 'modified'
+            checkpoint.write_text(json.dumps(value))
+            with self.assertRaisesRegex(RuntimeError, 'integrity mismatch'):
+                core.checkpoint_read()
+            (self.root / 'hermes-compaction-checkpoint.tmp').write_text('partial')
+            os.chmod(self.root / 'hermes-compaction-checkpoint.tmp', 0o600)
+            core.checkpoint_write({'version': 2, 'processed': {'parent': 'recovered'}})
+            self.assertEqual(core.checkpoint_read()['processed']['parent'], 'recovered')
+
     def test_mcp_search_and_read_support_new_origin(self):
         payload = {'origin': 'hermes_session', 'source': 'hermes-compaction/a/b/c',
                    'text': 'Collector emitted separate metrics in a historical test.',
@@ -144,6 +161,18 @@ class ExportTests(unittest.TestCase):
             self.assertIn('observed_at=2026-11-13', result)
             self.assertIn('verification=git_path_referenced_not_content_verified', result)
             self.assertIn('origin=hermes_session', mcp.read({'point_id': point['id']}))
+
+    def test_concurrent_lock_rejects_second_run(self):
+        state = self.root / 'private-state'
+        with mock.patch.object(core, 'STATE', state):
+            fd = core.lock()
+            try:
+                with self.assertRaisesRegex(RuntimeError, 'another qdrant-memory'):
+                    core.lock()
+                self.assertEqual(state.stat().st_mode & 0o777, 0o700)
+            finally:
+                fcntl.flock(fd, fcntl.LOCK_UN)
+                os.close(fd)
 
 
 if __name__ == '__main__':

@@ -377,7 +377,7 @@ def lock():
     if STATE.stat().st_uid != os.geteuid():
         raise RuntimeError('STOP: state directory owner differs')
     os.chmod(STATE, 0o700)
-    fd = os.open(STATE / 'index.lock', os.O_RDWR | os.O_CREAT, 0o600)
+    fd = os.open(STATE / 'index.lock', os.O_RDWR | os.O_CREAT | getattr(os, 'O_NOFOLLOW', 0), 0o600)
     try:
         fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except BlockingIOError:
@@ -409,17 +409,34 @@ def checkpoint_read():
         raise RuntimeError('STOP: checkpoint symlink')
     if not path.exists():
         return {'version': 1, 'processed': {}}
-    if path.stat().st_mode & 0o077 or not path.is_file():
+    if path.stat().st_mode & 0o077 or not path.is_file() or path.stat().st_size > 1024 * 1024:
         raise RuntimeError('STOP: checkpoint permissions too broad')
     value = json.loads(path.read_text(encoding='utf-8'))
-    if value.get('version') != 1 or not isinstance(value.get('processed'), dict):
+    if value.get('version') not in (1, 2) or not isinstance(value.get('processed'), dict):
         raise RuntimeError('STOP: incompatible checkpoint')
+    if any(not isinstance(k, str) or type(v) not in (str, int)
+           for k, v in value['processed'].items()):
+        raise RuntimeError('STOP: invalid checkpoint entries')
+    if value['version'] == 2 and value.get('sha256') != checkpoint_hash(value['processed']):
+        raise RuntimeError('STOP: checkpoint integrity mismatch')
     return value
+
+
+def checkpoint_hash(processed):
+    return hashlib.sha256(json.dumps(processed, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
 
 def checkpoint_write(value):
     path = STATE / 'hermes-compaction-checkpoint.json'
     tmp = STATE / 'hermes-compaction-checkpoint.tmp'
+    value['version'] = 2
+    value['sha256'] = checkpoint_hash(value['processed'])
+    if tmp.exists() or tmp.is_symlink():
+        info = tmp.lstat()
+        if tmp.is_symlink() or not tmp.is_file() or info.st_uid != os.geteuid() or info.st_mode & 0o077:
+            raise RuntimeError('STOP: unsafe interrupted checkpoint staging file')
+        # The exclusive process lock proves this is an orphan of a killed run.
+        tmp.unlink()
     fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, 'O_NOFOLLOW', 0), 0o600)
     try:
         with os.fdopen(fd, 'w', encoding='utf-8') as stream:
