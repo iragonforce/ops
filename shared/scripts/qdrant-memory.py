@@ -31,6 +31,10 @@ import uuid
 from collections import Counter
 from urllib.request import Request, urlopen
 
+# The remote receiver also imports this file directly via importlib.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from heading_chunk_filter import merge_heading_only_chunks
+
 HOME = Path('/home/iragonforce')
 INBOX = Path(os.environ.get('QDRANT_MEMORY_INBOX', str(HOME / 'qdrant-inbox')))
 STATE = Path(os.environ.get('QDRANT_MEMORY_STATE', str(HOME / '.local/state/qdrant-memory')))
@@ -181,7 +185,7 @@ def read_text(path):
         os.close(fd)
 
 
-def chunks(path, text):
+def _original_chunks(path, text):
     """Heading-aware chunks, deterministic UUIDs and provenance per passage."""
     heading = path.stem
     buffer, size, start, end, ordinal = [], 0, 1, 1, 0
@@ -232,6 +236,10 @@ def chunks(path, text):
     item = emit()
     if item is not None:
         yield item
+
+
+def chunks(path, text):
+    yield from merge_heading_only_chunks(_original_chunks(path, text), MAX_CHARS)
 
 
 def source_records(specific=None):

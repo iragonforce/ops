@@ -13,10 +13,14 @@ import argparse
 import hashlib
 import json
 import re
+import sys
 import uuid
 from collections import Counter
 from pathlib import Path
 from urllib.request import Request, urlopen
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from heading_chunk_filter import merge_heading_only_chunks
 
 ROOT = Path('/home/iragonforce/secondBrain/Homelab')
 QDRANT = 'http://127.0.0.1:6333'
@@ -47,7 +51,7 @@ def request(url, data=None, method=None):
         return json.load(response)
 
 
-def passages(path, root):
+def _original_passages(path, root):
     """Create stable, heading-aware records with no source text truncation."""
     rel = path.relative_to(root).as_posix()
     source = f'secondBrain/Homelab/{rel}'
@@ -97,6 +101,10 @@ def passages(path, root):
     last = emit()
     if last is not None:
         yield last
+
+
+def passages(path, root):
+    yield from merge_heading_only_chunks(_original_passages(path, root), MAX_CHARS)
 
 
 def classify(root, only):

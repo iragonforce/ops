@@ -4,11 +4,15 @@ import argparse
 import hashlib
 import json
 import re
+import sys
 import uuid
 from collections import Counter
 from pathlib import Path
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from heading_chunk_filter import merge_heading_only_chunks
 
 MODEL = 'qwen3-embedding:8b-fp16'
 QDRANT = 'http://127.0.0.1:6333'
@@ -32,7 +36,7 @@ def request(url, data=None, method=None):
         return json.load(resp)
 
 
-def chunks(root):
+def _original_chunks(root):
     for path in sorted(root.rglob('*.md')):
         if EXCLUDE.intersection(path.relative_to(root).parts) or not path.is_file() or path.is_symlink():
             continue
@@ -88,6 +92,10 @@ def chunks(root):
         record = emit()
         if record:
             yield record
+
+
+def chunks(root):
+    yield from merge_heading_only_chunks(_original_chunks(root), MAX_CHARS)
 
 
 def existing_points():
