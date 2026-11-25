@@ -85,11 +85,15 @@ def _safe_state_dir(db_path: Path) -> None:
 class LeaseManager:
     """Durable admission state; has no way to call a real process/service."""
 
-    def __init__(self, db_path: Path, backend: DesktopBackend, *, require_identity: bool = False):
+    def __init__(self, db_path: Path, backend: DesktopBackend, *, require_identity: bool = False,
+                 two_phase_restore: bool = False):
         self.path = Path(db_path)
         _safe_state_dir(self.path)
         self.backend = backend
         self.require_identity = require_identity
+        # Opt-in source-only contract. Production callers and service hooks
+        # are intentionally unavailable at this stage.
+        self.two_phase_restore = two_phase_restore
         self._conn = sqlite3.connect(self.path, timeout=8.0, isolation_level=None)
         self._conn.row_factory = sqlite3.Row
         os.chmod(self.path, 0o600)
@@ -126,6 +130,9 @@ class LeaseManager:
                 ):
                     if name not in columns:
                         self._conn.execute(f'ALTER TABLE gpu_leases ADD COLUMN {name} {sql_type}')
+                state_cols = {r['name'] for r in self._conn.execute('PRAGMA table_info(gpu_lease_state)')}
+                if 'restore_grant' not in state_cols:
+                    self._conn.execute('ALTER TABLE gpu_lease_state ADD COLUMN restore_grant TEXT')
                 self._conn.execute('COMMIT')
             except BaseException:
                 self._conn.execute('ROLLBACK')
@@ -167,7 +174,7 @@ class LeaseManager:
                         leases=len(holders), owners=[r['owner'] for r in holders])
 
     def _set_state(self, mode: str, resource: str | None, restore: bool) -> None:
-        self._conn.execute("UPDATE gpu_lease_state SET mode=?, resource=?, restore_wallpaper=?, modified_at=? WHERE id=1",
+        self._conn.execute("UPDATE gpu_lease_state SET mode=?, resource=?, restore_wallpaper=?, modified_at=?, restore_grant=NULL WHERE id=1",
                            (mode, resource, int(restore), int(time.time())))
 
     def _insert_holder(self, token: str, owner: str, resource: str,
@@ -258,11 +265,79 @@ class LeaseManager:
             return 'reserved'
         if not self.backend.inference_memory_released():
             return 'restore_pending'
+        if state['restore_wallpaper'] and self.two_phase_restore:
+            # Never invoke a guarded systemd start while holding _guard().
+            # complete_restoration() performs the start after releasing it.
+            return 'restore_pending'
         if state['restore_wallpaper'] and not self.backend.wallpaper_active():
             self.backend.start_wallpaper()
         # No wallpaper service is started if it was originally inactive.
         self._set_state('normal',None,False)
         return 'normal'
+
+    @contextlib.contextmanager
+    def _restore_guard(self):
+        """Serialize out-of-lease-lock systemd startup across processes.
+
+        A crashed caller releases flock automatically; the durable
+        restore_pending state remains intact for an explicit retry.
+        """
+        path = self.path.parent / 'gpu-restore.lock'
+        fd = os.open(path, os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
+        try:
+            info = os.fstat(fd)
+            if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.geteuid()
+                    or stat.S_IMODE(info.st_mode) != 0o600):
+                raise LeaseError('Restore lock owner/type/mode invalid')
+            try:
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                raise LeaseError('Restoration already in progress') from None
+            yield
+        finally:
+            os.close(fd)
+
+    def complete_restoration(self) -> str:
+        """Opt-in two-phase restore; never hold gpu-lease.lock during startup.
+
+        Stage 2D only. Requires a backend whose start_wallpaper() invokes a
+        lease-aware guarded systemd unit. The arbiter must acknowledge READY
+        by durably setting state to normal before systemctl start returns.
+        A fake backend without that acknowledgement is *not* sufficient.
+        """
+        if not self.two_phase_restore:
+            raise LeaseError('Two-phase restoration is not enabled')
+        with self._restore_guard():
+            with self._guard():
+                state = self._state()
+                if state['mode'] == 'normal' and not self._holders():
+                    return 'normal'
+                if self._holders() or state['mode'] != 'restore_pending':
+                    raise LeaseError('Restoration not eligible: active or unresolved lifecycle')
+                if not self.backend.inference_memory_released():
+                    return 'restore_pending'
+                if not state['restore_wallpaper']:
+                    self._set_state('normal', None, False)
+                    return 'normal'
+                if self.backend.wallpaper_active():
+                    raise LeaseError('Uncoordinated wallpaper restart; do not clear restore intent')
+                # A one-time, durable capability distinguishes an authorized
+                # restoration from an unrelated desktop/session restart.
+                # A retry rotates the capability, invalidating stale starters.
+                grant = uuid.uuid4().hex
+                with self._transaction():
+                    self._conn.execute('UPDATE gpu_lease_state SET restore_grant=?, modified_at=? WHERE id=1',
+                                       (grant, int(time.time())))
+            # CRITICAL: No gpu-lease.lock held across systemd startup.
+            # Only an opt-in guarded backend supports this keyword.
+            self.backend.start_wallpaper(restoration_grant=grant)
+            with self._guard():
+                state = self._state()
+                if state['mode'] != 'normal' or self._holders():
+                    raise LeaseError('Wallpaper unit did not acknowledge restoration')
+                if not self.backend.wallpaper_active():
+                    raise LeaseError('Wallpaper not active after restoration acknowledgement')
+                return 'normal'
 
     def recover_dead_owners(self, owner_status: Callable[[OwnerIdentity], str]) -> dict:
         """Recover only independently verified dead identities under the lease lock.

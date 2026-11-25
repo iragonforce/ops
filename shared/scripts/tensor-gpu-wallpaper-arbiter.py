@@ -13,13 +13,17 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 import fcntl
+import hmac
 import importlib.util
 import json
 import os
 from pathlib import Path
+import sqlite3
 import stat
+import time
 import sys
 from typing import Callable
+from urllib.parse import quote
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 GUARD_SCRIPT = SCRIPT_DIR / 'tensor-gpu-lifecycle-guard.py'
@@ -66,9 +70,55 @@ def _lock_file(db: Path) -> int:
         raise
 
 
+def _grant_matches(db: Path, candidate: str | None) -> bool:
+    """Verify a one-use restoration grant without creating/migrating a database."""
+    if not isinstance(candidate, str) or len(candidate) != 32:
+        return False
+    try:
+        int(candidate, 16)
+    except ValueError:
+        return False
+    uri = 'file:' + quote(str(db.resolve()), safe='/') + '?mode=ro'
+    try:
+        conn = sqlite3.connect(uri, uri=True, timeout=2)
+        try:
+            row = conn.execute('SELECT restore_grant FROM gpu_lease_state WHERE id=1').fetchone()
+        finally:
+            conn.close()
+    except sqlite3.Error:
+        return False
+    return row is not None and isinstance(row[0], str) and hmac.compare_digest(row[0], candidate)
+
+
+def _ack_restoration(db: Path, grant: str) -> None:
+    """Consume the exact grant once, atomically with state normalization."""
+    conn = sqlite3.connect(db, timeout=2, isolation_level=None)
+    try:
+        conn.execute('BEGIN IMMEDIATE')
+        state = conn.execute('SELECT mode, resource, restore_wallpaper, restore_grant '
+                             'FROM gpu_lease_state WHERE id=1').fetchone()
+        holders = conn.execute('SELECT COUNT(*) FROM gpu_leases').fetchone()[0]
+        if (state is None or state[0] != 'restore_pending' or not state[1]
+                or state[2] != 1 or holders != 0 or not isinstance(state[3], str)
+                or not hmac.compare_digest(state[3], grant)):
+            raise ArbitrationError('Restoration grant changed before readiness')
+        result = conn.execute('UPDATE gpu_lease_state SET mode=?, resource=NULL, '
+                              'restore_wallpaper=0, restore_grant=NULL, modified_at=? WHERE id=1',
+                              ('normal', int(time.time())))
+        if result.rowcount != 1:
+            raise ArbitrationError('Restoration acknowledgement not durable')
+        conn.execute('COMMIT')
+    except BaseException:
+        conn.execute('ROLLBACK')
+        raise
+    finally:
+        conn.close()
+
+
 def try_start(db: Path, launch: Callable[[], None], ready: Callable[[], bool],
               abort: Callable[[], None], *,
-              gpu_safe: Callable[[], bool], policy=None) -> StartDecision:
+              gpu_safe: Callable[[], bool], policy=None,
+              restoration_grant: str | None = None) -> StartDecision:
     """Attempt an atomic, *synthetic* startup under the lease lock.
 
     `launch` must have initiated the supervised wallpaper process before
@@ -93,6 +143,21 @@ def try_start(db: Path, launch: Callable[[], None], ready: Callable[[], bool],
         try:
             state = guard.read_state(db)
             allowed, reason = guard.wallpaper_start_policy(state)
+            # A durable last-lease restore intent authorizes wallpaper
+            # startup only after verified GPU release. The READY callback
+            # must atomically acknowledge it under the lease lock.
+            restore_handoff = (state['mode'] == 'restore_pending'
+                               and state['restore_wallpaper'] is True
+                               and state['leases'] == 0
+                               and isinstance(state['resource'], str)
+                               and bool(state['resource'])
+                               and _grant_matches(db, restoration_grant))
+            # Never authorize restore_pending from a plain policy check.
+            # A stale or forged grant must not turn into a normal start.
+            if restoration_grant is not None and not restore_handoff:
+                return StartDecision(False, 'restoration_grant_invalid')
+            if restore_handoff:
+                allowed, reason = True, 'verified_restore_grant'
         except (guard.GuardError, OSError, ValueError) as exc:
             return StartDecision(False, 'unverified_lease_state:' + str(exc))
         if not allowed:
@@ -109,6 +174,8 @@ def try_start(db: Path, launch: Callable[[], None], ready: Callable[[], bool],
             launch()
             if ready() is not True:
                 raise ArbitrationError('Wallpaper launch not confirmed ready')
+            if restore_handoff:
+                _ack_restoration(db, restoration_grant)
         except BaseException:
             try:
                 abort()  # Clean up ONLY the just-started candidate, still locked.

@@ -1,6 +1,6 @@
 # Tensor GPU inference lifecycle and persistent job queue
 
-**Status:** Stage 1 complete; Stage 2D wallpaper arbitration synthetic gate verified; two-phase restoration and production integration pending
+**Status:** Stage 1 complete; Stage 2D two-phase restoration validated in synthetic tests; production service integration pending
 **Date:** 2026-11-24
 **Host:** `tensor` (Arch Linux, NVIDIA RTX 5070, 64 GB-class RAM)
 **Scope:** Hermes/llama.cpp, Ollama, MinerU, Nexus-initiated Qdrant embeddings, Hyprland desktop restoration
@@ -111,7 +111,7 @@ All baseline observations require revalidation before modifying live services. I
 | --- | --- | --- | --- |
 | 0 — Inspect integrations | **Complete for Stage 1** | Wayland seat0; Hypridle 300s; Sunshine/Moonlight inactive; MinerU Gradio queue concurrency 1; llama.cpp 8080, Ollama 11434; native GPU admission still unverified | Proceed with synthetic-only Stage 1 |
 | 1 — Durable queue | **Committed and pushed** | 13/13 tests; 30 synthetic jobs; deduplication and private permissions verified | Commit 6be0ded |
-| 2 — GPU lease/desktop restoration | **Wallpaper arbitration validated, source-only** | 110/110 tests; zero SQLite ResourceWarnings; main checkout unchanged | Implement two-phase restoration and guarded service hooks |
+| 2 — GPU lease/desktop restoration | **Two-phase restoration synthetic gate verified** | 127/127 tests; zero ResourceWarnings; repair validated on Tensor | Guarded systemd integration and live acceptance pending |
 | 3 — Hermes lifecycle | Not started | Current Qwen loads, but lifecycle/tool/KV acceptance incomplete | After Stage 2 gate |
 | 4 — Ollama/Qdrant | Not started | Existing `/api/embed` and checkpoints identified | After Stage 3 gate |
 | 5 — MinerU | Not started | WebUI/router/backend processes identified | After Stage 4 gate |
@@ -211,3 +211,16 @@ The simulated `--activity idle` flag is a **test input only**, not a verified Hy
 - No live service hooks or GPU changes performed.
 - Remaining: two-phase restoration handoff, Hermes/Hyprland integration, controlled live verification.
 - Existing direct Ollama clients remain outside admission.
+
+## Stage 2D two-phase restoration acceptance — 2026-11-25
+
+- Host: Tensor, isolated feature worktree.
+- Base revision: 60f8f9b.
+- Initial candidate: 124 tests, two regressions.
+- Corrected implementation: 127/127 tests passed.
+- Zero SQLite ResourceWarnings.
+- Durable restoration grants and replay protection validated in synthetic tests.
+- Failed restoration retains recoverable state.
+- No production service hooks activated.
+- No Hermes, Ollama, MinerU or Wallpaper Engine configuration changes.
+- Remaining: guarded systemd startup integration, targeted rollback and controlled live acceptance.
