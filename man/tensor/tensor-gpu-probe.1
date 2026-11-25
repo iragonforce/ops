@@ -1,0 +1,20 @@
+.TH TENSOR-GPU-PROBE 1 "2026-11-24" "Tensor GPU" "User Commands"
+.SH NAME
+tensor-gpu-probe \- read-only GPU admission evidence on Tensor
+.SH SYNOPSIS
+.B python3 shared/scripts/tensor-gpu-probe.py
+.RI [ --required-free-mib MiB ]
+.SH DESCRIPTION
+Queries only user systemd service states, local NVIDIA memory and compute
+process inventories, local Ollama loaded models, and current-user Wallpaper
+Engine processes. Outputs JSON diagnostic evidence, warnings and reasons
+why a future GPU admission would be vetoed. Missing data fails closed.
+.PP
+This tool is NOT a resource lease or permission to launch inference.
+It never stops/restarts services, unloads models, purges VRAM, modifies
+configurations, or writes runtime queue state.
+.SH SEE ALSO
+.BR tensor-gpu-lease (1),
+.BR tensor-gpu-queue (1)
+.SH SOURCE
+iragonforce/ops, reviewed public snapshot target iragonforce/tensor.

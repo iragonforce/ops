@@ -1,6 +1,6 @@
 # Tensor GPU inference lifecycle and persistent job queue
 
-**Status:** Stage 1 committed (6be0ded); Stage 2 synthetic tests verified on Tensor; live GPU adapter pending
+**Status:** Stage 1 committed; Stage 2 synthetic lease and read-only probe verified on Tensor; live adapter pending
 **Date:** 2026-11-24
 **Host:** `tensor` (Arch Linux, NVIDIA RTX 5070, 64 GB-class RAM)
 **Scope:** Hermes/llama.cpp, Ollama, MinerU, Nexus-initiated Qdrant embeddings, Hyprland desktop restoration
@@ -111,7 +111,7 @@ All baseline observations require revalidation before modifying live services. I
 | --- | --- | --- | --- |
 | 0 — Inspect integrations | **Complete for Stage 1** | Wayland seat0; Hypridle 300s; Sunshine/Moonlight inactive; MinerU Gradio queue concurrency 1; llama.cpp 8080, Ollama 11434; native GPU admission still unverified | Proceed with synthetic-only Stage 1 |
 | 1 — Durable queue | **Committed and pushed** | 13/13 tests; 30 synthetic jobs; deduplication and private permissions verified | Commit 6be0ded |
-| 2 — GPU lease/desktop restoration | **Synthetic gate verified** | 17/17 Stage 2 tests and 13/13 Stage 1 regressions passed on Tensor | Real systemd/GPU adapter pending |
+| 2 — GPU lease/desktop restoration | **Synthetic and probe gates verified** | 17 lease + 11 probe + 13 queue tests passed; live GPU correctly denied admission | Implement isolated systemd adapter |
 | 3 — Hermes lifecycle | Not started | Current Qwen loads, but lifecycle/tool/KV acceptance incomplete | After Stage 2 gate |
 | 4 — Ollama/Qdrant | Not started | Existing `/api/embed` and checkpoints identified | After Stage 3 gate |
 | 5 — MinerU | Not started | WebUI/router/backend processes identified | After Stage 4 gate |
@@ -151,3 +151,15 @@ The simulated `--activity idle` flag is a **test input only**, not a verified Hy
 - No production worker or GPU adapter enabled.
 - No Hermes, Ollama, MinerU, Wallpaper Engine or Hypridle modifications.
 - Remaining Stage 2 gate: live systemd adapter, GPU memory-release verification and rollback.
+
+## Stage 2 read-only probe acceptance — 2026-11-24
+
+- Host: Tensor; probe mode: read-only.
+- Tests: 11/11 probe, 17/17 lease, 13/13 queue passed.
+- Observed VRAM: 10,590 MiB used, 1,242 MiB free.
+- Hermes llama.cpp active with CUDA allocation.
+- Ollama reported zero loaded models.
+- Wallpaper Engine inactive.
+- GPU admission denied as expected.
+- No GPU workloads or systemd services changed.
+- Remaining gate: reversible real-service adapter and restoration verification.
