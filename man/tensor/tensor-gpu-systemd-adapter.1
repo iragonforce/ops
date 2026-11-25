@@ -1,0 +1,26 @@
+.TH TENSOR-GPU-SYSTEMD-ADAPTER 1 "2026-11-24" "Tensor GPU" "User Commands"
+.SH NAME
+tensor-gpu-systemd-adapter \- read-only systemd/NVIDIA lease backend preflight
+.SH SYNOPSIS
+.B python3 shared/scripts/tensor-gpu-systemd-adapter.py
+.RI [ --required-free-mib " N" ]
+.SH DESCRIPTION
+Reports GPU memory, CUDA processes, model residency, and scoped systemd
+service state using the existing tensor-gpu-probe.py implementation.
+The CLI does not perform acquire, release, process termination, service
+stop/start, VRAM purging, or queued inference execution.
+.PP
+The internal TensorDesktopBackend supports a restricted DesktopBackend
+interface and is tested with injected fake systemd/NVIDIA observations.
+It must not be wired into unattended production until crash recovery,
+request-level GPU ownership, and independent wallpaper restart inhibition
+are implemented and validated.
+.SH EXIT STATUS
+0 on a completed read-only report, 1 when evidence is not verifiable.
+A denied admission candidate is expected and is not an error.
+.SH FILES
+iragonforce/ops/shared/scripts/tensor-gpu-systemd-adapter.py
+.br
+iragonforce/ops/shared/scripts/tensor-gpu-probe.py
+.SH SEE ALSO
+tensor-gpu-lease(1), tensor-gpu-probe(1), tensor-gpu-queue(1)

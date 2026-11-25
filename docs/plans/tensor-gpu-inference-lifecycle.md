@@ -1,6 +1,6 @@
 # Tensor GPU inference lifecycle and persistent job queue
 
-**Status:** Stage 1 committed; Stage 2 synthetic lease and read-only probe verified on Tensor; live adapter pending
+**Status:** Stage 1 complete; Stage 2A/2B/2C synthetic and read-only gates verified; production GPU lifecycle pending
 **Date:** 2026-11-24
 **Host:** `tensor` (Arch Linux, NVIDIA RTX 5070, 64 GB-class RAM)
 **Scope:** Hermes/llama.cpp, Ollama, MinerU, Nexus-initiated Qdrant embeddings, Hyprland desktop restoration
@@ -111,7 +111,7 @@ All baseline observations require revalidation before modifying live services. I
 | --- | --- | --- | --- |
 | 0 — Inspect integrations | **Complete for Stage 1** | Wayland seat0; Hypridle 300s; Sunshine/Moonlight inactive; MinerU Gradio queue concurrency 1; llama.cpp 8080, Ollama 11434; native GPU admission still unverified | Proceed with synthetic-only Stage 1 |
 | 1 — Durable queue | **Committed and pushed** | 13/13 tests; 30 synthetic jobs; deduplication and private permissions verified | Commit 6be0ded |
-| 2 — GPU lease/desktop restoration | **Synthetic and probe gates verified** | 17 lease + 11 probe + 13 queue tests passed; live GPU correctly denied admission | Implement isolated systemd adapter |
+| 2 — GPU lease/desktop restoration | **Stage 2C verified; live gate pending** | 17 adapter + 11 probe + 17 lease + 13 queue tests passed on Tensor | Resolve lifecycle conflicts and dead-owner recovery |
 | 3 — Hermes lifecycle | Not started | Current Qwen loads, but lifecycle/tool/KV acceptance incomplete | After Stage 2 gate |
 | 4 — Ollama/Qdrant | Not started | Existing `/api/embed` and checkpoints identified | After Stage 3 gate |
 | 5 — MinerU | Not started | WebUI/router/backend processes identified | After Stage 4 gate |
@@ -163,3 +163,17 @@ The simulated `--activity idle` flag is a **test input only**, not a verified Hy
 - GPU admission denied as expected.
 - No GPU workloads or systemd services changed.
 - Remaining gate: reversible real-service adapter and restoration verification.
+
+## Stage 2C adapter acceptance — 2026-11-24
+
+- Tensor: 58/58 tests passed.
+- Read-only systemd/NVIDIA adapter verified.
+- Live Qwen CUDA process detected.
+- GPU admission denied, as expected.
+- No systemd or GPU workload changes performed.
+- Production control remains disabled.
+- Blocker: Hermes independently restores wallpaper.
+- Blocker: Hyprland session-start independently restarts wallpaper.
+- Blocker: dead-owner lease recovery not validated.
+- Limitation: direct Ollama HTTP clients are not coordinated.
+- Next: implement restart guards and recovery before controlled live acquire/release.
