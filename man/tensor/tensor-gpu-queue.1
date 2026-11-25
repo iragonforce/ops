@@ -1,0 +1,52 @@
+.TH TENSOR-GPU-QUEUE 1 "November 2026" "Tensor GPU Queue Stage 1" "User Commands"
+.SH NAME
+tensor-gpu-queue \- simulate persistent GPU job admission without executing inference
+.SH SYNOPSIS
+.B python3 ~/ops/shared/scripts/tensor-gpu-queue.py
+.RI [ --db " FILE" ] " COMMAND " [ OPTIONS ]
+.SH DESCRIPTION
+Stage 1 of the Tensor GPU inference lifecycle. Maintains a private, SQLite-backed
+queue for synthetic fixture jobs. Does not execute arbitrary commands, GPUs,
+Hermes, MinerU, Ollama, Qdrant, systemd, or Wallpaper Engine operations.
+All job activity checks are SIMULATED and manually supplied by the operator.
+.SH COMMANDS
+.TP
+.B status
+Show paused state and aggregate job counts.
+.TP
+.B list [--limit N]
+List job IDs and state, without printing sources or private errors.
+.TP
+.B submit --source FIXTURE [--priority N] [--max-attempts N]
+Create/reuse one synthetic job. Same source is deduplicated, including after completion.
+.TP
+.B submit-batch [--prefix FIXTURE] [--count N]
+Atomically submit 1 to 1000 synthetic jobs; default is 30.
+.TP
+.B run-synthetic [--activity idle|active|unknown] [--limit N]
+Run only synthetic jobs, never real GPU work. Default activity is unknown,
+which refuses admission. Active and paused also refuse admission.
+.TP
+.B recover
+Recover expired worker leases; uncertain prior attempts are retried or marked failed,
+never silently acknowledged as completed.
+.TP
+.B pause | resume
+Persistently stop or permit new claims; existing running work is not killed.
+.TP
+.B cancel JOB_ID | retry JOB_ID
+Cancel pending/retry/failed jobs or manually retry failed jobs. Running jobs are protected.
+.SH FILES
+.TP
+.B ~/.local/state/tensor-gpu-queue/queue.sqlite3
+Private durable queue database; directory requires mode 0700, database mode 0600.
+.TP
+.B ~/.local/state/tensor-gpu-queue/worker.lock
+Advisory one-worker lock.
+.SH SAFETY
+No inference adapters or automatic idle triggers are installed in Stage 1.
+File paths, logs, and database content must not be committed to public Git.
+A lease does not prove exactly-once external effects after process failure;
+future real workload adapters must enforce idempotent output and checkpoint recovery.
+.SH SEE ALSO
+~/ops/docs/plans/tensor-gpu-inference-lifecycle.md
