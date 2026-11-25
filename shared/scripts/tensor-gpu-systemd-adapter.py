@@ -22,6 +22,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 PROBE_FILE = SCRIPT_DIR / 'tensor-gpu-probe.py'
 WALLPAPER_UNIT = 'wallpaper-engine-sync.service'
 REQUIRED_FREE_MIB = 10200
+RESTORE_DB = Path.home() / '.local/state/tensor-gpu-lease/queue.sqlite3'
 
 
 class AdapterError(RuntimeError):
@@ -32,6 +33,16 @@ def load_probe():
     spec = importlib.util.spec_from_file_location('tensor_gpu_probe_stage2c', PROBE_FILE)
     if not spec or not spec.loader:
         raise AdapterError('Cannot load existing read-only GPU probe')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def load_restore_mailbox():
+    path = SCRIPT_DIR / 'tensor-gpu-restore-mailbox.py'
+    spec = importlib.util.spec_from_file_location('tensor_gpu_restore_mailbox_adapter', path)
+    if not spec or not spec.loader:
+        raise AdapterError('Restoration transport component unavailable')
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -102,10 +113,27 @@ class TensorDesktopBackend:
         if after != 'inactive' or children:
             raise AdapterError('Wallpaper supervisor/children did not stop')
 
-    def start_wallpaper(self) -> None:
+    def start_wallpaper(self, *, restoration_grant: str | None = None) -> None:
+        """Start only the guarded unit; no grant appears in systemctl argv.
+
+        The two-phase lease manager must hold gpu-restore.lock while calling
+        this method. The service consumes the private mailbox delivery, and
+        the arbiter independently verifies the durable SQLite capability.
+        """
         state, _ = self._wallpaper_state()
+        if restoration_grant is not None and state != 'inactive':
+            raise AdapterError('Refusing grant when wallpaper is already active')
         if state == 'inactive':
-            self.run(['/usr/bin/systemctl', '--user', 'start', WALLPAPER_UNIT])
+            transport = load_restore_mailbox() if restoration_grant is not None else None
+            if transport is not None:
+                transport.publish(RESTORE_DB, restoration_grant)
+            try:
+                self.run(['/usr/bin/systemctl', '--user', 'start', WALLPAPER_UNIT])
+            finally:
+                # Remove an unconsumed capability even after a failed start.
+                # A successful service startup has already consumed it.
+                if transport is not None:
+                    transport.revoke(RESTORE_DB, restoration_grant)
         after, _ = self._wallpaper_state()
         if after != 'active':
             raise AdapterError('Wallpaper supervisor did not start')

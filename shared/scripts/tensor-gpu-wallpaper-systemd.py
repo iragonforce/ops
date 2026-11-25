@@ -2,8 +2,8 @@
 """Source-only guarded entrypoint for Tensor's existing Wallpaper Engine supervisor.
 
 Requires an existing, verified GPU lease database and a Type=notify systemd user
-unit. Not installed by this patch. Deliberately DOES NOT accept restoration
-grants: two-phase restoration requires a separately tested backend handoff.
+unit. A private restoration mailbox is consumed once; the arbiter validates
+the capability against the SQLite lease state before admitting startup.
 
 Usage: tensor-gpu-wallpaper-systemd.py [--serve | --help]
 Source: iragonforce/ops, Stage 2E integration candidate.
@@ -93,11 +93,13 @@ def start_guarded(*, db: Path, wallpaper: Path,
                   arbiter, gpu_report: Callable[[], dict],
                   notify: Callable[[], None],
                   spawn: Callable[[Path], object] | None = None,
-                  startup_delay: float = 0.5):
+                  startup_delay: float = 0.5,
+                  restoration_grant: str | None = None):
     """Run one arbiter-admitted startup; return (decision, owned subprocess).
 
-    Restoration is deliberately refused: no grant is provided to try_start.
-    The caller must retain the subprocess as the systemd unit's child.
+    A grant is accepted only from the private one-use mailbox. The arbiter
+    independently authorizes it under gpu-lease.lock. The caller retains the
+    subprocess as the systemd unit's child.
     """
     owned = None
     if spawn is None:
@@ -121,8 +123,11 @@ def start_guarded(*, db: Path, wallpaper: Path,
     def abort():
         stop_candidate(owned)
 
+    kwargs = ({'restoration_grant': restoration_grant}
+              if restoration_grant is not None else {})
     decision = arbiter.try_start(db, launch, ready, abort,
-                                 gpu_safe=lambda: wallpaper_gpu_safe(gpu_report()))
+                                 gpu_safe=lambda: wallpaper_gpu_safe(gpu_report()),
+                                 **kwargs)
     return decision, owned
 
 
@@ -132,14 +137,20 @@ def serve() -> int:
         raise SupervisorError('Type=notify user service required; no wallpaper started')
     arbiter = load_sibling('tensor-gpu-wallpaper-arbiter.py', 'tensor_gpu_wallpaper_arbiter_service')
     probe = load_sibling('tensor-gpu-probe.py', 'tensor_gpu_probe_wallpaper_service')
+    transport = load_sibling('tensor-gpu-restore-mailbox.py', 'tensor_gpu_restore_mailbox_service')
+    try:
+        restoration_grant = transport.consume(STATE_DB)
+    except transport.MailboxError as exc:
+        raise SupervisorError('Private restoration transport unavailable') from exc
     decision, child = start_guarded(db=STATE_DB, wallpaper=WALLPAPER, arbiter=arbiter,
                                     gpu_report=probe.probe,
-                                    notify=lambda: send_ready(notify_socket))
+                                    notify=lambda: send_ready(notify_socket),
+                                    restoration_grant=restoration_grant)
     if not decision.started:
         # Do not retry on every five-second Restart=on-failure period when an
         # admission veto is intentional. A later explicit start can retry.
         print(json.dumps({'wallpaper_started': False, 'reason': decision.reason}), flush=True)
-        return 0
+        return 75  # EX_TEMPFAIL; prevent automatic retry on admission veto.
     if child is None:
         raise SupervisorError('Arbiter approved startup without an owned process')
     # Systemd KillMode=control-group delivers SIGTERM to supervisor + children.
@@ -161,7 +172,7 @@ def main() -> int:
         return serve()
     except (OSError, ValueError, SupervisorError, subprocess.SubprocessError) as exc:
         print('Wallpaper guard refused startup: ' + str(exc), file=sys.stderr)
-        return 1
+        return 75  # Policy/setup errors are not renderer crashes.
 
 
 if __name__ == '__main__':

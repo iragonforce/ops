@@ -1,0 +1,32 @@
+.TH TENSOR-GPU-RESTORE-MAILBOX 1 "2026-11-25" "Tensor Ops" "User Commands"
+.SH NAME
+ tensor-gpu-restore-mailbox \- private one-consumer GPU wallpaper restoration handoff
+.SH SYNOPSIS
+.B tensor-gpu-restore-mailbox.py
+.RI [ --help | --version ]
+.SH DESCRIPTION
+This is a source-only Python library, not an executable restoration command.
+It atomically publishes a 32-character lowercase hexadecimal restoration
+grant in the caller-owned (0700) GPU lease-state directory as a 0600 file.
+The Wallpaper Engine systemd entrypoint consumes the pending file once and
+passes the value in-process to the existing guarded arbiter. The arbiter must
+verify the token against SQLite while holding gpu-lease.lock. The transport
+file alone never authorizes GPU work or service startup.
+.SH SECURITY
+The token is never passed through process arguments or environment variables,
+and the library does not print it. Only the existing single-user trust boundary
+is enforced: other programs running as the same user can access the private
+lease database. The caller must serialize restoration attempts using the
+existing gpu-restore.lock. An unsuccessful systemd start must revoke any
+unconsumed grant. Source-only tests do not prove production readiness.
+.SH OPTIONS
+.TP
+.B --help
+Display usage.
+.TP
+.B --version
+Display version.
+.SH SEE ALSO
+.BR tensor-gpu-lease (1),
+.BR tensor-gpu-wallpaper-arbiter (1),
+.BR tensor-gpu-wallpaper-systemd (1)

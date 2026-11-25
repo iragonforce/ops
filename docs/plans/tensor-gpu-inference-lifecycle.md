@@ -111,7 +111,7 @@ All baseline observations require revalidation before modifying live services. I
 | --- | --- | --- | --- |
 | 0 — Inspect integrations | **Complete for Stage 1** | Wayland seat0; Hypridle 300s; Sunshine/Moonlight inactive; MinerU Gradio queue concurrency 1; llama.cpp 8080, Ollama 11434; native GPU admission still unverified | Proceed with synthetic-only Stage 1 |
 | 1 — Durable queue | **Committed and pushed** | 13/13 tests; 30 synthetic jobs; deduplication and private permissions verified | Commit 6be0ded |
-| 2 — GPU lease/desktop restoration | **Two-phase restoration synthetic gate verified** | 127/127 tests; zero ResourceWarnings; repair validated on Tensor | Guarded systemd integration and live acceptance pending |
+| 2 — GPU lease/desktop restoration | **Restoration transport validated, source-only** | 165/165 tests; systemd unit verified; no production changes | Failure-injection and guarded live integration pending |
 | 3 — Hermes lifecycle | Not started | Current Qwen loads, but lifecycle/tool/KV acceptance incomplete | After Stage 2 gate |
 | 4 — Ollama/Qdrant | Not started | Existing `/api/embed` and checkpoints identified | After Stage 3 gate |
 | 5 — MinerU | Not started | WebUI/router/backend processes identified | After Stage 4 gate |
@@ -238,3 +238,16 @@ The simulated `--activity idle` flag is a **test input only**, not a verified Hy
 - Remaining: restoration-grant transport, Hermes/Hyprland
   startup integration, crash recovery and live acceptance.
 - This checkpoint does not authorize production deployment.
+
+## Stage 2F restoration transport acceptance — 2026-11-25
+
+- Host: Tensor.
+- Base revision: 46c6869.
+- GPU regression suite: 165/165 passed.
+- Private restoration mailbox and adapter integration validated in synthetic tests.
+- Candidate systemd unit passed static verification.
+- Exactly seven implementation files changed.
+- Hermes and Wallpaper Engine remained active.
+- No production database or service modifications.
+- Remaining: READY/SQLite failure-injection, Hermes/Hyprland integration and controlled deployment.
+- Source-only acceptance does not authorize live activation.

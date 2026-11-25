@@ -6,6 +6,7 @@ Type=notify
 NotifyAccess=main
 ExecStart=/usr/bin/python3 /home/iragonforce/.local/lib/tensor-gpu/tensor-gpu-wallpaper-systemd.py --serve
 Restart=on-failure
+RestartPreventExitStatus=75
 RestartSec=5
 TimeoutStartSec=20
 TimeoutStopSec=30
