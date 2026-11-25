@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+from dataclasses import dataclass
 import fcntl
 import json
 import os
@@ -23,11 +24,35 @@ import sqlite3
 import stat
 import time
 import uuid
-from typing import Protocol
+from typing import Callable, Protocol
 
 
 class LeaseError(Exception):
     """Operator-safe refusal; state is unchanged unless explicitly documented."""
+
+
+@dataclass(frozen=True)
+class OwnerIdentity:
+    """Observed Linux process identity; supplied by a trusted future launcher.
+
+    The CLI currently has NO live acquire entrypoint. A caller-supplied PID is
+    not authentication. Production launchers must bind their own kernel identity.
+    """
+    boot_id: str
+    pid: int
+    start_ticks: int
+
+
+def validate_identity(identity: OwnerIdentity | None) -> None:
+    if identity is None:
+        return
+    if (not isinstance(identity, OwnerIdentity)
+            or not isinstance(identity.boot_id, str)
+            or not 1 <= len(identity.boot_id) <= 128
+            or any(c.isspace() or ord(c) < 33 for c in identity.boot_id)
+            or type(identity.pid) is not int or identity.pid <= 0
+            or type(identity.start_ticks) is not int or identity.start_ticks <= 0):
+        raise LeaseError("Invalid Linux process identity")
 
 
 class DesktopBackend(Protocol):
@@ -60,10 +85,11 @@ def _safe_state_dir(db_path: Path) -> None:
 class LeaseManager:
     """Durable admission state; has no way to call a real process/service."""
 
-    def __init__(self, db_path: Path, backend: DesktopBackend):
+    def __init__(self, db_path: Path, backend: DesktopBackend, *, require_identity: bool = False):
         self.path = Path(db_path)
         _safe_state_dir(self.path)
         self.backend = backend
+        self.require_identity = require_identity
         self._conn = sqlite3.connect(self.path, timeout=8.0, isolation_level=None)
         self._conn.row_factory = sqlite3.Row
         os.chmod(self.path, 0o600)
@@ -87,6 +113,23 @@ class LeaseManager:
                 created_at INTEGER NOT NULL
             );
         ''')
+        # Additive migration. Old synthetic leases remain unbound and must
+        # never be assumed dead; no state or holder row is deleted here.
+        with self._guard():
+            self._conn.execute('BEGIN IMMEDIATE')
+            try:
+                columns = {r['name'] for r in self._conn.execute('PRAGMA table_info(gpu_leases)')}
+                for name, sql_type in (
+                    ('owner_boot_id', 'TEXT'),
+                    ('owner_pid', 'INTEGER'),
+                    ('owner_start_ticks', 'INTEGER'),
+                ):
+                    if name not in columns:
+                        self._conn.execute(f'ALTER TABLE gpu_leases ADD COLUMN {name} {sql_type}')
+                self._conn.execute('COMMIT')
+            except BaseException:
+                self._conn.execute('ROLLBACK')
+                raise
 
     def close(self) -> None:
         self._conn.close()
@@ -127,12 +170,36 @@ class LeaseManager:
         self._conn.execute("UPDATE gpu_lease_state SET mode=?, resource=?, restore_wallpaper=?, modified_at=? WHERE id=1",
                            (mode, resource, int(restore), int(time.time())))
 
-    def acquire(self, owner: str, resource: str, *, activity: str, foreground: bool = False) -> str:
+    def _insert_holder(self, token: str, owner: str, resource: str,
+                       identity: OwnerIdentity | None) -> None:
+        self._conn.execute('''INSERT INTO gpu_leases
+            (token, owner, resource, created_at, owner_boot_id, owner_pid, owner_start_ticks)
+            VALUES (?, ?, ?, ?, ?, ?, ?)''',
+            (token, owner, resource, int(time.time()),
+             identity.boot_id if identity else None,
+             identity.pid if identity else None,
+             identity.start_ticks if identity else None))
+
+    @contextlib.contextmanager
+    def _transaction(self):
+        self._conn.execute('BEGIN IMMEDIATE')
+        try:
+            yield
+            self._conn.execute('COMMIT')
+        except BaseException:
+            self._conn.execute('ROLLBACK')
+            raise
+
+    def acquire(self, owner: str, resource: str, *, activity: str, foreground: bool = False,
+                identity: OwnerIdentity | None = None) -> str:
         """Reserve an identical model/resource; never preempt another resource.
 
         Explicit foreground requests bypass *idle admission*, not busy-GPU checks.
         The calling adapter is responsible for strong foreground authorization.
         """
+        validate_identity(identity)
+        if self.require_identity and identity is None:
+            raise LeaseError('Verified owner identity required for live admission')
         if not owner or not resource or len(owner) > 128 or len(resource) > 128:
             raise LeaseError("Invalid owner/resource")
         if any(ord(c) < 32 for c in owner + resource):
@@ -148,8 +215,7 @@ class LeaseManager:
                 if state['mode'] != 'reserved' or state['resource'] != resource:
                     raise LeaseError("GPU reserved for a different resource")
                 token = str(uuid.uuid4())
-                self._conn.execute("INSERT INTO gpu_leases VALUES (?,?,?,?)",
-                                   (token,owner,resource,int(time.time())))
+                self._insert_holder(token, owner, resource, identity)
                 return token
             if state['mode'] != 'normal':
                 raise LeaseError("Unresolved GPU lifecycle state; reconcile before admission")
@@ -164,9 +230,11 @@ class LeaseManager:
             if not self.backend.safe_to_acquire():
                 raise LeaseError("Uncoordinated GPU allocation; lifecycle needs reconciliation")
             token = str(uuid.uuid4())
-            self._conn.execute("INSERT INTO gpu_leases VALUES (?,?,?,?)",
-                               (token,owner,resource,int(time.time())))
-            self._set_state('reserved',resource,initially_active)
+            # Registration and reserved transition commit atomically. If a
+            # crash precedes this, 'preparing' remains fail-closed.
+            with self._transaction():
+                self._insert_holder(token, owner, resource, identity)
+                self._set_state('reserved',resource,initially_active)
             return token
 
     def release(self, token: str) -> str:
@@ -175,10 +243,13 @@ class LeaseManager:
             found = self._conn.execute("SELECT token FROM gpu_leases WHERE token=?",(token,)).fetchone()
             if not found or state['mode'] != 'reserved':
                 raise LeaseError("Unknown lease token or invalid lifecycle state")
-            self._conn.execute("DELETE FROM gpu_leases WHERE token=?",(token,))
-            if self._holders():
+            with self._transaction():
+                self._conn.execute("DELETE FROM gpu_leases WHERE token=?",(token,))
+                last_holder = not self._holders()
+                if last_holder:
+                    self._set_state('restore_pending',state['resource'],bool(state['restore_wallpaper']))
+            if not last_holder:
                 return 'reserved'
-            self._set_state('restore_pending',state['resource'],bool(state['restore_wallpaper']))
             return self._finalize_restore()
 
     def _finalize_restore(self) -> str:
@@ -192,6 +263,45 @@ class LeaseManager:
         # No wallpaper service is started if it was originally inactive.
         self._set_state('normal',None,False)
         return 'normal'
+
+    def recover_dead_owners(self, owner_status: Callable[[OwnerIdentity], str]) -> dict:
+        """Recover only independently verified dead identities under the lease lock.
+
+        Unknown/unbound identity prevents *all* mutations this pass. A dead
+        owner is removed atomically; if this was the last holder, restoration
+        still requires the normal GPU-residency release proof. No model is
+        stopped by this method. The caller must use the trusted /proc verifier.
+        """
+        with self._guard():
+            state = self._state()
+            holders = self._holders()
+            if state['mode'] != 'reserved' or not holders:
+                return {'result': state['mode'], 'recovered': 0, 'unverified': 0}
+            outcomes = {}
+            for row in holders:
+                if row['owner_boot_id'] is None or row['owner_pid'] is None or row['owner_start_ticks'] is None:
+                    return {'result': 'reserved', 'recovered': 0, 'unverified': 1}
+                identity = OwnerIdentity(row['owner_boot_id'], row['owner_pid'], row['owner_start_ticks'])
+                try:
+                    validate_identity(identity)
+                    status = owner_status(identity)
+                except (OSError, ValueError, LeaseError):
+                    status = 'unknown'
+                if status not in ('dead', 'live'):
+                    return {'result': 'reserved', 'recovered': 0, 'unverified': 1}
+                outcomes[row['token']] = status
+            dead = [token for token, status in outcomes.items() if status == 'dead']
+            if not dead:
+                return {'result': 'reserved', 'recovered': 0, 'unverified': 0}
+            with self._transaction():
+                for token in dead:
+                    self._conn.execute('DELETE FROM gpu_leases WHERE token=?', (token,))
+                last_holder = not self._holders()
+                if last_holder:
+                    self._set_state('restore_pending',state['resource'],bool(state['restore_wallpaper']))
+            if not last_holder:
+                return {'result': 'reserved', 'recovered': len(dead), 'unverified': 0}
+            return {'result': self._finalize_restore(), 'recovered': len(dead), 'unverified': 0}
 
     def reconcile(self) -> str:
         """Explicit crash/failure recovery; fail closed while GPU is occupied."""
