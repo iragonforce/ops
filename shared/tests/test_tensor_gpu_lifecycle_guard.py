@@ -1,6 +1,7 @@
 """Stage 2D read-only policy tests; no real services or GPU accessed."""
 import importlib.util
 from pathlib import Path
+from contextlib import closing
 import sqlite3
 import sys
 import tempfile
@@ -27,11 +28,12 @@ class GuardTest(unittest.TestCase):
         self.db = self.base / 'lease.sqlite3'
 
     def build(self, mode='normal', count=0, *, resource=None, restore=0):
-        with sqlite3.connect(self.db) as conn:
+        with closing(sqlite3.connect(self.db)) as conn:
             conn.execute('CREATE TABLE gpu_lease_state(id INTEGER,mode TEXT,resource TEXT,restore_wallpaper INTEGER)')
             conn.execute('CREATE TABLE gpu_leases(token TEXT)')
             conn.execute('INSERT INTO gpu_lease_state VALUES (1,?,?,?)', (mode, resource, restore))
             conn.executemany('INSERT INTO gpu_leases VALUES (?)', [(f't{i}',) for i in range(count)])
+            conn.commit()
         self.db.chmod(0o600)
 
     def test_missing_state_deny(self):

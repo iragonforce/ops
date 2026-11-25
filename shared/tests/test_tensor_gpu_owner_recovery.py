@@ -2,6 +2,7 @@
 from __future__ import annotations
 import importlib.util
 from pathlib import Path
+from contextlib import closing
 import sqlite3
 import sys
 import tempfile
@@ -38,7 +39,7 @@ class OwnerTest(unittest.TestCase):
         self.path = Path(self.tmp.name) / 'secure' / 'lease.sqlite3'
         self.b = Fake()
         self.q = mod.LeaseManager(self.path, self.b, require_identity=True)
-        self.addCleanup(self.q.close)
+        self.addCleanup(lambda: self.q.close())
         self.a = mod.OwnerIdentity('boot-a', 100, 1000)
         self.second = mod.OwnerIdentity('boot-a', 200, 2000)
 
@@ -127,7 +128,7 @@ class OwnerTest(unittest.TestCase):
     def test_additive_schema_migration_keeps_old_rows(self):
         self.q.close()
         self.path.unlink()
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db:
             db.executescript('''
                 CREATE TABLE gpu_lease_state(id INTEGER PRIMARY KEY,mode TEXT,resource TEXT,restore_wallpaper INTEGER,modified_at INTEGER);
                 INSERT INTO gpu_lease_state VALUES(1,'reserved','qwen',1,100);

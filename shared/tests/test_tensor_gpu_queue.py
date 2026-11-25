@@ -23,7 +23,7 @@ class QueueTest(unittest.TestCase):
         self.root.mkdir(mode=0o700)
         self.path = self.root / 'queue.sqlite3'
         self.q = mod.Queue(self.path)
-        self.addCleanup(self.q.close)
+        self.addCleanup(lambda: self.q.close())
 
     def test_batch_30_survives_restart_and_completes_in_order(self):
         names = [f'fixture-{i:04d}' for i in range(1,31)]

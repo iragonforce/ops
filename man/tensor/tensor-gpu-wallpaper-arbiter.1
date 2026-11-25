@@ -1,0 +1,21 @@
+.TH TENSOR-GPU-WALLPAPER-ARBITER 1 "2026-11-24" "Tensor GPU lifecycle" "User Commands"
+.SH NAME
+tensor-gpu-wallpaper-arbiter \- source-only atomic wallpaper startup contract
+.SH SYNOPSIS
+.B tensor-gpu-wallpaper-arbiter.py
+.RI [ --help ]
+.SH DESCRIPTION
+Provides a Python callback API for a future guarded wallpaper unit. It uses the
+same private gpu-lease.lock flock as the Tensor GPU lease manager and verifies
+the SQLite lease state while holding that lock, then calls the injected launch
+and readiness callbacks before releasing it. Non-normal, unverified and busy
+state refuses startup. It cannot start a service via its command-line interface.
+.SH SAFETY
+Do not install as a live Wallpaper Engine systemd ExecStart until a Type=notify
+supervisor wrapper and two-phase restore protocol are implemented and tested.
+The current LeaseManager restoration holds the lease lock during systemctl start;
+a naive unit wrapper waiting for that lock could otherwise deadlock. This library
+uses a nonblocking lock to refuse rather than hang, but restoration would remain
+pending without a proper handoff. This is not production admission authorization.
+.SH SOURCE
+shared/scripts/tensor-gpu-wallpaper-arbiter.py in iragonforce/ops.
