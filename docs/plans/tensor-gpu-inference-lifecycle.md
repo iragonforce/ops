@@ -224,3 +224,17 @@ The simulated `--activity idle` flag is a **test input only**, not a verified Hy
 - No production service hooks activated.
 - No Hermes, Ollama, MinerU or Wallpaper Engine configuration changes.
 - Remaining: guarded systemd startup integration, targeted rollback and controlled live acceptance.
+
+## Stage 2E systemd source acceptance — 2026-11-25
+
+- Host: Tensor; isolated systemd integration worktree.
+- Base revision: 0383c4c.
+- GPU regression tests: 143/143 passed.
+- Candidate systemd unit passed static verification.
+- Guarded Type=notify entrypoint added in source only.
+- Existing wallpaper supervisor and renderer retained.
+- Production Hermes and wallpaper services remained active.
+- No live lease database initialization or service changes.
+- Remaining: restoration-grant transport, Hermes/Hyprland
+  startup integration, crash recovery and live acceptance.
+- This checkpoint does not authorize production deployment.

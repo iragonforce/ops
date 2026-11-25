@@ -1,8 +1,12 @@
 [Unit]
-Description=Mirror Wallpaper Engine selections onto Hyprland monitors
+Description=Mirror Wallpaper Engine selections onto Hyprland monitors (GPU-lease guarded)
 
 [Service]
-ExecStart=/home/iragonforce/.local/bin/wallpaper-engine-sync
+Type=notify
+NotifyAccess=main
+ExecStart=/usr/bin/python3 /home/iragonforce/.local/lib/tensor-gpu/tensor-gpu-wallpaper-systemd.py --serve
 Restart=on-failure
 RestartSec=5
+TimeoutStartSec=20
+TimeoutStopSec=30
 KillMode=control-group

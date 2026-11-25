@@ -1,0 +1,20 @@
+.TH TENSOR-GPU-WALLPAPER-SYSTEMD 1 "2026-11-25" "iragonforce/ops" "User Commands"
+.SH NAME
+ tensor-gpu-wallpaper-systemd \- guarded Wallpaper Engine systemd supervisor entrypoint
+.SH SYNOPSIS
+.B tensor-gpu-wallpaper-systemd.py
+[--help | --version | --serve]
+.SH DESCRIPTION
+Without --serve the script only prints JSON readiness blockers. --serve is a
+future Type=notify systemd user-unit entrypoint that acquires the existing GPU
+lease lock and verifies that Hermes, CUDA processes and Ollama models are idle
+before spawning the existing wallpaper-engine-sync supervisor. The service
+sends READY only after the supervisor process survives a bounded startup wait.
+This is not a proof of a rendered wallpaper surface. Restoration grants are not
+accepted in this stage. The unit source is NOT installed automatically.
+.SH SAFETY
+Lease database must be initialized by a future bounded deployment action.
+Do not deploy this unit until restoration grant handoff, shutdown semantics,
+Hermes integration and rollback are tested on the target machine.
+.SH SOURCE
+iragonforce/ops, shared/scripts/tensor-gpu-wallpaper-systemd.py
