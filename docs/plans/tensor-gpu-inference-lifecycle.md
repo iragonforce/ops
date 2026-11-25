@@ -1,6 +1,6 @@
 # Tensor GPU inference lifecycle and persistent job queue
 
-**Status:** Stage 1 complete; Stage 2A/2B/2C synthetic and read-only gates verified; production GPU lifecycle pending
+**Status:** Stage 1 complete; Stage 2A–2D synthetic/read-only checkpoints verified; production lifecycle pending
 **Date:** 2026-11-24
 **Host:** `tensor` (Arch Linux, NVIDIA RTX 5070, 64 GB-class RAM)
 **Scope:** Hermes/llama.cpp, Ollama, MinerU, Nexus-initiated Qdrant embeddings, Hyprland desktop restoration
@@ -111,7 +111,7 @@ All baseline observations require revalidation before modifying live services. I
 | --- | --- | --- | --- |
 | 0 — Inspect integrations | **Complete for Stage 1** | Wayland seat0; Hypridle 300s; Sunshine/Moonlight inactive; MinerU Gradio queue concurrency 1; llama.cpp 8080, Ollama 11434; native GPU admission still unverified | Proceed with synthetic-only Stage 1 |
 | 1 — Durable queue | **Committed and pushed** | 13/13 tests; 30 synthetic jobs; deduplication and private permissions verified | Commit 6be0ded |
-| 2 — GPU lease/desktop restoration | **Stage 2C verified; live gate pending** | 17 adapter + 11 probe + 17 lease + 13 queue tests passed on Tensor | Resolve lifecycle conflicts and dead-owner recovery |
+| 2 — GPU lease/desktop restoration | **Stage 2D preliminary gate verified** | 72/72 tests; lifecycle guard fails closed without lease state | Implement dead-owner recovery and restart coordination |
 | 3 — Hermes lifecycle | Not started | Current Qwen loads, but lifecycle/tool/KV acceptance incomplete | After Stage 2 gate |
 | 4 — Ollama/Qdrant | Not started | Existing `/api/embed` and checkpoints identified | After Stage 3 gate |
 | 5 — MinerU | Not started | WebUI/router/backend processes identified | After Stage 4 gate |
@@ -177,3 +177,13 @@ The simulated `--activity idle` flag is a **test input only**, not a verified Hy
 - Blocker: dead-owner lease recovery not validated.
 - Limitation: direct Ollama HTTP clients are not coordinated.
 - Next: implement restart guards and recovery before controlled live acquire/release.
+
+## Stage 2D preliminary acceptance — 2026-11-24
+
+- Tensor: 72/72 tests passed across five suites.
+- Lifecycle guard: 14/14 tests passed.
+- Guard remained read-only; live control disabled.
+- Missing lease state correctly denied wallpaper admission.
+- No production worker, service hook or GPU modification.
+- Three source files installed but not activated.
+- Remaining: atomic owner registration, dead-owner recovery, Hermes/Hyprland restart guards, controlled live acceptance and rollback.

@@ -1,0 +1,24 @@
+.TH TENSOR-GPU-LIFECYCLE-GUARD 1 "2026-11-24" "Tensor infrastructure" "User Commands"
+.SH NAME
+ tensor-gpu-lifecycle-guard \- read-only wallpaper start policy and owner identity checks
+.SH SYNOPSIS
+.B python3 shared/scripts/tensor-gpu-lifecycle-guard.py
+.RI [ --db " PATH" ]
+.RI [ --check-wallpaper-start ]
+.SH DESCRIPTION
+Stage 2D safety predicate. Reads the existing GPU lease database without mutation.
+Refuses wallpaper startup candidates during preparing, reserved, or restore_pending states.
+The optional check flag exits 1 when state cannot be verified or a lease is active.
+The Python module also provides a Linux PID+starttime+boot ID identity classifier.
+Neither the CLI nor this module modifies services, performs recovery, or unloads GPU models.
+.PP
+.B WARNING:
+This predicate alone is not an atomic systemd start guard, and is not installed
+as a service hook in Stage 2D. Race-safe wallpaper startup and owner registration
+are required before enabling a real lease coordinator.
+.SH FILES
+.I ~/.local/state/tensor-gpu-lease/queue.sqlite3
+is the proposed protected runtime state (not created by the guard).
+.SH SEE ALSO
+.BR tensor-gpu-lease (1),
+.BR tensor-gpu-systemd-adapter (1).
