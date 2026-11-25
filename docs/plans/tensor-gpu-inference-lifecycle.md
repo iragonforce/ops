@@ -1,6 +1,6 @@
 # Tensor GPU inference lifecycle and persistent job queue
 
-**Status:** Stage 0 complete; Stage 1 verified on Tensor (13/13 tests, 30 synthetic jobs); pending Git publication
+**Status:** Stage 1 committed (6be0ded); Stage 2 synthetic tests verified on Tensor; live GPU adapter pending
 **Date:** 2026-11-24
 **Host:** `tensor` (Arch Linux, NVIDIA RTX 5070, 64 GB-class RAM)
 **Scope:** Hermes/llama.cpp, Ollama, MinerU, Nexus-initiated Qdrant embeddings, Hyprland desktop restoration
@@ -110,8 +110,8 @@ All baseline observations require revalidation before modifying live services. I
 | Stage | Status | Evidence | Next action |
 | --- | --- | --- | --- |
 | 0 — Inspect integrations | **Complete for Stage 1** | Wayland seat0; Hypridle 300s; Sunshine/Moonlight inactive; MinerU Gradio queue concurrency 1; llama.cpp 8080, Ollama 11434; native GPU admission still unverified | Proceed with synthetic-only Stage 1 |
-| 1 — Durable queue | **Verified on Tensor** | 13/13 unit tests; 30 synthetic jobs completed; active-user deferral 0; 30 duplicate submissions reused; private permissions 0700/0600 | Commit accepted source; proceed to Stage 2 |
-| 2 — GPU lease/desktop restoration | Not started | — | After Stage 1 gate |
+| 1 — Durable queue | **Committed and pushed** | 13/13 tests; 30 synthetic jobs; deduplication and private permissions verified | Commit 6be0ded |
+| 2 — GPU lease/desktop restoration | **Synthetic gate verified** | 17/17 Stage 2 tests and 13/13 Stage 1 regressions passed on Tensor | Real systemd/GPU adapter pending |
 | 3 — Hermes lifecycle | Not started | Current Qwen loads, but lifecycle/tool/KV acceptance incomplete | After Stage 2 gate |
 | 4 — Ollama/Qdrant | Not started | Existing `/api/embed` and checkpoints identified | After Stage 3 gate |
 | 5 — MinerU | Not started | WebUI/router/backend processes identified | After Stage 4 gate |
@@ -141,3 +141,13 @@ The simulated `--activity idle` flag is a **test input only**, not a verified Hy
 - Source installed in the authoritative ops checkout.
 - No production worker, idle hook, GPU purge, or service modification.
 - Next gate: safe GPU lease and desktop restoration.
+
+## Stage 2 synthetic acceptance — 2026-11-24
+
+- Tensor: 17/17 GPU lease tests passed.
+- Stage 1 regression: 13/13 tests passed.
+- Verified simulated shared leases, conflict rejection, crash recovery and restoration guards.
+- Source: tensor-gpu-lease.py, corresponding tests and man page.
+- No production worker or GPU adapter enabled.
+- No Hermes, Ollama, MinerU, Wallpaper Engine or Hypridle modifications.
+- Remaining Stage 2 gate: live systemd adapter, GPU memory-release verification and rollback.

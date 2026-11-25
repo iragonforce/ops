@@ -1,0 +1,24 @@
+.TH TENSOR-GPU-LEASE 1 "2026-11-24" "Tensor" "GPU Admission"
+.SH NAME
+tensor-gpu-lease \- simulated GPU lease lifecycle (Stage 2)
+.SH SYNOPSIS
+.B python3 shared/scripts/tensor-gpu-lease.py --help
+.SH DESCRIPTION
+Stage 2 provides a Python-only, fail-closed GPU reservation state machine with
+an injected backend interface and synthetic unit tests. It has no real systemd,
+wallpaper, NVIDIA, Ollama, Hermes or MinerU backend and cannot change live GPU
+or desktop state.  Production integration is prohibited until the relevant
+adapters and idle signals have passed independent acceptance testing.
+.PP
+The manager keeps state in a caller-owned 0700 directory and a 0600 SQLite
+file. The future adapter must verify GPU memory release before restoring
+previously running wallpaper services; an unexpected wallpaper restart during
+an active lease must be contained. Explicit foreground requests bypass idle
+eligibility only, never conflicting resource ownership.
+.SH SAFETY
+Do not use the synthetic fake backend as an actual GPU-free-memory test. Do not
+treat model server uptime, process existence, or arbitrary free-VRAM thresholds
+as proof that no inference is active. All runtime clients must participate
+before global scheduling guarantees can be claimed.
+.SH SOURCE
+iragonforce/ops shared/scripts/tensor-gpu-lease.py
