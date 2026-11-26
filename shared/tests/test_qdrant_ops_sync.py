@@ -17,6 +17,13 @@ spec.loader.exec_module(core)
 
 
 class OpsSyncTests(unittest.TestCase):
+    def test_unit_indexes_docs_before_optional_gemini(self):
+        unit = (Path(__file__).parents[2] /
+                'hosts/nexus/files/etc/systemd/system/qdrant-memory.service').read_text()
+        self.assertLess(unit.index('sync-inbox\n'), unit.index('sync-ops\n'))
+        self.assertLess(unit.index('sync-ops\n'), unit.index('sync-hermes\n'))
+        self.assertLess(unit.index('sync-hermes\n'), unit.index('sync-chat\n'))
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
