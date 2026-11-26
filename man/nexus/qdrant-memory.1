@@ -1,4 +1,4 @@
-.TH QDRANT-MEMORY 1 "2026-11-24" "Homelab" "User Commands"
+.TH QDRANT-MEMORY 1 "2026-11-26" "Homelab" "User Commands"
 .SH NAME
 qdrant-memory \- reconcile the existing Nexus Qdrant knowledge collection
 .SH SYNOPSIS
@@ -24,11 +24,13 @@ historically labelled records under
 It does not index full transcripts or modify other origins. The original inbox
 command retains its previous semantics.
 .B sync-chat
-starts only after an explicit forward-only bootstrap (no historical chat
-backfill). It reads settled default-profile CLI/TUI/Photon user and final-answer
-pairs from a read-only SQLite snapshot, skipping recent, failed, other-profile,
-cron and delegated turns. It screens sensitive text before sending bounded
-pairs to the existing Gemini 3.8 Flash provider; accepted historical findings
+starts only after an explicit forward-only closed-session bootstrap (no historical
+chat backfill). It reads default-profile CLI/TUI/Photon user and final-answer
+pairs from a read-only SQLite snapshot only after durable explicit session close,
+skipping compression, failed, open, other-profile, cron and delegated turns.
+The session-close hook wakes the existing path unit; the hourly timer retries
+missed events. It screens sensitive text before sending bounded
+pairs to the existing Gemini 3.8 Flash High selector; accepted historical findings
 are embedded with the existing Ollama model and stored separately as
 .BR origin=hermes_chat .
 Raw chats and model rejects are not exported or logged. No automatic deletion.

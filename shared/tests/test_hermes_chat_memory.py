@@ -40,7 +40,8 @@ class ChatMemoryTests(unittest.TestCase):
                        'not inferred from an earlier proposal.')
         conn = sqlite3.connect(self.db)
         conn.executescript('''
-            CREATE TABLE sessions (id TEXT PRIMARY KEY, profile_name TEXT, source TEXT);
+            CREATE TABLE sessions (id TEXT PRIMARY KEY, profile_name TEXT, source TEXT,
+                ended_at REAL, end_reason TEXT);
             CREATE TABLE messages (id INTEGER PRIMARY KEY, session_id TEXT, role TEXT,
                 content TEXT, timestamp REAL, finish_reason TEXT, active INTEGER,
                 compacted INTEGER, _compressed_summary INTEGER, display_kind TEXT,
@@ -59,8 +60,10 @@ class ChatMemoryTests(unittest.TestCase):
         self.conn.close()
         self.temp.cleanup()
 
-    def add_turn(self, session, profile, source, msg_id, user, answer, *, failed=False, finish: str | None='stop', age=300):
-        self.conn.execute('INSERT OR IGNORE INTO sessions VALUES (?,?,?)', (session, profile, source))
+    def add_turn(self, session, profile, source, msg_id, user, answer, *, failed=False,
+                 finish: str | None='stop', age=300, ended_at=None, end_reason='tui_close'):
+        self.conn.execute('INSERT OR IGNORE INTO sessions VALUES (?,?,?,?,?)',
+                          (session, profile, source, self.now-10 if ended_at is None else ended_at, end_reason))
         self.conn.execute('INSERT INTO messages VALUES (?,?,?,?,?,?,?,?,?,?,?)',
                           (msg_id, session, 'user', user, self.now-age-1, None, 1, 0, 0, None, None))
         self.conn.execute('INSERT INTO messages VALUES (?,?,?,?,?,?,?,?,?,?,?)',
@@ -78,6 +81,36 @@ class ChatMemoryTests(unittest.TestCase):
         self.assertEqual(len(chat.settled_turns(self.db, 0, now=self.now)), 1)
         self.assertEqual(chat.newest_message_id(self.db), 71)
         self.assertEqual(chat.settled_turns(self.db, 11, now=self.now), [])
+
+    def test_closed_sessions_skip_open_and_compression_without_losing_later_closes(self):
+        self.add_turn('open', 'default', 'tui', 100, self.user, self.answer, ended_at=0)
+        self.conn.execute("UPDATE sessions SET ended_at=NULL, end_reason=NULL WHERE id='open'")
+        self.add_turn('compressed', 'default', 'tui', 110, self.user, self.answer, end_reason='compression')
+        self.add_turn('later-close', 'default', 'tui', 120, self.user, self.answer, ended_at=self.now)
+        self.conn.commit()
+        cursor = (self.now-20, '', chat.FINISHED_SESSION)
+        page = chat.closed_turns(self.db, cursor, limit=1)
+        self.assertEqual([row[1] for row, _ in page if row], ['default-ok'])
+        later = chat.closed_turns(self.db, page[-1][1], limit=8)
+        self.assertEqual([row[1] for row, _ in later if row], ['later-close'])
+        self.assertEqual(chat.closed_turns(self.db, later[-1][1]), [])
+        self.conn.execute("UPDATE sessions SET ended_at=?, end_reason='tui_close' WHERE id='open'", (self.now+1,))
+        self.conn.commit()
+        self.assertEqual([row[1] for row, _ in chat.closed_turns(self.db, later[-1][1]) if row], ['open'])
+
+    def test_closed_session_paginates_each_turn_without_advancing_past_unread_rows(self):
+        self.add_turn('default-ok', 'default', 'tui', 200, self.user, self.answer)
+        self.conn.commit()
+        cursor = (self.now-20, '', chat.FINISHED_SESSION)
+        ids = []
+        for _ in range(4):
+            page = chat.closed_turns(self.db, cursor, limit=1)
+            if not page:
+                break
+            ids.extend(row[0] for row, _ in page if row)
+            cursor = page[-1][1]
+        self.assertEqual(ids, [11, 201])
+        self.assertEqual(cursor[2], chat.FINISHED_SESSION)
 
     def test_sensitive_and_oversized_chats_never_sent(self):
         self.assertTrue(chat.safe_pair(self.user, self.answer, (core.SENSITIVE,)))
@@ -143,29 +176,30 @@ class ChatMemoryTests(unittest.TestCase):
         with context[0], context[1], context[2], context[3], context[4], context[5]:
             with self.assertRaisesRegex(RuntimeError, 'bootstrap'):
                 core.sync_chat()
-            core.chat_checkpoint_write(0)
+            cursor = (self.now-20, '', chat.FINISHED_SESSION)
+            core.closed_checkpoint_write(cursor)
             with mock.patch.object(core.chat, 'select_facts', side_effect=OSError('provider unavailable')):
                 with self.assertRaisesRegex(RuntimeError, 'chat selector failed .OSError.'):
                     core.sync_chat()
-                self.assertEqual(core.chat_checkpoint_read(), 0)
+                self.assertEqual(core.closed_checkpoint_read(), cursor)
             with mock.patch.object(core.chat, 'select_facts', return_value=[fact]):
                 core.sync_chat()
                 self.assertEqual(len(store), 1)
-                self.assertEqual(core.chat_checkpoint_read(), 11)
+                self.assertEqual(core.closed_checkpoint_read()[1], 'interrupted')
                 core.sync_chat()
                 self.assertEqual(len(store), 1)
-            checkpoint = state / 'hermes-chat-checkpoint.json'
+            checkpoint = state / 'hermes-closed-chat-checkpoint.json'
             self.assertEqual(checkpoint.stat().st_mode & 0o777, 0o600)
-            leftover = state / 'hermes-chat-checkpoint.tmp'
+            leftover = state / 'hermes-closed-chat-checkpoint.tmp'
             leftover.write_text('interrupted private staging')
             leftover.chmod(0o600)
-            core.chat_checkpoint_write(11)
+            core.closed_checkpoint_write(core.closed_checkpoint_read())
             self.assertFalse(leftover.exists())
             invalid = json.loads(checkpoint.read_text())
-            invalid['last_id'] = 42
+            invalid['cursor'][2] = 42
             checkpoint.write_text(json.dumps(invalid))
             with self.assertRaisesRegex(RuntimeError, 'integrity'):
-                core.chat_checkpoint_read()
+                core.closed_checkpoint_read()
 
 
 if __name__ == '__main__':

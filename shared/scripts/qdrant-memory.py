@@ -657,24 +657,75 @@ def chat_checkpoint_write(last_id):
         if tmp.exists():
             tmp.unlink()
 
+def closed_checkpoint_read():
+    path = STATE / 'hermes-closed-chat-checkpoint.json'
+    if path.is_symlink():
+        raise RuntimeError('STOP: closed-chat checkpoint symlink')
+    if not path.exists():
+        return None
+    info = path.stat()
+    if not path.is_file() or info.st_uid != os.geteuid() or info.st_mode & 0o077 or info.st_size > 4096:
+        raise RuntimeError('STOP: unsafe closed-chat checkpoint')
+    value = json.loads(path.read_text(encoding='utf-8'))
+    if set(value) != {'version', 'cursor', 'sha256'} or value['version'] != 1:
+        raise RuntimeError('STOP: closed-chat checkpoint integrity mismatch')
+    cursor = value['cursor']
+    if (not isinstance(cursor, list) or len(cursor) != 3
+            or type(cursor[0]) not in (float, int) or cursor[0] < 0
+            or not isinstance(cursor[1], str) or type(cursor[2]) is not int
+            or cursor[2] < 0 or cursor[2] > chat.FINISHED_SESSION
+            or hashlib.sha256(json.dumps(cursor).encode()).hexdigest() != value['sha256']):
+        raise RuntimeError('STOP: closed-chat checkpoint integrity mismatch')
+    return tuple(cursor)
+
+def closed_checkpoint_write(cursor):
+    path = STATE / 'hermes-closed-chat-checkpoint.json'
+    tmp = STATE / 'hermes-closed-chat-checkpoint.tmp'
+    if path.is_symlink() or tmp.is_symlink():
+        raise RuntimeError('STOP: closed-chat checkpoint symlink')
+    if tmp.exists():
+        info = tmp.stat()
+        if not tmp.is_file() or info.st_uid != os.geteuid() or info.st_mode & 0o077:
+            raise RuntimeError('STOP: unsafe interrupted closed-chat checkpoint')
+        tmp.unlink()
+    encoded = json.dumps(cursor)
+    value = {'version': 1, 'cursor': cursor,
+             'sha256': hashlib.sha256(encoded.encode()).hexdigest()}
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, 'O_NOFOLLOW', 0), 0o600)
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as out:
+            json.dump(value, out, sort_keys=True)
+            out.flush()
+            os.fsync(out.fileno())
+        os.replace(tmp, path)
+        directory = os.open(STATE, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+
 def sync_chat(*, dry_run=False, bootstrap=False, limit=12):
-    """Forward-only, default-profile settled chats; model failures remain retryable."""
+    """Forward-only closed default-profile sessions; no transcript staging."""
     database = Path(os.environ.get('QDRANT_MEMORY_HERMES_DB', '/opt/data/state.db'))
     if database.is_symlink() or not database.is_file() or not 1 <= limit <= 30:
         raise RuntimeError('STOP: invalid Hermes chat database or limit')
-    last_id = chat_checkpoint_read()
+    cursor = closed_checkpoint_read()
     if bootstrap:
-        if last_id is not None or dry_run:
+        if cursor is not None or dry_run:
             raise RuntimeError('STOP: bootstrap requires a missing checkpoint and apply mode')
-        cursor = chat.newest_message_id(database)
-        chat_checkpoint_write(cursor)
-        print(f'CHAT bootstrap_last_id={cursor} (forward-only; no historical chat sent to model)', flush=True)
+        cursor = (time.time(), '', chat.FINISHED_SESSION)
+        closed_checkpoint_write(cursor)
+        print('CHAT bootstrap_closed (forward-only; no historical chat sent to model)', flush=True)
         return
-    if last_id is None:
+    if cursor is None:
         raise RuntimeError('STOP: chat checkpoint missing; explicit --bootstrap required')
-    turns = chat.settled_turns(database, last_id, limit=limit)
+    turns = chat.closed_turns(database, cursor, limit=limit)
     if dry_run:
-        print(f'CHAT dry_run candidates={len(turns)} last_id={last_id}; no model/embedding/Qdrant writes', flush=True)
+        candidates = sum(turn is not None for turn, _ in turns)
+        print(f'CHAT dry_run candidates={candidates}; no model/embedding/Qdrant writes', flush=True)
         return
     verify_collection()
     scanner_path = INDEXERS / 'git-snapshot-index.py'
@@ -688,7 +739,10 @@ def sync_chat(*, dry_run=False, bootstrap=False, limit=12):
     seen = {p.get('content_sha256') for p in existing.values()}
     seen.update(p.get('content_sha256') for p in existing_points('hermes_session').values())
     counts = Counter()
-    for turn in turns:
+    for turn, position in turns:
+        if turn is None:
+            closed_checkpoint_write(position)
+            continue
         answer_id, _, _, user, answer, _, _ = turn
         if not chat.safe_pair(user, answer, scanners):
             counts['skipped_input'] += 1
@@ -704,6 +758,11 @@ def sync_chat(*, dry_run=False, bootstrap=False, limit=12):
             counts['selected'] += len(records)
         fresh = []
         for pid, payload in records:
+            # Closed sessions may contain turns selected under the previous
+            # settled-turn cursor. Preserve those exact IDs and their payloads.
+            if pid in existing:
+                counts['already_present'] += 1
+                continue
             content_hash = payload['content_sha256']
             if content_hash in seen and pid not in existing:
                 counts['duplicate'] += 1
@@ -719,7 +778,7 @@ def sync_chat(*, dry_run=False, bootstrap=False, limit=12):
                 raise RuntimeError('STOP: chat point readback differs; checkpoint not advanced')
             for pid, payload in fresh:
                 existing[pid] = payload
-        chat_checkpoint_write(answer_id)
+        closed_checkpoint_write(position)
         counts['processed'] += 1
         counts['new_or_changed'] += len(fresh)
     print('CHAT ' + ' '.join(f'{k}={v}' for k, v in sorted(counts.items())), flush=True)
@@ -733,8 +792,8 @@ def main():
     hermes_parser = sub.add_parser('sync-hermes', help='Reconcile historical main-profile compaction findings')
     hermes_parser.add_argument('--dry-run', action='store_true')
     hermes_parser.add_argument('--limit', type=int, help='Pilot only the first N completed compactions')
-    chat_parser = sub.add_parser('sync-chat', help='Select future completed default-profile chat findings (no raw transcript stored)')
-    chat_parser.add_argument('--bootstrap', action='store_true', help='Set a forward-only cursor at the current message ID without inference/writes')
+    chat_parser = sub.add_parser('sync-chat', help='Select findings from explicitly closed default-profile sessions (no raw transcript stored)')
+    chat_parser.add_argument('--bootstrap', action='store_true', help='Start a forward-only closed-session cursor without inference/writes')
     chat_parser.add_argument('--dry-run', action='store_true', help='Count eligible turns without model, embedding or Qdrant writes')
     chat_parser.add_argument('--limit', type=int, default=12, help='Maximum settled chat turns per invocation (1–30)')
     ops_parser = sub.add_parser('sync-ops', help='Reconcile committed ops Markdown without indexing uncommitted drafts')

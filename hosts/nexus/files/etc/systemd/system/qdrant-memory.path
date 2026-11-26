@@ -3,6 +3,8 @@ Description=Watch Qdrant inbox for added, edited, or deleted text files
 
 [Path]
 PathModified=/home/iragonforce/qdrant-inbox
+# Hermes default-profile session finalization touches this private marker.
+PathChanged=/srv/containers/data/hermes/data/state/qdrant-memory/session-close-trigger
 Unit=qdrant-memory.service
 
 [Install]

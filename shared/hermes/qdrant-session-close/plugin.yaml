@@ -1,0 +1,6 @@
+name: qdrant-session-close
+version: 0.1.0
+description: Wake the existing Nexus Qdrant reconciler after a Hermes session closes.
+author: Nexus operations
+provides_hooks:
+  - on_session_finalize
