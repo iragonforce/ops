@@ -31,9 +31,13 @@ and
 Tensor runs an independent native Hermes gateway using provider `custom` and
 llama.cpp at `http://127.0.0.1:8080/v1`, default `qwen3.8-27b-iq3`, context
 64000 (live configuration checked November 26). The 300-second native
-llama.cpp sleep and a direct cold request passed; authenticated gateway
-metadata requests passed, but gateway inference, tool use and concurrent
-admission have **not** passed. The earlier Ollama `gpt-oss:20b` default and
+llama.cpp sleep and a direct cold request passed on November 25; authenticated
+gateway metadata requests passed, but gateway inference, tool use and concurrent
+admission have **not** passed. On November 26 at 10:38 EST, an unguarded
+`/slots` request woke the sleeping server while Ollama occupied VRAM and
+`hermes-llama.service` failed on CUDA OOM; the gateway stayed active.
+See the [incident record](../changes/2026-11-26-tensor-llama-cold-wake-oom.md)
+before trying to restart it. The earlier Ollama `gpt-oss:20b` default and
 `qwen3.5:9b` test are historical, not current configuration. See
 [`tensor-gpu-inference-lifecycle.md`](../plans/tensor-gpu-inference-lifecycle.md).
 

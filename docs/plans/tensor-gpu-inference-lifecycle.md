@@ -1,6 +1,6 @@
 # Tensor GPU inference lifecycle and persistent job queue
 
-**Status:** Stage 1 complete; Stage 2F restoration transport validated in synthetic tests; Stage 3 native sleep deployed, gateway inference acceptance blocked by competing GPU residency
+**Status:** Stage 1 complete; Stage 2F restoration transport validated in synthetic tests; Stage 3 native sleep installed but llama service failed after unguarded cold wake on November 26; Stage 4–5 dispatch disabled
 **Date:** 2026-11-26
 **Host:** `tensor` (Arch Linux, NVIDIA RTX 5070, 64 GB-class RAM)
 **Scope:** Hermes/llama.cpp, Ollama, MinerU, Nexus-initiated Qdrant embeddings, Hyprland desktop restoration
@@ -112,7 +112,7 @@ All baseline observations require revalidation before modifying live services. I
 | 0 — Inspect integrations | **Complete for Stage 1** | Wayland seat0; Hypridle 300s; Sunshine/Moonlight inactive; MinerU Gradio queue concurrency 1; llama.cpp 8080, Ollama 11434; native GPU admission still unverified | Proceed with synthetic-only Stage 1 |
 | 1 — Durable queue | **Committed and pushed** | 13/13 tests; 30 synthetic jobs; deduplication and private permissions verified | Commit 6be0ded |
 | 2 — GPU lease/desktop restoration | **Restoration transport validated, source-only** | 165/165 tests; systemd unit verified; no production changes | Failure-injection and guarded live integration pending |
-| 3 — Hermes lifecycle | **Native sleep/wake verified; gateway read-only API verified** | 300-second sleep; successful direct cold inference; 10,226 MiB released; authenticated gateway metadata HTTP 200 on November 26 | Add request-level admission before any gateway cold wake; then test inference/tool use/concurrency |
+| 3 — Hermes lifecycle | **Native sleep pilot passed; service failed on unguarded cold wake November 26** | Earlier 300-second sleep/direct cold inference and 10,226 MiB release passed; a later `/slots` probe triggered CUDA OOM with Ollama resident | Preserve active wallpaper/gateway; implement request admission and recover llama only after safe GPU/desktop coordination |
 | 4 — Ollama/Qdrant | **Request boundary inspected; not integrated** | Nexus writers and MCP retrieval call Tensor `/api/embed` directly; model reloaded during this inspection | Shared lease/request admission and durable batch handoff before live upsert test |
 | 5 — MinerU | **Conversion boundary inspected; not integrated** | WebUI/API healthy; shared in-memory conversion slot and native multi-file Tasks found, but no durable task registry | Durable per-file admission and output idempotency after shared gate |
 | 6 — Acceptance/publication | Not started | — | After Stage 5 gate |
