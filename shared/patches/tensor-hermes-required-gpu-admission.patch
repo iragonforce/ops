@@ -1,0 +1,56 @@
+--- a/hermes_cli/middleware.py
++++ b/hermes_cli/middleware.py
+@@ -7,6 +7,7 @@
+ from __future__ import annotations
+ 
+ import logging
++from urllib.parse import urlsplit
+ from copy import deepcopy
+ from dataclasses import dataclass, field
+ from typing import Any, Callable, Dict, List
+@@ -24,6 +25,16 @@
+ VALID_MIDDLEWARE: set[str] = {
+     TOOL_REQUEST_MIDDLEWARE, TOOL_EXECUTION_MIDDLEWARE, LLM_REQUEST_MIDDLEWARE, LLM_EXECUTION_MIDDLEWARE,
+ }
++
++class GpuAdmissionRequired(RuntimeError):
++    """The protected local model must not run without its admission policy."""
++
++def _protected_tensor_model(kind: str, context: Dict[str, Any]) -> bool:
++    if kind != LLM_EXECUTION_MIDDLEWARE or context.get("provider") != "custom":
++        return False
++    url = urlsplit(str(context.get("base_url") or ""))
++    return (url.scheme == "http" and url.hostname in ("127.0.0.1", "localhost")
++            and url.port == 8080 and url.path.rstrip("/") == "/v1")
+ 
+ 
+ @dataclass
+@@ -164,6 +175,11 @@
+     payload_key = "request" if "request" in kwargs else "args"
+     manager = _delivery_manager()
+     callbacks = list(manager._middleware.get(kind, []))
++    protected = _protected_tensor_model(kind, kwargs)
++    if protected:
++        policies = [cb for cb in callbacks if getattr(cb, "tensor_gpu_admission_policy", False)]
++        if len(policies) != 1 or callbacks[0] is not policies[0]:
++            raise GpuAdmissionRequired("Tensor GPU admission policy unavailable")
+     if not callbacks:
+         return terminal_call(kwargs[payload_key])
+ 
+@@ -198,10 +214,15 @@
+         call_kwargs[payload_key] = payload
+         call_kwargs["next_call"] = next_call
+         try:
+-            return callback(**call_kwargs)
++            result = callback(**call_kwargs)
++            if protected and index == 0 and (not next_succeeded or result is not next_result):
++                raise GpuAdmissionRequired("Tensor GPU policy did not return the provider result")
++            return result
+         except _DownstreamExecutionError as exc:
+             raise exc.original
+         except Exception as exc:
++            if protected and index == 0:
++                raise GpuAdmissionRequired("Tensor GPU admission denied") from exc
+             # Runs once per tool/LLM call: a mis-declared callback fails identically every time,
+             # so it goes through the manager's warn-once reporter (#111922).
+             manager._report_hook_failure(kind, callback, call_kwargs, exc, surface="Middleware")
