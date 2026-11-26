@@ -39,6 +39,7 @@ from urllib.request import Request, urlopen
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from heading_chunk_filter import heading_only, merge_heading_only_chunks
 import hermes_chat_memory as chat
+from tensor_gpu_embedding import writer_embed
 
 HOME = Path('/home/iragonforce')
 INBOX = Path(os.environ.get('QDRANT_MEMORY_INBOX', str(HOME / 'qdrant-inbox')))
@@ -284,11 +285,9 @@ def upsert(records):
     for start in range(0, len(records), BATCH):
         batch = records[start:start + BATCH]
         inputs = [f'Source: {p["source"]}\nHeading: {p["heading"]}\n{p["text"]}' for _, p in batch]
-        embeddings = request(f'{OLLAMA}/api/embed', {
-            'model': MODEL,
-            'input': inputs,
-            'keep_alive': '10m',
-        })['embeddings']
+        embeddings = writer_embed(inputs, lambda values: request(f'{OLLAMA}/api/embed', {
+            'model': MODEL, 'input': values, 'keep_alive': '10m',
+        })['embeddings'])
         if len(embeddings) != len(batch) or any(len(v) != DIMENSIONS for v in embeddings):
             raise RuntimeError('STOP: unexpected Ollama embedding dimensions/count')
         result = request(f'{QDRANT}/collections/{COLLECTION}/points?wait=true', {

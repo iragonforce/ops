@@ -1,0 +1,39 @@
+.TH TENSOR_GPU_EMBEDDING 1 "November 2026" "Tensor GPU source-only handoff" "User Commands"
+.SH NAME
+tensor_gpu_embedding.py \- stage protected embedding batches in the existing Tensor GPU queue
+.SH SYNOPSIS
+.B python3 ~/ops/shared/scripts/tensor_gpu_embedding.py
+.RI [ --db " FILE" ] " submit | result"
+.SH DESCRIPTION
+The submit command accepts JSON containing model and up to three inputs on
+standard input. It stores private input bytes beside the existing queue and
+returns an opaque job ID. The result command accepts a job ID on standard
+input; it returns a completed, validated vector batch or a pending status.
+Neither command executes Ollama, acquires a GPU lease, or starts a worker.
+No raw text or vectors are passed in command-line arguments or public Git.
+.SH CLIENT MODE
+Existing Nexus Qdrant writers and the Hermes knowledge-search MCP can opt
+into the handoff by setting QDRANT_MEMORY_EMBED_COMMAND to a JSON argv array
+for a pinned, noninteractive SSH invocation of this script. Without that
+variable, their previous direct Ollama behavior is preserved. With it,
+failures and the 30-second bounded wait fail closed: no direct fallback,
+Qdrant write, or writer checkpoint advancement is attempted. Configure every
+writer and search consumer together only after a verified GPU-admitted worker
+and protected transport are deployed.
+.SH PYTHON API
+submit(db, inputs) deduplicates by operation/config revision and canonical
+input SHA-256. run_admitted(db, claim, embed) requires a caller-supplied claim
+and a separately verified GPU reservation; it is not an admission function.
+The caller must keep the shared GPU reservation until the model is truly
+released. result(db, job_id) checks the revision, digest, vector count and
+4096 finite dimensions. The Nexus writers retain their own Qdrant exact-ID
+readback and cursor rules; an embedding result alone never advances them.
+.SH FILES
+Private queue.sqlite3, payload-* and result-* files under the queue's
+caller-owned mode-0700 directory. Never synchronize these files to public Git.
+.SH LIMITATIONS
+Source-only: no production GPU worker, lease, confirmed idle signal, direct
+client containment or deployed SSH transport. Do not enable this client
+switch until these prerequisites and Tensor model-request admission pass.
+.SH SEE ALSO
+~/ops/man/tensor/tensor-gpu-queue.1

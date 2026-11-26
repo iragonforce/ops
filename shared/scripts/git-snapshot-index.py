@@ -16,10 +16,14 @@ import hashlib
 import json
 import re
 import subprocess
+import sys
 import uuid
 from collections import Counter
 from pathlib import Path
 from urllib.request import Request, urlopen
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from tensor_gpu_embedding import writer_embed
 
 GIT = '/usr/bin/git'
 QDRANT = 'http://127.0.0.1:6333'
@@ -274,9 +278,9 @@ def upsert(batch):
         f'Repository: {p["repository"]}\nFile: {p["file_path"]}\nLanguage: {p["language"]}\n{p["text"]}'
         for _, p in batch
     ]
-    vectors = request(f'{OLLAMA}/api/embed', {
-        'model': MODEL, 'input': prompts, 'keep_alive': '10m'
-    })['embeddings']
+    vectors = writer_embed(prompts, lambda values: request(f'{OLLAMA}/api/embed', {
+        'model': MODEL, 'input': values, 'keep_alive': '10m',
+    })['embeddings'])
     if len(vectors) != len(batch) or any(len(vector) != DIMENSIONS for vector in vectors):
         raise SystemExit('STOP: embedding vector count/dimensions mismatch')
     reply = request(
