@@ -3,6 +3,7 @@
 
 import importlib.util
 import hashlib
+from contextlib import closing
 from pathlib import Path
 import subprocess
 import sys
@@ -252,7 +253,7 @@ class TypedQueueTest(unittest.TestCase):
         self.q.set_paused(True)
         self.q.close()
         import sqlite3
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db, db:
             db.execute('ALTER TABLE jobs RENAME TO old_jobs')
             db.execute('''CREATE TABLE jobs (
                 seq INTEGER PRIMARY KEY AUTOINCREMENT,
