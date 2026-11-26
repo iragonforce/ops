@@ -36,6 +36,12 @@ gateway metadata requests passed, but gateway inference, tool use and concurrent
 admission have **not** passed. On November 26 at 10:38 EST, an unguarded
 `/slots` request woke the sleeping server while Ollama occupied VRAM and
 `hermes-llama.service` failed on CUDA OOM; the gateway stayed active.
+At 14:43 EST the llama unit remained failed, while gateway, MinerU WebUI and
+wallpaper were active; Ollama had no loaded models, but only 8,577 MiB was
+free against the failed reload's 9,685 MiB allocation. Native Hermes
+`llm_execution` middleware was also proven to skip a denied GPU lease and
+reach the provider in both streaming and direct paths. Do not treat a plugin
+exception as request admission; Stage 4–5 dispatch is still disabled.
 See the [incident record](../changes/2026-11-26-tensor-llama-cold-wake-oom.md)
 before trying to restart it. The earlier Ollama `gpt-oss:20b` default and
 `qwen3.5:9b` test are historical, not current configuration. See
