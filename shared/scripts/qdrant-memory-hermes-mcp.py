@@ -17,8 +17,12 @@ import re
 import sys
 import uuid
 from collections import Counter
+from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from tensor_gpu_embedding import writer_embed
 
 QDRANT = os.environ.get('QDRANT_URL', 'http://127.0.0.1:6333')
 OLLAMA = os.environ.get('OLLAMA_URL', 'http://192.168.1.3:11434')
@@ -148,9 +152,9 @@ def search(args):
             raise ValueError('invalid origins filter')
 
     # Match the exact model and embedding call used for the existing collection.
-    embedding = post(f'{OLLAMA}/api/embed', {
-        'model': MODEL, 'input': [query.strip()], 'keep_alive': '10m'
-    }, timeout=120).get('embeddings', [])
+    embedding = writer_embed([query.strip()], lambda values: post(f'{OLLAMA}/api/embed', {
+        'model': MODEL, 'input': values, 'keep_alive': '10m',
+    }, timeout=120).get('embeddings', []))
     if len(embedding) != 1 or len(embedding[0]) != 4096:
         raise ValueError('embedding vector did not match qdrant_memory (4096)')
     request = {

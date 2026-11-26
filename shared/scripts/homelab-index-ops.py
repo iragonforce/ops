@@ -13,6 +13,7 @@ from urllib.error import HTTPError
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from heading_chunk_filter import merge_heading_only_chunks
+from tensor_gpu_embedding import writer_embed
 
 MODEL = 'qwen3-embedding:8b-fp16'
 QDRANT = 'http://127.0.0.1:6333'
@@ -155,8 +156,9 @@ def main():
     for index in range(0, len(todo), BATCH):
         batch = todo[index:index+BATCH]
         texts = [f'Source: {p["source"]}\nHeading: {p["heading"]}\n{p["text"]}' for _, p in batch]
-        embed = request(f'{OLLAMA}/api/embed', {'model': MODEL, 'input': texts, 'keep_alive': '10m'})
-        vectors = embed['embeddings']
+        vectors = writer_embed(texts, lambda values: request(f'{OLLAMA}/api/embed', {
+            'model': MODEL, 'input': values, 'keep_alive': '10m',
+        })['embeddings'])
         if len(vectors) != len(batch) or any(len(v) != 4096 for v in vectors):
             raise SystemExit('STOP: embedding count or dimensions mismatch')
         result = request(f'{QDRANT}/collections/{COLLECTION}/points?wait=true',
