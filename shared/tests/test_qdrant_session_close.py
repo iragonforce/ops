@@ -33,6 +33,8 @@ class SessionCloseHookTests(unittest.TestCase):
                 self.assertEqual(marker.stat().st_mtime_ns, 1_000_000_000)
                 module.on_session_finalize(session_id='closed')
                 self.assertGreater(marker.stat().st_mtime_ns, 1_000_000_000)
+                module.on_session_finalize(session_id='closed')
+                self.assertEqual(marker.read_bytes(), b'1')
                 marker.unlink()
                 module.on_session_finalize(session_id='closed')
                 marker.symlink_to(Path(temp) / 'target')

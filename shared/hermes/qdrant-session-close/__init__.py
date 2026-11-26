@@ -17,7 +17,13 @@ def on_session_finalize(**kwargs):
         return
     if not MARKER.is_file() or MARKER.is_symlink():
         return
-    os.utime(MARKER, None, follow_symlinks=False)
+    # PathChanged observes close-after-write; utime() alone is metadata-only
+    # and need not wake systemd.path. Keep a single byte, never a transcript.
+    fd = os.open(MARKER, os.O_WRONLY | getattr(os, 'O_NOFOLLOW', 0))
+    try:
+        os.write(fd, b'1')
+    finally:
+        os.close(fd)
 
 
 def register(ctx):
