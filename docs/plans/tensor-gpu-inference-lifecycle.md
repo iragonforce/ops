@@ -305,3 +305,7 @@ The existing `tensor-gpu-queue.py` now has transactional v1-to-v2 migration and 
 ## Hermes request boundary negative test — source only, 2026-11-26
 
 Four negative-characterization tests executed against installed Nexus Hermes source and showed both streaming and direct `perform_api_call()` skip a denied `llm_execution` lease callback and reach the provider. A missing trusted identity and an unidentifiable GPU state likewise reach the provider; simultaneous incompatible requests do too. These tests establish an unsafe upstream behavior, not a working admission policy. Do not enable a plugin that merely raises `LeaseError`. The exact upstream patch contract, tests and rollback are in `docs/changes/2026-11-26-tensor-hermes-request-admission-blocker.md`; guarded production recovery and Stage 4–5 dispatch remain blocked.
+
+## Stage 5 unknown-outcome fencing — source only, 2026-11-26
+
+The typed queue now marks `mineru_pdf` failed on an explicit attempt error or expired lease, regardless of remaining attempts, and rejects `retry` for failed PDF records. A native conversion POST may have succeeded before its task ID was durably recorded; retrying the same PDF could duplicate GPU work and outputs. This queue change prevents both automatic and operator CLI replay but does not reconcile native tasks or commit existing WebUI outputs. Embedding and synthetic retry behavior is unchanged. No installed queue database or MinerU service was modified.

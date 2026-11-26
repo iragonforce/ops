@@ -30,13 +30,15 @@ which refuses admission. Active and paused also refuse admission.
 .TP
 .B recover
 Recover expired worker leases; uncertain prior attempts are retried or marked failed,
-never silently acknowledged as completed.
+never silently acknowledged as completed. PDF jobs fail closed on expiry.
 .TP
 .B pause | resume
 Persistently stop or permit new claims; existing running work is not killed.
 .TP
 .B cancel JOB_ID | retry JOB_ID
-Cancel pending/retry/failed jobs or manually retry failed jobs. Running jobs are protected.
+Cancel pending/retry/failed jobs or manually retry failed non-PDF jobs. Running
+jobs are protected. An unknown PDF conversion outcome is never replayed by
+the queue: its native task/output must first be reconciled manually.
 .SH FILES
 .TP
 .B ~/.local/state/tensor-gpu-queue/queue.sqlite3
@@ -66,6 +68,11 @@ fences and a protected result receipt token for typed success. A typed failure
 passes error="CODE" instead; no paths, secrets, or raw error logs. The adapter
 must check durable output and, for embeddings, exact Qdrant point readback and
 source checkpoint before success. A queue lease does not fence external writes.
+.PP
+MinerU PDF failures and lease expiry become failed even when attempts remain.
+Neither automatic recovery nor retry JOB_ID can submit a second conversion
+after a possibly successful native POST. Preserve input and outputs until
+explicit native-task/output reconciliation is implemented and verified.
 .PP
 Schema v1 migrates transactionally to v2 on open. Preserve a protected database
 backup before a live migration; do not open the production DB with this source

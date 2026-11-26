@@ -245,11 +245,13 @@ class Queue:
         now = time.time() if now is None else now
         with self.transaction():
             rows = self.db.execute("""
-                SELECT id,attempts,max_attempts FROM jobs
+                SELECT id,kind,attempts,max_attempts FROM jobs
                 WHERE state='running' AND lease_until<=?
             """, (now,)).fetchall()
             for row in rows:
-                failed = row["attempts"] >= row["max_attempts"]
+                # A PDF conversion may have crossed the external POST boundary;
+                # its outcome is unknown until explicitly reconciled.
+                failed = row["kind"] == "mineru_pdf" or row["attempts"] >= row["max_attempts"]
                 self.db.execute("""
                     UPDATE jobs SET state=?,updated_at=?,available_at=?,
                         lease_owner=NULL,lease_until=NULL,lease_token=NULL,
@@ -321,7 +323,8 @@ class Queue:
                     _token(error, "error code")
                 if result_ref is not None:
                     raise QueueError("Failed jobs cannot carry a result")
-                state = "retry" if row["attempts"] < row["max_attempts"] else "failed"
+                state = ("retry" if row["kind"] != "mineru_pdf" and
+                         row["attempts"] < row["max_attempts"] else "failed")
                 due = now + RETRY_BASE_SECONDS * 2 ** max(0, row["attempts"] - 1)
                 result_ref = None
                 last_error = error[:512]
@@ -336,14 +339,14 @@ class Queue:
     def transition(self, job_id: str, operation: str, now: float | None = None) -> str:
         now = time.time() if now is None else now
         with self.transaction():
-            row = self.db.execute("SELECT state FROM jobs WHERE id=?", (job_id,)).fetchone()
+            row = self.db.execute("SELECT state,kind FROM jobs WHERE id=?", (job_id,)).fetchone()
             if row is None:
                 raise QueueError("Unknown job")
             state = row["state"]
             if operation == "cancel" and state in ("pending", "retry", "failed"):
                 target = "cancelled"
                 self.db.execute("UPDATE jobs SET state=?,updated_at=? WHERE id=?", (target, now, job_id))
-            elif operation == "retry" and state == "failed":
+            elif operation == "retry" and state == "failed" and row["kind"] != "mineru_pdf":
                 target = "pending"
                 self.db.execute("""
                     UPDATE jobs SET state=?,attempts=0,available_at=?,updated_at=?,last_error=NULL
