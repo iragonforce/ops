@@ -1,12 +1,13 @@
-.TH TENSOR-GPU-QUEUE 1 "November 2026" "Tensor GPU Queue Stage 1" "User Commands"
+.TH TENSOR-GPU-QUEUE 1 "November 2026" "Tensor GPU Queue source-only" "User Commands"
 .SH NAME
 tensor-gpu-queue \- simulate persistent GPU job admission without executing inference
 .SH SYNOPSIS
 .B python3 ~/ops/shared/scripts/tensor-gpu-queue.py
 .RI [ --db " FILE" ] " COMMAND " [ OPTIONS ]
 .SH DESCRIPTION
-Stage 1 of the Tensor GPU inference lifecycle. Maintains a private, SQLite-backed
-queue for synthetic fixture jobs. Does not execute arbitrary commands, GPUs,
+Maintains a private, SQLite-backed queue for synthetic fixture jobs and typed
+embedding-batch/MinerU-PDF records. The CLI only executes synthetic fixtures.
+Does not execute arbitrary commands, GPUs,
 Hermes, MinerU, Ollama, Qdrant, systemd, or Wallpaper Engine operations.
 All job activity checks are SIMULATED and manually supplied by the operator.
 .SH COMMANDS
@@ -48,5 +49,27 @@ No inference adapters or automatic idle triggers are installed in Stage 1.
 File paths, logs, and database content must not be committed to public Git.
 A lease does not prove exactly-once external effects after process failure;
 future real workload adapters must enforce idempotent output and checkpoint recovery.
+.SH PYTHON INTEGRATION API (SOURCE ONLY)
+Queue.submit_typed(kind, operation_revision, input_digest, payload_ref,
+priority=0, max_attempts=3) accepts embedding_batch or mineru_pdf. Digest is
+lowercase SHA-256 of canonical input; revision includes operation and effective
+model/config version. Reference is an opaque token resolving to protected local
+state, not a path or content. Same kind/revision/digest returns the original ID
+even after completion; the original payload reference is not replaced.
+.PP
+Queue.claim(activity, worker, kinds=(kind,)) explicitly selects typed records;
+the default selects synthetic only. The activity parameter is simulated and
+must NOT be wired to production without verified admission and GPU leases.
+Queue.finish(id, worker, attempt=claim["attempt"],
+lease_token=claim["lease_token"], result_ref="receipt:token") requires both
+fences and a protected result receipt token for typed success. A typed failure
+passes error="CODE" instead; no paths, secrets, or raw error logs. The adapter
+must check durable output and, for embeddings, exact Qdrant point readback and
+source checkpoint before success. A queue lease does not fence external writes.
+.PP
+Schema v1 migrates transactionally to v2 on open. Preserve a protected database
+backup before a live migration; do not open the production DB with this source
+until an integration gate and rollback are approved. Python 3 with SQLite
+RETURNING, standard library only. No new daemon or automatic GPU activation.
 .SH SEE ALSO
 ~/ops/docs/plans/tensor-gpu-inference-lifecycle.md

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Durable Tensor GPU job *admission simulator*; Stage 1 never executes GPU work.
+"""Durable Tensor GPU queue; no real workload adapter or activation is installed.
 
 Usage: tensor-gpu-queue.py --help
 Source of truth: iragonforce/ops; public snapshot target: iragonforce/tensor.
 
-Only synthetic jobs are accepted until request-specific adapters and a trustworthy
-idle signal are validated. This deliberately does NOT run arbitrary commands.
+The CLI executes synthetic fixtures only. Python callers may record typed jobs,
+but must supply their own validated admission and idempotent workload adapters.
 """
 
 from __future__ import annotations
@@ -17,15 +17,19 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import sqlite3
 import sys
 import time
 import uuid
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 DEFAULT_DIR = Path(os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local/state"))) / "tensor-gpu-queue"
 RETRY_BASE_SECONDS = 60
 MAX_SOURCE_LEN = 256
+TYPED_KINDS = ("embedding_batch", "mineru_pdf")
+TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,127}\Z")
+DIGEST = re.compile(r"[0-9a-f]{64}\Z")
 
 
 class QueueError(Exception):
@@ -49,15 +53,28 @@ def ensure_private_state(db_path: Path) -> None:
 
 
 def idempotency_key(kind: str, source: str) -> str:
-    # Only synthetic fixture names are accepted in Stage 1. Future real jobs
-    # must use a source-content digest + operation/configuration revision.
+    # Preserve Stage 1 synthetic identities across migration.
     return hashlib.sha256((kind + "\0" + source).encode("utf-8")).hexdigest()
+
+def typed_idempotency_key(kind: str, revision: str, digest: str) -> str:
+    return hashlib.sha256(json.dumps([kind, revision, digest], separators=(",", ":")).encode()).hexdigest()
+
+def _token(value: str | None, label: str) -> None:
+    if not isinstance(value, str) or not TOKEN.fullmatch(value):
+        raise QueueError(f"{label} must be an opaque 1–128 character token, not a path or content")
 
 
 class Queue:
     def __init__(self, path: Path):
         self.path = path
         ensure_private_state(path)
+        if not path.exists():
+            try:
+                fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_RDWR | os.O_NOFOLLOW, 0o600)
+            except FileExistsError:
+                ensure_private_state(path)
+            else:
+                os.close(fd)
         previous = os.umask(0o077)
         try:
             self.db = sqlite3.connect(str(path), timeout=20, isolation_level=None)
@@ -90,15 +107,20 @@ class Queue:
 
     def _initialize(self) -> None:
         version = self.db.execute("PRAGMA user_version").fetchone()[0]
-        if version not in (0, SCHEMA_VERSION):
+        if version not in (0, 1, SCHEMA_VERSION):
             raise QueueError(f"Unsupported database schema version: {version}")
         with self.transaction():
+            if version == 1:
+                self.db.execute("ALTER TABLE jobs RENAME TO jobs_v1")
             self.db.execute("""
                 CREATE TABLE IF NOT EXISTS jobs (
                     seq INTEGER PRIMARY KEY AUTOINCREMENT,
                     id TEXT NOT NULL UNIQUE,
-                    kind TEXT NOT NULL CHECK(kind = 'synthetic'),
+                    kind TEXT NOT NULL CHECK(kind IN ('synthetic','embedding_batch','mineru_pdf')),
                     source TEXT NOT NULL,
+                    operation_revision TEXT,
+                    input_digest TEXT,
+                    payload_ref TEXT,
                     dedup_key TEXT NOT NULL UNIQUE,
                     priority INTEGER NOT NULL,
                     state TEXT NOT NULL CHECK(state IN
@@ -110,10 +132,21 @@ class Queue:
                     available_at REAL NOT NULL,
                     lease_owner TEXT,
                     lease_until REAL,
+                    lease_token TEXT,
                     last_error TEXT,
                     result_ref TEXT
                 )
             """)
+            if version == 1:
+                self.db.execute("""
+                    INSERT INTO jobs (seq,id,kind,source,dedup_key,priority,state,attempts,
+                        max_attempts,created_at,updated_at,available_at,lease_owner,lease_until,
+                        last_error,result_ref)
+                    SELECT seq,id,kind,source,dedup_key,priority,state,attempts,max_attempts,
+                        created_at,updated_at,available_at,lease_owner,lease_until,last_error,result_ref
+                    FROM jobs_v1
+                """)
+                self.db.execute("DROP TABLE jobs_v1")
             self.db.execute("""
                 CREATE INDEX IF NOT EXISTS jobs_ready
                 ON jobs(state, available_at, priority DESC, seq)
@@ -166,6 +199,40 @@ class Queue:
                     result.append((row["id"], True))
         return result
 
+    def submit_typed(self, kind: str, operation_revision: str, input_digest: str,
+                     payload_ref: str, priority: int = 0, max_attempts: int = 3,
+                     now: float | None = None) -> tuple[str, bool]:
+        """Record an opaque protected-state reference; caller verifies input digest.
+
+        Digest covers canonical input batch/document; revision covers operation
+        and effective model/config. Duplicate requests retain the original ref.
+        """
+        if kind not in TYPED_KINDS:
+            raise QueueError("Unsupported typed job kind")
+        _token(operation_revision, "operation_revision")
+        _token(payload_ref, "payload_ref")
+        if not isinstance(input_digest, str) or not DIGEST.fullmatch(input_digest):
+            raise QueueError("input_digest must be lowercase SHA-256 hex")
+        if not (-20 <= priority <= 20) or not (1 <= max_attempts <= 10):
+            raise QueueError("priority must be -20..20 and max-attempts 1..10")
+        now = time.time() if now is None else now
+        key = typed_idempotency_key(kind, operation_revision, input_digest)
+        job_id = str(uuid.uuid4())
+        with self.transaction():
+            row = self.db.execute("""
+                INSERT INTO jobs (id,kind,source,operation_revision,input_digest,payload_ref,
+                    dedup_key,priority,state,attempts,max_attempts,created_at,updated_at,available_at)
+                VALUES (?,?,?,?,?,?,?,?,'pending',0,?,?,?,?)
+                ON CONFLICT(dedup_key) DO NOTHING RETURNING id
+            """, (job_id, kind, kind, operation_revision, input_digest, payload_ref,
+                  key, priority, max_attempts, now, now, now)).fetchone()
+            if row is not None:
+                return row["id"], True
+            existing = self.db.execute("SELECT id FROM jobs WHERE dedup_key=?", (key,)).fetchone()
+            if existing is None:
+                raise QueueError("Deduplication lookup unexpectedly failed")
+            return existing["id"], False
+
     def paused(self) -> bool:
         return self.db.execute("SELECT value FROM settings WHERE key='paused'").fetchone()[0] == "1"
 
@@ -185,7 +252,7 @@ class Queue:
                 failed = row["attempts"] >= row["max_attempts"]
                 self.db.execute("""
                     UPDATE jobs SET state=?,updated_at=?,available_at=?,
-                        lease_owner=NULL,lease_until=NULL,
+                        lease_owner=NULL,lease_until=NULL,lease_token=NULL,
                         last_error='Expired worker lease; previous attempt outcome unknown'
                     WHERE id=?
                 """, ("failed" if failed else "retry", now,
@@ -193,12 +260,14 @@ class Queue:
             return len(rows)
 
     def claim(self, activity: str, worker: str, now: float | None = None,
-              lease_seconds: int = 300) -> dict | None:
-        """Synthetic policy gate: only *explicit simulated* idle admits a job."""
+              lease_seconds: int = 300, kinds: tuple[str, ...] = ("synthetic",)) -> dict | None:
+        """Simulation-only gate; explicit idle does NOT prove real desktop idle."""
         if activity not in ("active", "idle", "unknown"):
             raise QueueError("Invalid simulated activity")
         if not worker or lease_seconds < 10:
             raise QueueError("Worker identity and lease >=10s required")
+        if not kinds or any(k not in ("synthetic", *TYPED_KINDS) for k in kinds):
+            raise QueueError("Invalid claim kinds")
         if activity != "idle":
             return None
         now = time.time() if now is None else now
@@ -206,39 +275,60 @@ class Queue:
             if self.paused():
                 return None
             row = self.db.execute("""
-                SELECT id,source,attempts FROM jobs
+                SELECT id,kind,source,operation_revision,input_digest,payload_ref,attempts FROM jobs
                 WHERE state IN ('pending','retry') AND available_at<=?
+                    AND kind IN (""" + ",".join("?" for _ in kinds) + """)
                 ORDER BY priority DESC, seq ASC LIMIT 1
-            """, (now,)).fetchone()
+            """, (now, *kinds)).fetchone()
             if row is None:
                 return None
+            token = uuid.uuid4().hex
             self.db.execute("""
                 UPDATE jobs SET state='running', attempts=attempts+1,
-                    lease_owner=?,lease_until=?,updated_at=?
+                    lease_owner=?,lease_until=?,lease_token=?,updated_at=?
                 WHERE id=?
-            """, (worker, now+lease_seconds, now, row["id"]))
-            return dict(row)
+            """, (worker, now+lease_seconds, token, now, row["id"]))
+            claimed = dict(row)
+            claimed.update(attempt=row["attempts"] + 1, lease_token=token,
+                           lease_until=now + lease_seconds)
+            return claimed
 
     def finish(self, job_id: str, worker: str, now: float | None = None,
-               error: str | None = None) -> str:
+               error: str | None = None, *, attempt: int | None = None,
+               lease_token: str | None = None, result_ref: str | None = None) -> str:
         now = time.time() if now is None else now
         with self.transaction():
             row = self.db.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
-            if row is None or row["state"] != "running" or row["lease_owner"] != worker:
+            if (row is None or row["state"] != "running" or row["lease_owner"] != worker
+                    or row["lease_until"] <= now
+                    or (attempt is not None and attempt != row["attempts"])
+                    or (lease_token is not None and lease_token != row["lease_token"])
+                    or (row["kind"] != "synthetic" and
+                        (attempt is None or lease_token is None))):
                 raise QueueError("Job is not running under this worker lease")
             if error is None:
                 state = "completed"
                 due = now
-                result_ref = "synthetic:completed"
+                if row["kind"] == "synthetic":
+                    if result_ref is not None:
+                        raise QueueError("Synthetic results are fixed")
+                    result_ref = "synthetic:completed"
+                else:
+                    _token(result_ref, "result_ref")
                 last_error = None
             else:
+                if row["kind"] != "synthetic":
+                    _token(error, "error code")
+                if result_ref is not None:
+                    raise QueueError("Failed jobs cannot carry a result")
                 state = "retry" if row["attempts"] < row["max_attempts"] else "failed"
                 due = now + RETRY_BASE_SECONDS * 2 ** max(0, row["attempts"] - 1)
                 result_ref = None
                 last_error = error[:512]
             self.db.execute("""
                 UPDATE jobs SET state=?, available_at=?, updated_at=?,
-                    lease_owner=NULL, lease_until=NULL, result_ref=?, last_error=?
+                    lease_owner=NULL, lease_until=NULL, lease_token=NULL,
+                    result_ref=?, last_error=?
                 WHERE id=?
             """, (state, due, now, result_ref, last_error, job_id))
             return state

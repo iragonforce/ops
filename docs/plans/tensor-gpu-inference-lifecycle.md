@@ -271,3 +271,21 @@ The simulated `--activity idle` flag is a **test input only**, not a verified Hy
 - Existing GPU queue and lease guard remain undeployed.
 - Rollback: remove 30-native-sleep.conf, reload user systemd,
   and restart hermes-llama.service in a maintenance window.
+
+## Stage 4/5 queue record contract — source only, 2026-11-26
+
+The existing SQLite queue now has a transactional v1-to-v2 migration and typed
+`embedding_batch` / `mineru_pdf` records. `submit_typed` deduplicates by kind,
+operation/config revision and canonical input SHA-256. Opaque payload/result
+tokens point into protected caller-managed state; paths, raw documents and
+embeddings do not belong in the public repository or CLI output. Typed claims
+must explicitly select their kind; the synthetic CLI remains synthetic-only.
+Each typed finish requires the claimed attempt and unique lease token, with an
+unexpired lease. Expiration or retry cannot authorize an old attempt to finish.
+Synthetic tests cover migration, duplicate revisions, retries and fencing.
+This is **not** Stage 4/5 production acceptance: no Ollama, Qdrant, MinerU,
+GPU, wallpaper or idle integration was activated. Before a live migration,
+make a protected SQLite backup and define rollback; adapters must verify real
+output/checkpoints and exact Qdrant IDs before acknowledging success. Existing
+direct HTTP clients and the current Tensor GPU admission incident remain outside
+this source-only queue contract.
