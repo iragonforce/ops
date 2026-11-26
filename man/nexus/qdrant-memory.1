@@ -10,6 +10,8 @@ qdrant-memory \- reconcile the existing Nexus Qdrant knowledge collection
 .br
 .B qdrant-memory.py sync-chat [--bootstrap | --dry-run] [--limit N]
 .br
+.B qdrant-memory.py sync-ops [--dry-run]
+.br
 .B qdrant-memory.py update TARGET [--dry-run]
 .SH DESCRIPTION
 The existing inbox and repository indexers use the same Qdrant collection and
@@ -30,6 +32,13 @@ pairs to the existing Gemini 3.8 Flash provider; accepted historical findings
 are embedded with the existing Ollama model and stored separately as
 .BR origin=hermes_chat .
 Raw chats and model rejects are not exported or logged. No automatic deletion.
+The
+.B sync-ops
+command uses the existing ops Markdown indexer on the Nexus checkout after
+confirming its Markdown is committed. It skips uncommitted drafts and retries
+on the next existing hourly service run. It does not fetch GitHub or index
+private repository history. The indexer embeds only changed/new passages,
+retains stale ops points for review, and confirms intended hashes after upsert.
 The
 .B --dry-run
 mode performs no model calls or Qdrant writes.

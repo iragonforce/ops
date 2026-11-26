@@ -10,6 +10,8 @@ sync-hermes command indexes conservatively filtered, historical main-profile
 compaction findings as origin=hermes_session; it never prunes other origins.
 sync-chat selects narrow settled-turn findings with the existing Antigravity
 Gemini provider, then embeds/upserts origin=hermes_chat without pruning.
+sync-ops reconciles committed ops Markdown using the existing repository
+indexer; uncommitted Markdown is skipped until the next scheduled run.
 Deletion: inbox reconciliation prunes stale manual_inbox points only, with
 empty-inbox and mass-purge guards. No secrets are intentionally emitted to logs.
 
@@ -427,6 +429,33 @@ def update_ops(dry_run):
             raise RuntimeError('STOP: ops indexer would delete too many previous points; review before applying')
     subprocess_index([sys.executable, '-u', str(indexer), '--dry-run' if dry_run else '--apply'], dry_run)
 
+def ops_git(*args):
+    root = HOME / 'ops'
+    result = subprocess.run(['git', '-C', str(root), *args], capture_output=True,
+                            timeout=20)
+    if result.returncode:
+        # Git diagnostics can expose private paths; never forward stderr.
+        raise RuntimeError('STOP: ops Git preflight failed; no Markdown indexed')
+    return result.stdout
+
+def ops_markdown_dirty():
+    return bool(ops_git('status', '--porcelain=v1', '-z', '--untracked-files=all', '--', '*.md') or
+                ops_git('ls-files', '--others', '--ignored', '--exclude-standard', '-z', '--', '*.md'))
+
+def sync_ops(dry_run=False):
+    root = HOME / 'ops'
+    if Path(os.fsdecode(ops_git('rev-parse', '--show-toplevel')).strip()).resolve() != root.resolve():
+        raise RuntimeError('STOP: ops checkout root differs; no Markdown indexed')
+    # The indexer reads working-tree Markdown, not Git blobs. Do not publish
+    # uncommitted or untracked project drafts into the public search index.
+    if ops_markdown_dirty():
+        print('OPS SKIP: uncommitted Markdown; retry after commit', flush=True)
+        return
+    head = ops_git('rev-parse', 'HEAD')
+    update_ops(dry_run)
+    if not dry_run and (ops_git('rev-parse', 'HEAD') != head or ops_markdown_dirty()):
+        raise RuntimeError('STOP: ops Markdown or HEAD changed during indexing; retry')
+
 
 def update_repo(source, dry_run):
     subprocess_index([
@@ -708,6 +737,8 @@ def main():
     chat_parser.add_argument('--bootstrap', action='store_true', help='Set a forward-only cursor at the current message ID without inference/writes')
     chat_parser.add_argument('--dry-run', action='store_true', help='Count eligible turns without model, embedding or Qdrant writes')
     chat_parser.add_argument('--limit', type=int, default=12, help='Maximum settled chat turns per invocation (1–30)')
+    ops_parser = sub.add_parser('sync-ops', help='Reconcile committed ops Markdown without indexing uncommitted drafts')
+    ops_parser.add_argument('--dry-run', action='store_true')
     inbox_parser = sub.add_parser('sync-inbox', help='Reconcile the entire inbox; including deletions')
     inbox_parser.add_argument('--dry-run', action='store_true')
     inbox_parser.add_argument('--allow-empty', action='store_true', help='Explicitly allow an emptied inbox / large prune')
@@ -734,6 +765,9 @@ def main():
     if args.cmd == 'sync-inbox' and args.dry_run:
         update_inbox(dry_run=True, allow_empty=args.allow_empty)
         return
+    if args.cmd == 'sync-ops' and args.dry_run:
+        sync_ops(dry_run=True)
+        return
     if args.cmd == 'update' and args.dry_run:
         run_update(args.target, dry_run=True)
         return
@@ -744,6 +778,8 @@ def main():
             sync_hermes(limit=args.limit)
         elif args.cmd == 'sync-chat':
             sync_chat(bootstrap=args.bootstrap, limit=args.limit)
+        elif args.cmd == 'sync-ops':
+            sync_ops()
         elif args.cmd == 'update':
             run_update(args.target, dry_run=False)
 

@@ -19,6 +19,8 @@ For the next task, read the matching record first. In main Nexus Hermes, use nat
 
 Global memory contains preferences and retrieval pointers, not a second infrastructure inventory. Record new operational facts in Git. End a successful task by making the verified outcome discoverable, not by inventing another skill.
 
+For public `ops` project closeout Markdown, after the verified commit and push, safely fast-forward Nexus `~/ops` without overwriting unrelated dirty work. The existing hourly `qdrant-memory.service` then reconciles committed Markdown as `origin=ops`; verify the resulting source-linked points through Qdrant/MCP when indexing is an acceptance criterion. It does not fetch remote GitHub commits or index another host's checkout, and an uncommitted Markdown draft is skipped. See `docs/current/hermes-qdrant-memory.md` and `docs/changes/2026-11-25-qdrant-ops-project-closeout.md` for boundaries and rollback.
+
 ## Actual Git transports
 
 The public `iragonforce/ops` repository is the normal source on Nexus, Tensor, Qubit and main Hermes. Nexus's `~/ops` publishes to GitHub over its existing SSH identity; preserve the existing Bitwarden Secrets Manager integration. Use task branches where appropriate, and never push over a checked-out branch in another non-bare checkout or overwrite dirty work. Original history is retained separately in private `iragonforce/ops-private`; do not fetch, merge, or push it into the public repository.

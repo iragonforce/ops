@@ -20,4 +20,7 @@ ExecStartPost=+/usr/bin/docker exec --user 10000 -e QDRANT_MEMORY_QDRANT=http://
 # second post-step. It selects only settled default-profile turns after an
 # explicit forward-only checkpoint bootstrap. No credential files are copied.
 ExecStartPost=+/usr/bin/docker exec --user 10000 -e HOME=/opt/data -e AGY_CLI_PATH=/opt/data/.local/bin/agy -e QDRANT_MEMORY_QDRANT=http://qdrant:6333 -e QDRANT_MEMORY_INDEXERS=/opt/data/workspace/ops/shared/scripts -e QDRANT_MEMORY_STATE=/opt/data/state/qdrant-memory hermes /usr/bin/python3 -u /opt/data/workspace/ops/shared/scripts/qdrant-memory.py sync-chat
+# The existing hourly service also reconciles committed Markdown in the
+# Nexus ops checkout. An uncommitted Markdown draft is never indexed.
+ExecStartPost=/usr/bin/python3 -u /home/iragonforce/ops/shared/scripts/qdrant-memory.py sync-ops
 TimeoutStartSec=0
