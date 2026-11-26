@@ -1,7 +1,7 @@
 # Tensor GPU inference lifecycle and persistent job queue
 
-**Status:** Stage 1 complete; Stage 2D two-phase restoration validated in synthetic tests; production service integration pending
-**Date:** 2026-11-24
+**Status:** Stage 1 complete; Stage 2F restoration transport validated in synthetic tests; Stage 3 native sleep deployed, gateway inference acceptance blocked by competing GPU residency
+**Date:** 2026-11-26
 **Host:** `tensor` (Arch Linux, NVIDIA RTX 5070, 64 GB-class RAM)
 **Scope:** Hermes/llama.cpp, Ollama, MinerU, Nexus-initiated Qdrant embeddings, Hyprland desktop restoration
 **Repository policy:** `iragonforce/ops` is the authoritative deployment source. Publish sanitized, reviewed configuration and implementation snapshots to `iragonforce/tensor`; never publish private runtime queue contents.
@@ -112,7 +112,7 @@ All baseline observations require revalidation before modifying live services. I
 | 0 — Inspect integrations | **Complete for Stage 1** | Wayland seat0; Hypridle 300s; Sunshine/Moonlight inactive; MinerU Gradio queue concurrency 1; llama.cpp 8080, Ollama 11434; native GPU admission still unverified | Proceed with synthetic-only Stage 1 |
 | 1 — Durable queue | **Committed and pushed** | 13/13 tests; 30 synthetic jobs; deduplication and private permissions verified | Commit 6be0ded |
 | 2 — GPU lease/desktop restoration | **Restoration transport validated, source-only** | 165/165 tests; systemd unit verified; no production changes | Failure-injection and guarded live integration pending |
-| 3 — Hermes lifecycle | **Native sleep/wake verified** | 300-second sleep; successful cold inference; 10,226 MiB released | Gateway request test and wallpaper coordination pending |
+| 3 — Hermes lifecycle | **Native sleep/wake verified; gateway read-only API verified** | 300-second sleep; successful direct cold inference; 10,226 MiB released; authenticated gateway metadata HTTP 200 on November 26 | Add request-level admission before any gateway cold wake; then test inference/tool use/concurrency |
 | 4 — Ollama/Qdrant | Not started | Existing `/api/embed` and checkpoints identified | After Stage 3 gate |
 | 5 — MinerU | Not started | WebUI/router/backend processes identified | After Stage 4 gate |
 | 6 — Acceptance/publication | Not started | — | After Stage 5 gate |
@@ -269,5 +269,17 @@ The simulated `--activity idle` flag is a **test input only**, not a verified Hy
 - Persistent wallpaper restoration is NOT verified.
 - Cold wake with wallpaper running is NOT verified.
 - Existing GPU queue and lease guard remain undeployed.
+- The native-sleep drop-in and plan were committed as `e104b18`.
 - Rollback: remove 30-native-sleep.conf, reload user systemd,
   and restart hermes-llama.service in a maintenance window.
+
+## Stage 3 gateway acceptance checkpoint — 2026-11-26
+
+- Nexus Hermes container inspection and a pinned, strict-host-key SSH connection established that commands on Tensor execute as `iragonforce` on Linux. Public `origin/consolidate` was fetched at `eba00fd`; Tensor's clean `~/ops` checkout remains at `e104b18`. No Tensor files, services, queue state or GPU processes were changed.
+- Tensor's `hermes-gateway.service`, `hermes-llama.service`, `mineru-webui.service` and `wallpaper-engine-sync.service` were active. The gateway still has `20-local-llama.conf` requiring the llama service and waiting for `/health`. The llama service has `30-native-sleep.conf`, so the server remains running while weights can sleep. Hermes' live custom-provider URL is `http://127.0.0.1:8080/v1`, model `qwen3.8-27b-iq3`, context 64000.
+- A local authenticated, read-only request to the **actual Hermes gateway** on port 8642 returned HTTP 200 for `/v1/models`, `/v1/capabilities`, `/v1/toolsets` and `/health/detailed`; `/v1/models` advertised `hermes-agent`. Unauthenticated `/v1/models` returned HTTP 401. This proves API routing/authentication and gateway availability, **not** inference or tool execution. The llama `/health` was also HTTP 200, which does not prove cold-wake safety.
+- At the admission check, `ollama ps` reported `qwen3-embedding:8b-fp16` resident with about eight minutes of retention remaining. NVIDIA reported its runner using 7344 MiB, two known Wallpaper Engine renderers using 822 and 1490 MiB, and sleeping Hermes llama using 184 MiB; total usage 10794 MiB with only 1038 MiB free. The graphical session reported `IdleHint=no`; this is not an established activity signal. An Ollama residency timer is not proof of request inactivity.
+- **Admission veto:** no gateway inference, cold/warm generation, tool-call or concurrent-session tests were attempted while the incompatible Ollama allocation was present. The existing GPU queue and lease guard remain source-only, and llama.cpp can still wake on an unguarded direct/gateway request. Avoid treating the read-only API probe as the Stage 3 gate.
+- **Next change:** integrate the existing lease arbiter at the Hermes model-request boundary (gateway and CLI), before any request reaches sleeping llama.cpp. Fail closed on unknown GPU owner or user activity; use the same reservation for concurrent requests and release only after the last request and the model's native 300-second sleep has actually freed VRAM. Keep native sleep and gateway active, and remove the gateway's startup dependency only after a guarded cold request works. Do not implement a second queue or a forced unload manager.
+- **Verification gate:** with Ollama released and all GPU owners identified, exercise one authenticated gateway cold request, a warm request, a read-only tool call and overlapping sessions; check model residency and request outcomes before and after the 300-second sleep, then retry with an embedding allocation present to prove deferral without model eviction. Confirm service health and durable lease state after failure/restart.
+- **Rollback:** this checkpoint is documentation-only, so no live rollback is required. For the proposed integration, preserve prior unit/drop-in and Hermes provider settings before deployment; disable the new admission route and restore the previous service wiring if guarded requests fail. Never purge an unknown process or delete queued work to roll back.
