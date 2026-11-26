@@ -81,6 +81,14 @@ class EmbeddingHandoffTest(unittest.TestCase):
         with self.assertRaises(module.HandoffError):
             module.run_admitted(self.db, claim, lambda *_: self.fail('corrupt input executed'))
 
+    def test_expired_claim_cannot_start_gpu_callback(self):
+        job = module.submit(self.db, self.inputs)
+        with module.Queue(self.db) as queue:
+            claim = queue.claim('idle', 'worker', kinds=('embedding_batch',))
+            queue.db.execute('UPDATE jobs SET lease_until=0 WHERE id=?', (job,))
+        with self.assertRaises(module.HandoffError):
+            module.run_admitted(self.db, claim, lambda *_: self.fail('expired claim executed'))
+
 
 if __name__ == '__main__':
     unittest.main()

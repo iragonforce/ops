@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Protected Tensor embedding handoff for existing Nexus writers (source only).
 
-Usage: tensor-gpu-embedding.py --help. Dependencies: Python stdlib and the
+Usage: tensor_gpu_embedding.py --help. Dependencies: Python stdlib and the
 existing tensor-gpu-queue.py. No worker/desktop admission is installed: only a
 caller holding a separately verified GPU admission may invoke run_admitted().
 The submit/result CLI is intended for a pinned SSH command, never a public HTTP
@@ -150,6 +150,7 @@ def run_admitted(db, claim, embed):
         row = queue.db.execute('SELECT * FROM jobs WHERE id=?', (claim['id'],)).fetchone()
         if (row is None or row['kind'] != 'embedding_batch' or row['state'] != 'running'
                 or row['lease_token'] != claim['lease_token'] or row['attempts'] != claim['attempt']
+                or row['lease_until'] is None or row['lease_until'] <= time.time()
                 or row['operation_revision'] != REVISION):
             raise HandoffError('Invalid embedding claim')
         inputs = json.loads(read_private(db.parent, row['payload_ref']))
