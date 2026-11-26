@@ -5,7 +5,7 @@ Verified 2026-11-06 unless marked otherwise. Task-specific physical acceptance r
 | Host | Role | Agent state | Access |
 |---|---|---|---|
 | qubit | macOS control machine | Codex CLI 0.167.0; Nexus Hermes SSH launcher; no local Hermes home | Existing strict-key SSH route works |
-| tensor | Arch desktop | Native Hermes v0.22.5, custom provider to local Ollama; configured default gpt-oss:20b; qwen3.5:9b inference verified with temporary override | SSH command channel restored by owner; no agent-side repair |
+| tensor | Arch desktop | Native Hermes gateway with custom provider to local llama.cpp `qwen3.8-27b-iq3`; native 300-second idle sleep verified, gateway inference admission still pending | Strict-key SSH route verified November 26 |
 | nexus | Debian 13 NAS/Docker/KVM | Codex CLI 0.166.0; Hermes v0.21.6 Coordinator, native Kanban and openai-codex provider; redundant Qwen Hermes and Paperclip retired | Local execution host for this implementation |
 
 ## Main Hermes
@@ -28,11 +28,14 @@ unverified. See
 and
 [`2026-11-12-hermes-fallback-order.md`](../changes/2026-11-12-hermes-fallback-order.md).
 
-Tensor runs an independent native Hermes v0.22.5 gateway,
-using provider `custom` and Ollama's OpenAI-compatible endpoint
-`http://127.0.0.1:11434/v1`. Hermes inference with `qwen3.5:9b`
-passed entirely on the RTX 5070. The configured default remains
-`gpt-oss:20b`; that default has not been separately verified.
+Tensor runs an independent native Hermes gateway using provider `custom` and
+llama.cpp at `http://127.0.0.1:8080/v1`, default `qwen3.8-27b-iq3`, context
+64000 (live configuration checked November 26). The 300-second native
+llama.cpp sleep and a direct cold request passed; authenticated gateway
+metadata requests passed, but gateway inference, tool use and concurrent
+admission have **not** passed. The earlier Ollama `gpt-oss:20b` default and
+`qwen3.5:9b` test are historical, not current configuration. See
+[`tensor-gpu-inference-lifecycle.md`](../plans/tensor-gpu-inference-lifecycle.md).
 
 The duplicate Nexus `qwen-hermes`, Paperclip, API relays,
 Knowledge Bridge and Spectrum containers have been retired.
