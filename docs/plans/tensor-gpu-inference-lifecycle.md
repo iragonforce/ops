@@ -112,7 +112,7 @@ All baseline observations require revalidation before modifying live services. I
 | 0 — Inspect integrations | **Complete for Stage 1** | Wayland seat0; Hypridle 300s; Sunshine/Moonlight inactive; MinerU Gradio queue concurrency 1; llama.cpp 8080, Ollama 11434; native GPU admission still unverified | Proceed with synthetic-only Stage 1 |
 | 1 — Durable queue | **Committed and pushed** | 13/13 tests; 30 synthetic jobs; deduplication and private permissions verified | Commit 6be0ded |
 | 2 — GPU lease/desktop restoration | **Restoration transport validated, source-only** | 165/165 tests; systemd unit verified; no production changes | Failure-injection and guarded live integration pending |
-| 3 — Hermes lifecycle | Not started | Current Qwen loads, but lifecycle/tool/KV acceptance incomplete | After Stage 2 gate |
+| 3 — Hermes lifecycle | **Native sleep/wake verified** | 300-second sleep; successful cold inference; 10,226 MiB released | Gateway request test and wallpaper coordination pending |
 | 4 — Ollama/Qdrant | Not started | Existing `/api/embed` and checkpoints identified | After Stage 3 gate |
 | 5 — MinerU | Not started | WebUI/router/backend processes identified | After Stage 4 gate |
 | 6 — Acceptance/publication | Not started | — | After Stage 5 gate |
@@ -251,3 +251,23 @@ The simulated `--activity idle` flag is a **test input only**, not a verified Hy
 - No production database or service modifications.
 - Remaining: READY/SQLite failure-injection, Hermes/Hyprland integration and controlled deployment.
 - Source-only acceptance does not authorize live activation.
+
+## Stage 3 native sleep pilot — 2026-11-25
+
+- Host: Tensor.
+- Native llama.cpp idle timeout: 300 seconds.
+- Model: Qwen3.8-27B-UD-IQ3_XXS.gguf.
+- Model entered sleep without stopping the service.
+- Cold inference with managed wallpaper stopped: HTTP 200.
+- Completion: 33 generated tokens.
+- GPU usage after inference: 11,193 MiB.
+- GPU usage after second sleep: 967 MiB.
+- Measured VRAM reduction: 10,226 MiB.
+- Hermes gateway remained active.
+- Wallpaper start was requested after the test.
+- Subsequent verification found the wallpaper service inactive.
+- Persistent wallpaper restoration is NOT verified.
+- Cold wake with wallpaper running is NOT verified.
+- Existing GPU queue and lease guard remain undeployed.
+- Rollback: remove 30-native-sleep.conf, reload user systemd,
+  and restart hermes-llama.service in a maintenance window.
