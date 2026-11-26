@@ -245,11 +245,13 @@ class Queue:
         now = time.time() if now is None else now
         with self.transaction():
             rows = self.db.execute("""
-                SELECT id,attempts,max_attempts FROM jobs
+                SELECT id,kind,attempts,max_attempts FROM jobs
                 WHERE state='running' AND lease_until<=?
             """, (now,)).fetchall()
             for row in rows:
-                failed = row["attempts"] >= row["max_attempts"]
+                # A MinerU POST may have succeeded before its task ID was persisted.
+                # Never replay that PDF automatically after an expired lease.
+                failed = row["kind"] == "mineru_pdf" or row["attempts"] >= row["max_attempts"]
                 self.db.execute("""
                     UPDATE jobs SET state=?,updated_at=?,available_at=?,
                         lease_owner=NULL,lease_until=NULL,lease_token=NULL,
@@ -321,7 +323,8 @@ class Queue:
                     _token(error, "error code")
                 if result_ref is not None:
                     raise QueueError("Failed jobs cannot carry a result")
-                state = "retry" if row["attempts"] < row["max_attempts"] else "failed"
+                state = ("retry" if row["kind"] != "mineru_pdf" and
+                         row["attempts"] < row["max_attempts"] else "failed")
                 due = now + RETRY_BASE_SECONDS * 2 ** max(0, row["attempts"] - 1)
                 result_ref = None
                 last_error = error[:512]
@@ -336,14 +339,14 @@ class Queue:
     def transition(self, job_id: str, operation: str, now: float | None = None) -> str:
         now = time.time() if now is None else now
         with self.transaction():
-            row = self.db.execute("SELECT state FROM jobs WHERE id=?", (job_id,)).fetchone()
+            row = self.db.execute("SELECT state,kind FROM jobs WHERE id=?", (job_id,)).fetchone()
             if row is None:
                 raise QueueError("Unknown job")
             state = row["state"]
             if operation == "cancel" and state in ("pending", "retry", "failed"):
                 target = "cancelled"
                 self.db.execute("UPDATE jobs SET state=?,updated_at=? WHERE id=?", (target, now, job_id))
-            elif operation == "retry" and state == "failed":
+            elif operation == "retry" and state == "failed" and row["kind"] != "mineru_pdf":
                 target = "pending"
                 self.db.execute("""
                     UPDATE jobs SET state=?,attempts=0,available_at=?,updated_at=?,last_error=NULL
@@ -352,6 +355,26 @@ class Queue:
             else:
                 raise QueueError(f"Refusing {operation} for {state} job")
             return target
+
+    def reconcile_pdf_result(self, job_id: str, payload_ref: str, result_ref: str,
+                             now: float | None = None) -> None:
+        """Record externally verified artifacts after an expired/failed PDF attempt.
+
+        The caller must validate the durable manifest and every artifact first;
+        this never creates a new native task or takes over a running lease.
+        """
+        _token(payload_ref, "payload_ref")
+        _token(result_ref, "result_ref")
+        now = time.time() if now is None else now
+        with self.transaction():
+            row = self.db.execute("""
+                UPDATE jobs SET state='completed', result_ref=?, last_error=NULL,
+                    updated_at=?, available_at=?
+                WHERE id=? AND kind='mineru_pdf' AND payload_ref=? AND state='failed'
+                RETURNING id
+            """, (result_ref, now, now, job_id, payload_ref)).fetchone()
+            if row is None:
+                raise QueueError("PDF result is not a failed job with matching payload")
 
     def summary(self) -> dict:
         counts = {r["state"]: r["n"] for r in self.db.execute(

@@ -228,25 +228,37 @@ class TypedQueueTest(unittest.TestCase):
         self.assertEqual('retry', self.q.finish(job, 'same', now=171, attempt=second['attempt'],
                          lease_token=second['lease_token'], error='INFERENCE_FAILED'))
 
-    def test_typed_failure_retry_and_completed_dedup(self):
+    def test_pdf_failed_attempt_requires_reconciliation_not_retry(self):
         job, _ = self.q.submit_typed('mineru_pdf', 'extract-v1', self.digest('pdf'), 'request:pdf',
-                                     max_attempts=1, now=100)
+                                     max_attempts=3, now=100)
         claim = self.q.claim('idle', 'w', now=100, kinds=('mineru_pdf',))
         with self.assertRaises(mod.QueueError):
             self.q.finish(job, 'w', now=101, attempt=claim['attempt'],
                           lease_token=claim['lease_token'], error='private path /tmp/file.pdf')
         self.assertEqual('failed', self.q.finish(job, 'w', now=101, attempt=claim['attempt'],
                          lease_token=claim['lease_token'], error='CONVERSION_FAILED'))
-        self.assertEqual('pending', self.q.transition(job, 'retry', now=102))
-        again = self.q.claim('idle', 'w', now=102, kinds=('mineru_pdf',))
-        self.assertNotEqual(claim['lease_token'], again['lease_token'])
+        with self.assertRaises(mod.QueueError):
+            self.q.transition(job, 'retry', now=102)
+        self.assertIsNone(self.q.claim('idle', 'w', now=200, kinds=('mineru_pdf',)))
         with self.assertRaises(mod.QueueError):
             self.q.finish(job, 'w', now=103, attempt=claim['attempt'],
                           lease_token=claim['lease_token'], result_ref='receipt:pdf')
-        self.assertEqual('completed', self.q.finish(job, 'w', now=103, attempt=again['attempt'],
-                         lease_token=again['lease_token'], result_ref='receipt:pdf'))
         self.assertEqual((job, False), self.q.submit_typed('mineru_pdf', 'extract-v1',
                          self.digest('pdf'), 'request:pdf-new', now=104))
+
+    def test_pdf_expired_lease_never_replays_without_reconciliation(self):
+        job, _ = self.q.submit_typed('mineru_pdf', 'extract-v1', self.digest('pdf'), 'request:pdf',
+                                     max_attempts=3, now=100)
+        first = self.q.claim('idle', 'w', now=100, lease_seconds=10, kinds=('mineru_pdf',))
+        self.assertEqual(1, self.q.recover_stale(now=110))
+        self.assertEqual('failed', self.q.db.execute(
+            'SELECT state FROM jobs WHERE id=?', (job,)).fetchone()['state'])
+        self.assertIsNone(self.q.claim('idle', 'w', now=300, kinds=('mineru_pdf',)))
+        with self.assertRaises(mod.QueueError):
+            self.q.transition(job, 'retry', now=300)
+        with self.assertRaises(mod.QueueError):
+            self.q.finish(job, 'w', now=301, attempt=first['attempt'],
+                          lease_token=first['lease_token'], result_ref='receipt:pdf')
 
     def test_migrate_v1_preserves_existing_synthetic_rows(self):
         legacy, _ = self.q.submit('legacy', now=10)
