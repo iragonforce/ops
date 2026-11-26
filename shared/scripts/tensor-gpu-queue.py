@@ -356,6 +356,26 @@ class Queue:
                 raise QueueError(f"Refusing {operation} for {state} job")
             return target
 
+    def reconcile_pdf_result(self, job_id: str, payload_ref: str, result_ref: str,
+                             now: float | None = None) -> None:
+        """Record externally verified artifacts after an expired/failed PDF attempt.
+
+        The caller must validate the durable manifest and every artifact first;
+        this never creates a new native task or takes over a running lease.
+        """
+        _token(payload_ref, "payload_ref")
+        _token(result_ref, "result_ref")
+        now = time.time() if now is None else now
+        with self.transaction():
+            row = self.db.execute("""
+                UPDATE jobs SET state='completed', result_ref=?, last_error=NULL,
+                    updated_at=?, available_at=?
+                WHERE id=? AND kind='mineru_pdf' AND payload_ref=? AND state='failed'
+                RETURNING id
+            """, (result_ref, now, now, job_id, payload_ref)).fetchone()
+            if row is None:
+                raise QueueError("PDF result is not a failed job with matching payload")
+
     def summary(self) -> dict:
         counts = {r["state"]: r["n"] for r in self.db.execute(
             "SELECT state,COUNT(*) AS n FROM jobs GROUP BY state"
