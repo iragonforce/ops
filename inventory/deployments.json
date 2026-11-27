@@ -2643,6 +2643,21 @@
     },
     {
       "host": "tensor",
+      "target": "/etc/tensor-control/guard.nft",
+      "source": "hosts/tensor/files/etc/tensor-control/guard.nft",
+      "baseline_sha256": "275a91e93078f6073c4d9da807872c2e91c5e7e5cc7fac4ce3206da8209d27e1",
+      "mode": 420,
+      "deployed": true,
+      "policy": "preserve target; overwrite only unchanged baseline or previously deployed digest",
+      "allow_create": false,
+      "uid": 0,
+      "gid": 0,
+      "group": "tensor-gpu-admission",
+      "deployed_sha256": "7e47dbb66b2bb322cfc0ef69bb8b20460c53eef28ba7d2a3e85552f77f7bdd60",
+      "verified_at": "2026-11-26"
+    },
+    {
+      "host": "tensor",
       "target": "/etc/systemd/system/sshd.service.d/30-local-userdb.conf",
       "source": "hosts/tensor/files/etc/systemd/system/sshd.service.d/30-local-userdb.conf",
       "baseline_sha256": "a53d96c8c56a176d53da0309da8206b877097b7c45dfc4677cd19c7d23b50868",

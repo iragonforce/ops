@@ -1,0 +1,28 @@
+table inet tensor_control {
+  chain input {
+    type filter hook input priority -10; policy accept;
+
+    # Local clients for the established Tensor control endpoint.
+    iifname "lo" tcp dport 8769 accept
+
+    # Previously configured trusted LAN and Tailscale clients.
+    ip saddr {
+      192.168.4.2,
+      192.168.1.2,
+      192.168.1.4,
+      192.168.1.102,
+      192.168.4.254,
+      100.103.67.56,
+      100.96.255.81
+    } tcp dport 8769 accept
+
+    # Existing control-port guard, unchanged.
+    tcp dport 8769 counter drop
+
+    # Temporary GPU admission containment: retain loopback for protected
+    # handoff/backend checks; block direct LAN/tailnet model and WebUI ingress.
+    # The independent Tailscale Serve 8445 proxy must also stay disabled:
+    # its loopback connection would bypass this network-input rule.
+    iifname != "lo" tcp dport { 7860, 11434 } reject
+  }
+}
