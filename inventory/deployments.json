@@ -4752,6 +4752,19 @@
     },
     {
       "host": "tensor",
+      "target": "/home/iragonforce/.config/systemd/user/hermes-gateway.service.d/20-local-llama.conf",
+      "source": "hosts/tensor/files/.config/systemd/user/hermes-gateway.service.d/20-local-llama.conf",
+      "baseline_sha256": "2a4ad8313ee73095d23e3fc161cade8b814cd5e046f8170c1dc2710e2f862412",
+      "mode": 420,
+      "deployed": true,
+      "deployed_sha256": "341b241a5d9fc117aedd5021a08a6651ebfc3c556a0eb68349941cd24b46740e",
+      "verified_at": "2026-11-27",
+      "policy": "preserve target; overwrite only unchanged baseline or previously deployed digest",
+      "allow_create": false,
+      "group": "tensor-gpu-admission"
+    },
+    {
+      "host": "tensor",
       "target": "/home/iragonforce/.config/systemd/user/hyprland-notify-api.service",
       "source": "hosts/tensor/files/.config/systemd/user/hyprland-notify-api.service",
       "baseline_sha256": "dfbd490711b70d3106640ab068336937fcb6c943a009a4430d7ab33a9346c431",
