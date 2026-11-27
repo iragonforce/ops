@@ -218,6 +218,11 @@ class LeaseManager:
         with self._guard():
             state = self._state()
             holders = self._holders()
+            # Existing holders do not authorize a new request after an
+            # uncoordinated CUDA owner/model appears. Veto before token insert.
+            preflight = getattr(self.backend, 'preflight', None)
+            if preflight is not None and not preflight():
+                raise LeaseError("GPU owner veto before desktop transition")
             if holders:
                 if state['mode'] != 'reserved' or state['resource'] != resource:
                     raise LeaseError("GPU reserved for a different resource")
@@ -226,6 +231,8 @@ class LeaseManager:
                 return token
             if state['mode'] != 'normal':
                 raise LeaseError("Unresolved GPU lifecycle state; reconcile before admission")
+            # A second check after the scoped stop remains mandatory:
+            # preflight alone is never admission.
             # Intent is durable before a desktop transition. Any exception leaves
             # a recoverable preparing state, never a false 'normal' state.
             initially_active = self.backend.wallpaper_active()

@@ -1,6 +1,6 @@
 # Tensor GPU inference lifecycle and persistent job queue
 
-**Status:** Stage 1 complete; Stage 2F restoration transport validated in synthetic tests; Stage 3 native sleep installed but llama service failed after unguarded cold wake on November 26; native Hermes request middleware proven fail-open at pinned `bf0203a`, admission integration blocked; Stage 4–5 dispatch disabled
+**Status:** Stage 1 complete; Stage 2F restoration transport validated in synthetic tests, sleep-aware GPU owner veto read-only tested on Tensor; Stage 3 native sleep installed but llama service failed after unguarded cold wake on November 26; native Hermes request middleware proven fail-open at pinned `bf0203a`, admission integration blocked; Stage 4–5 dispatch disabled
 **Date:** 2026-11-26
 **Host:** `tensor` (Arch Linux, NVIDIA RTX 5070, 64 GB-class RAM)
 **Scope:** Hermes/llama.cpp, Ollama, MinerU, Nexus-initiated Qdrant embeddings, Hyprland desktop restoration
@@ -111,13 +111,15 @@ All baseline observations require revalidation before modifying live services. I
 | --- | --- | --- | --- |
 | 0 — Inspect integrations | **Complete for Stage 1** | Wayland seat0; Hypridle 300s; Sunshine/Moonlight inactive; MinerU Gradio queue concurrency 1; llama.cpp 8080, Ollama 11434; native GPU admission still unverified | Proceed with synthetic-only Stage 1 |
 | 1 — Durable queue | **Committed and pushed** | 13/13 tests; 30 synthetic jobs; deduplication and private permissions verified | Commit 6be0ded |
-| 2 — GPU lease/desktop restoration | **Restoration transport validated, source-only** | 165/165 tests; systemd unit verified; no production changes | Failure-injection and guarded live integration pending |
+| 2 — GPU lease/desktop restoration | **Restoration transport and sleep-aware owner veto validated, source-only** | 189 GPU tests passed; actual Tensor read-only preflight true with failed llama and known wallpaper, post-stop candidate false while wallpaper active; no GPU service changes | Verify recovery/idle signal and guarded lease lifecycle before live acquire |
 | 3 — Hermes lifecycle | **Native sleep pilot passed; service failed on unguarded cold wake November 26; middleware admission blocked** | Earlier 300-second sleep/direct cold inference and 10,226 MiB release passed; a later `/slots` probe triggered CUDA OOM with Ollama resident; four source-only negative tests show native middleware skips lease refusals | Upstream required fail-closed `llm_execution` policy, then guarded recovery and request admission |
 | 4 — Ollama/Qdrant | **Source-only protected handoff and five call sites; not deployed** | Nexus writer/MCP paths can opt into typed queue submit/result; default direct path remains unchanged | Verified GPU-admitted worker and shared lease, then guarded live exact-ID/checkpoint acceptance |
 | 5 — MinerU | **Source-only per-file adapter; not deployed** | Queue has no-replay PDF fencing, protected payload/manifest and artifact-digest reconciliation; live WebUI/native paths remain independent | Guard all PDF entry points, persist native task IDs, verify admission and sequential real PDFs |
 | 6 — Acceptance/publication | Not started | — | After Stage 5 gate |
 
 **Scope control:** Complete one gate at a time. Record changed files, actual verification output references, blockers, rollback and commit SHA here before starting the next stage. Do not interpret this plan as permission for destructive process termination, data pruning, credential changes or automatic deployment from the public Tensor snapshot.
+
+**2026-11-26 owner-veto increment:** `shared/scripts/tensor-gpu-lease.py` now checks the backend's negative preflight before any desktop transition or additional holder insertion. `TensorSleepAwareBackend` in `shared/scripts/tensor-gpu-systemd-adapter.py` verifies process owners, NVIDIA compute memory, pmon clients, and systemd MainPID for an active 256-MiB-or-less natively sleeping llama; post-stop free VRAM remains mandatory. It fails closed on malformed/racing inventories and is not connected to a live launcher. On Tensor, an ephemeral source copy returned `preflight=True` and `safe_to_acquire=False` while wallpaper was running and llama failed; no acquisition or interruption occurred. This is not request admission: local bypasses, idle authorization, independent wallpaper restarts, crash recovery, and the Hermes policy remain unguarded. Recovery must remove the old `ExecStopPost`/pre-start desktop coupling and avoid broad purge before any llama start. Source rollback: revert this scoped commit; no runtime state changed.
 
 ## Stage 1 implementation record — 2026-11-24
 

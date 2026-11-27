@@ -22,6 +22,7 @@ class Fake:
         self.starts = 0
         self.fail_stop = False
         self.fail_start = False
+        self.preflight_ok = True
 
     def wallpaper_active(self): return self.wallpaper
     def stop_wallpaper(self):
@@ -34,6 +35,7 @@ class Fake:
         self.starts += 1
     def safe_to_acquire(self): return self.may_acquire
     def inference_memory_released(self): return self.gpu_idle
+    def preflight(self): return self.preflight_ok
 
 
 class LeaseTest(unittest.TestCase):
@@ -82,6 +84,24 @@ class LeaseTest(unittest.TestCase):
         with self.assertRaises(mod.LeaseError):
             self.lease.acquire('batch','qwen',activity='unknown')
         self.assertEqual(self.backend.stops,0)
+
+    def test_preflight_veto_keeps_wallpaper_and_normal_state(self):
+        self.backend.preflight_ok = False
+        with self.assertRaises(mod.LeaseError):
+            self.acquire()
+        self.assertTrue(self.backend.wallpaper)
+        self.assertEqual(self.backend.stops, 0)
+        self.assertEqual(self.lease.status()['mode'], 'normal')
+        self.assertEqual(self.lease.status()['leases'], 0)
+
+    def test_existing_holder_does_not_authorize_new_owner_after_veto(self):
+        token = self.acquire('cli')
+        self.backend.preflight_ok = False
+        with self.assertRaises(mod.LeaseError):
+            self.acquire('gateway')
+        self.assertEqual(self.lease.status()['leases'], 1)
+        self.backend.preflight_ok = True
+        self.assertEqual(self.lease.release(token), 'normal')
 
     def test_explicit_foreground_does_not_bypass_resource_conflict(self):
         a=self.acquire()

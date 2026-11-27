@@ -65,6 +65,58 @@ class FakeState:
     def backend(self):
         return mod.TensorDesktopBackend(run=self.run,observe=self.observe)
 
+class SleepAwareTest(unittest.TestCase):
+    def backend(self, *, wallpaper='inactive', llama=True, extra=None, free=11000,
+                model_count=0, llama_mib=184):
+        desktop = {1147: '/usr/bin/Hyprland', 1281: '/usr/bin/Xwayland'}
+        children = {101: '/opt/linux-wallpaperengine/linux-wallpaperengine',
+                    102: '/opt/linux-wallpaperengine/linux-wallpaperengine'} if wallpaper == 'active' else {}
+        allocations = ({1000: llama_mib} if llama else {}) | (
+            {101: 822, 102: 1490} if wallpaper == 'active' else {}) | (extra or {})
+        names = desktop | children | ({1000: '/usr/bin/llama-server'} if llama else {}) | (
+            {pid: '/usr/bin/unknown-client' for pid in extra} if extra else {})
+        def observe():
+            return {'mode': 'read-only', 'admission_candidate': False,
+                    'reasons': ['native_sleep'], 'evidence': {
+                'wallpaper_service': wallpaper, 'wallpaper_child_pids': list(children),
+                'hermes_llama_service': 'active' if llama else 'failed',
+                'cuda_compute_pids': list(allocations),
+                'ollama_loaded_models': model_count,
+                'gpu_memory': {'free_mib': free}}}
+        def run(argv):
+            if argv[-1] == '--value': return '1000' if llama else '0'
+            if argv[1].startswith('--query-compute-apps='):
+                return '\n'.join(f'{pid}, {mib}' for pid, mib in allocations.items())
+            if argv[1] == 'pmon':
+                rows = {**desktop, **children, **({1000: names[1000]} if llama else {}),
+                        **({pid: names[pid] for pid in extra} if extra else {})}
+                return ('# gpu pid type sm mem enc dec jpg ofa command\n'
+                        '# Idx # C/G % % % % % % name\n' +
+                        '\n'.join(f'0 {pid} G - - - - - - {name}' for pid, name in rows.items()))
+            raise AssertionError(argv)
+        return mod.TensorSleepAwareBackend(observe=observe, run=run,
+                                            identify=lambda pid: names[pid])
+
+    def test_native_sleep_after_wallpaper_stop(self):
+        b = self.backend()
+        self.assertTrue(b.safe_to_acquire())
+        self.assertTrue(b.inference_memory_released())
+
+    def test_active_wallpaper_preflight_accepts_only_known_children(self):
+        self.assertTrue(self.backend(wallpaper='active',free=8500).preflight())
+
+    def test_loaded_llama_or_unknown_cuda_veto(self):
+        self.assertFalse(self.backend(llama_mib=9700).safe_to_acquire())
+        self.assertFalse(self.backend(extra={777: 900}).safe_to_acquire())
+
+    def test_ollama_or_insufficient_free_veto(self):
+        self.assertFalse(self.backend(model_count=1).preflight())
+        self.assertFalse(self.backend(free=8500).safe_to_acquire())
+
+    def test_nvidia_inventory_rejects_malformed(self):
+        with self.assertRaises(mod.AdapterError): mod.gpu_client_pids('')
+        with self.assertRaises(mod.AdapterError): mod.gpu_compute_memory('N/A, ?')
+
 
 class AdapterTest(unittest.TestCase):
     def test_read_only_snapshot_no_systemd_calls(self):
@@ -126,6 +178,18 @@ class AdapterTest(unittest.TestCase):
     def test_gpu_blocked_by_ollama(self):
         f=FakeState(wallpaper='inactive',ollama=1)
         self.assertFalse(f.backend().safe_to_acquire())
+
+    def test_ollama_preflight_veto_before_wallpaper_stop(self):
+        f=FakeState(wallpaper='active',ollama=1)
+        self.assertFalse(f.backend().preflight())
+        self.assertEqual(f.wallpaper, 'active')
+        self.assertEqual(f.calls, [])
+
+    def test_clear_preflight_does_not_override_post_stop_check(self):
+        f=FakeState(wallpaper='active')
+        b=f.backend()
+        self.assertTrue(b.preflight())
+        self.assertFalse(b.safe_to_acquire())
 
     def test_gpu_blocked_by_uncoordinated_cuda(self):
         f=FakeState(wallpaper='inactive',cuda=[299])

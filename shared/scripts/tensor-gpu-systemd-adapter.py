@@ -22,6 +22,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 PROBE_FILE = SCRIPT_DIR / 'tensor-gpu-probe.py'
 WALLPAPER_UNIT = 'wallpaper-engine-sync.service'
 REQUIRED_FREE_MIB = 10200
+MAX_SLEEPING_LLAMA_MIB = 256  # Observed native sleep ~184 MiB; conservative veto above this.
 RESTORE_DB = Path.home() / '.local/state/tensor-gpu-lease/queue.sqlite3'
 
 
@@ -52,6 +53,39 @@ def systemctl_command(argv: list[str]) -> str:
     """Only the caller-selected, exact systemctl argv; never a shell command."""
     cp = subprocess.run(argv, check=True, capture_output=True, text=True, timeout=30)
     return cp.stdout.strip()
+
+def gpu_client_pids(output: str) -> set[int]:
+    """Parse one NVIDIA pmon sample; malformed/empty evidence is never admission."""
+    lines = [line.strip() for line in output.splitlines() if line.strip()]
+    if len(lines) < 2 or not all(line.startswith('#') for line in lines[:2]):
+        raise AdapterError('GPU client inventory unavailable')
+    pids: set[int] = set()
+    for line in lines[2:]:
+        cells = line.split()
+        if len(cells) < 10 or cells[0] != '0' or not cells[1].isdecimal():
+            raise AdapterError('Malformed NVIDIA GPU client')
+        pids.add(int(cells[1]))
+    return pids
+
+def gpu_compute_memory(output: str) -> dict[int, int]:
+    allocations: dict[int, int] = {}
+    for line in output.splitlines():
+        cells = [value.strip() for value in line.split(',')]
+        if len(cells) != 2 or not all(value.isdecimal() for value in cells):
+            raise AdapterError('Malformed NVIDIA compute allocation')
+        pid, mib = map(int, cells)
+        if pid <= 0 or pid in allocations:
+            raise AdapterError('Ambiguous NVIDIA compute allocation')
+        allocations[pid] = mib
+    return allocations
+
+def owned_gpu_executable(pid: int, proc_root: Path = Path('/proc')) -> str:
+    """Identify only caller-owned regular processes; do not trust pmon names."""
+    directory = proc_root / str(pid)
+    if pid <= 0 or directory.stat().st_uid != os.geteuid():
+        raise AdapterError('Unknown GPU process owner')
+    value = os.readlink(directory / 'exe')
+    return value.removesuffix(' (deleted)')
 
 
 class TensorDesktopBackend:
@@ -138,6 +172,22 @@ class TensorDesktopBackend:
         if after != 'active':
             raise AdapterError('Wallpaper supervisor did not start')
 
+    def preflight(self) -> bool:
+        """Veto known incompatible owners before touching the desktop.
+
+        This is only a negative precheck. Full ownership/free-memory evidence
+        is still required by safe_to_acquire() after a scoped wallpaper stop.
+        An active Hermes service needs a separate sleep-aware verified backend.
+        """
+        e = self.snapshot()['evidence']
+        return (e['wallpaper_service'] in ('active', 'inactive')
+                and isinstance(e['wallpaper_child_pids'], list)
+                and e['hermes_llama_service'] in ('inactive', 'failed')
+                and e['cuda_compute_pids'] == []
+                and type(e['ollama_loaded_models']) is int
+                and e['ollama_loaded_models'] == 0
+                and isinstance(e['gpu_memory'], dict))
+
     def safe_to_acquire(self) -> bool:
         # Called by the lease state machine AFTER a verified scoped wallpaper stop.
         # A positive candidate remains insufficient until request admission,
@@ -150,6 +200,81 @@ class TensorDesktopBackend:
         # Candidate requires all NVIDIA/process/model evidence to pass.
         report = self.snapshot()
         return report.get('admission_candidate') is True and not report['reasons']
+
+
+class TensorSleepAwareBackend(TensorDesktopBackend):
+    """Conservative ownership veto for a natively sleeping, active llama.
+
+    Positive evidence alone is not a lease, verified user-idle signal, or
+    containment of loopback clients; do not enable live acquire on this alone.
+    """
+
+    def __init__(self, *, identify: Callable[[int], str] = owned_gpu_executable,
+                 **kwargs):
+        super().__init__(**kwargs)
+        self.identify = identify
+
+    def _owner_safe(self, *, before_stop: bool) -> bool:
+        try:
+            e = self.snapshot()['evidence']
+            state = e['wallpaper_service']
+            children = e['wallpaper_child_pids']
+            gpu = e['gpu_memory']
+            if (state not in (('active', 'inactive') if before_stop else ('inactive',))
+                    or not isinstance(children, list)
+                    or any(type(pid) is not int or pid <= 0 for pid in children)
+                    or (not before_stop and children)
+                    or type(e['ollama_loaded_models']) is not int
+                    or e['ollama_loaded_models'] != 0
+                    or not isinstance(gpu, dict)
+                    or (not before_stop and gpu['free_mib'] < self.required_free_mib)):
+                return False
+            main_argv = ['/usr/bin/systemctl', '--user', 'show',
+                         'hermes-llama.service', '--property=MainPID', '--value']
+            main = self.run(main_argv)
+            if not main.isdecimal():
+                return False
+            main_pid = int(main)
+            memory = gpu_compute_memory(self.run([
+                '/usr/bin/nvidia-smi', '--query-compute-apps=pid,used_gpu_memory',
+                '--format=csv,noheader,nounits']))
+            observed = gpu_client_pids(self.run(['/usr/bin/nvidia-smi', 'pmon', '-c', '1']))
+            if set(memory) != set(e['cuda_compute_pids']) or not set(memory).issubset(observed):
+                return False
+            wallpaper_pids = set(children) if state == 'active' and before_stop else set()
+            remaining = {pid: mib for pid, mib in memory.items() if pid not in wallpaper_pids}
+            service = e['hermes_llama_service']
+            if service == 'active':
+                if (main_pid <= 0 or set(remaining) != {main_pid}
+                        or not 0 < remaining[main_pid] <= MAX_SLEEPING_LLAMA_MIB
+                        or self.identify(main_pid) != '/usr/bin/llama-server'):
+                    return False
+            elif service in ('inactive', 'failed'):
+                if main_pid != 0 or remaining:
+                    return False
+            else:
+                return False
+            allowed = {'/usr/bin/Hyprland', '/usr/bin/Xwayland'}
+            if state == 'active' and before_stop:
+                for pid in children:
+                    if self.identify(pid) != '/opt/linux-wallpaperengine/linux-wallpaperengine':
+                        return False
+                allowed.add('/opt/linux-wallpaperengine/linux-wallpaperengine')
+            if any(pid != main_pid and self.identify(pid) not in allowed for pid in observed):
+                return False
+            # A swapped systemd PID between probes invalidates the snapshot.
+            return main == self.run(main_argv)
+        except (AdapterError, OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError):
+            return False
+
+    def preflight(self) -> bool:
+        return self._owner_safe(before_stop=True)
+
+    def safe_to_acquire(self) -> bool:
+        return self._owner_safe(before_stop=False)
+
+    def inference_memory_released(self) -> bool:
+        return self._owner_safe(before_stop=False)
 
 
 def main() -> int:
