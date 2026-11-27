@@ -1,0 +1,9 @@
+name: tensor-gpu-admission
+version: "0.1.0"
+description: "Serialize the Tensor local llama provider through the existing GPU lease, queue lock, and scoped wallpaper service."
+author: "iragonforce/ops"
+provides_middleware:
+  - llm_execution
+provides_tools:
+  - tensor_gpu_status
+  - tensor_local_models

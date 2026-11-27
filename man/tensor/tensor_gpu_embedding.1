@@ -1,15 +1,18 @@
-.TH TENSOR_GPU_EMBEDDING 1 "November 2026" "Tensor GPU source-only handoff" "User Commands"
+.TH TENSOR_GPU_EMBEDDING 1 "November 2026" "Tensor GPU embedding handoff" "User Commands"
 .SH NAME
 tensor_gpu_embedding.py \- stage protected embedding batches in the existing Tensor GPU queue
 .SH SYNOPSIS
 .B python3 ~/ops/shared/scripts/tensor_gpu_embedding.py
-.RI [ --db " FILE" ] " submit | result"
+.RI [ --db " FILE" ] " submit | result | worker"
 .SH DESCRIPTION
 The submit command accepts JSON containing model and up to three inputs on
 standard input. It stores private input bytes beside the existing queue and
 returns an opaque job ID. The result command accepts a job ID on standard
 input; it returns a completed, validated vector batch or a pending status.
-Neither command executes Ollama, acquires a GPU lease, or starts a worker.
+Submit starts a transient Tensor systemd user worker when the job needs work.
+The worker executes only embedding batches via local Ollama after the existing
+GPU owner/idle veto and lease. A queued PDF ahead of an embedding waits for
+the separate MinerU integration instead of being skipped.
 No raw text or vectors are passed in command-line arguments or public Git.
 .SH CLIENT MODE
 Existing Nexus Qdrant writers and the Hermes knowledge-search MCP can opt
@@ -32,8 +35,11 @@ readback and cursor rules; an embedding result alone never advances them.
 Private queue.sqlite3, payload-* and result-* files under the queue's
 caller-owned mode-0700 directory. Never synchronize these files to public Git.
 .SH LIMITATIONS
-Source-only: no production GPU worker, lease, confirmed idle signal, direct
-client containment or deployed SSH transport. Do not enable this client
-switch until these prerequisites and Tensor model-request admission pass.
+The Tensor worker and one local sample were deployed and verified on November
+27. Nexus writer transport, real Qdrant upsert/readback, and MinerU dispatch
+have not passed acceptance. Direct Ollama and MinerU clients still bypass this
+queue. The worker does not force-stop a model possibly serving another client;
+if it remains resident after the bounded poll, the lease is held for operator
+recovery. Do not enable all Nexus clients before validating the SSH path.
 .SH SEE ALSO
 ~/ops/man/tensor/tensor-gpu-queue.1

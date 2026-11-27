@@ -71,7 +71,7 @@ class RequiredAdmissionTest(unittest.TestCase):
         self.addCleanup(modules.stop)
         self.reached = []
 
-    def attempt(self, name, *, streaming=False, base_url='http://127.0.0.1:8080/v1'):
+    def attempt(self, name, *, streaming=False, base_url='http://127.0.0.1:8080/v1', provider_name='custom'):
         def provider(request):
             self.reached.append(name)
             raise ProviderReached(name)
@@ -81,7 +81,7 @@ class RequiredAdmissionTest(unittest.TestCase):
             _interruptible_api_call=provider, _model_request_active=None,
             _pending_redirect_lock=None, _has_pending_redirect=lambda: False,
             session_id='synthetic', platform='test', model='qwen',
-            is_subagent=False, _fallback_index=0, provider='custom', base_url=base_url)
+            is_subagent=False, _fallback_index=0, provider=provider_name, base_url=base_url)
         return self.perform(agent, api_kwargs={'id': name}, _original_api_kwargs={'id': name},
                             _llm_middleware_trace=[], _moa_prepared_request=None,
                             _retry=None, thinking_spinner=None, retry_count=0,
@@ -107,6 +107,13 @@ class RequiredAdmissionTest(unittest.TestCase):
         for streaming in (False, True):
             with self.subTest(streaming=streaming), self.assertRaises(self.middleware.GpuAdmissionRequired):
                 self.attempt(f'missing-{streaming}', streaming=streaming)
+        self.assertEqual(self.reached, [])
+
+    def test_local_ollama_route_requires_policy(self):
+        for provider in ('ollama', 'custom'):
+            with self.subTest(provider=provider), self.assertRaises(self.middleware.GpuAdmissionRequired):
+                self.attempt('ollama-' + provider, provider_name=provider,
+                             base_url='http://127.0.0.1:11434/v1')
         self.assertEqual(self.reached, [])
 
     def test_denial_never_reaches_provider(self):

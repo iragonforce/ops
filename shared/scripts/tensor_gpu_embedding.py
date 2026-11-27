@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Protected Tensor embedding handoff for existing Nexus writers (source only).
+"""Protected Tensor embedding handoff for existing Nexus writers.
 
 Usage: tensor_gpu_embedding.py --help. Dependencies: Python stdlib and the
-existing tensor-gpu-queue.py. No worker/desktop admission is installed: only a
-caller holding a separately verified GPU admission may invoke run_admitted().
+existing tensor-gpu-queue.py, tensor-gpu-lease.py and
+tensor-gpu-systemd-adapter.py. The worker is one transient systemd job while
+pending work exists; no persistent daemon or free-running GPU request.
 The submit/result CLI is intended for a pinned SSH command, never a public HTTP
 listener. Private payloads and vectors stay outside Git and the queue database.
 """
@@ -17,6 +18,7 @@ import subprocess
 import sys
 import time
 import uuid
+from urllib.request import ProxyHandler, Request, build_opener
 
 MODULE = Path(__file__).with_name('tensor-gpu-queue.py')
 spec = importlib.util.spec_from_file_location('tensor_gpu_queue', MODULE)
@@ -31,6 +33,8 @@ MAX_INPUTS = 3
 MAX_INPUT_CHARS = 8000
 MAX_WIRE_BYTES = 48000
 MAX_RESULT_BYTES = 1024 * 1024
+WORKER_UNIT = 'tensor-gpu-embedding-worker'
+STANDBY_COMMAND = Path.home() / '.local/bin/hibernate'
 DB = Path(os.environ.get('TENSOR_GPU_EMBED_DB', str(queue_module.DEFAULT_DIR / 'queue.sqlite3')))
 
 
@@ -175,6 +179,128 @@ def run_admitted(db, claim, embed):
             raise HandoffError('Embedding attempt failed; queued retry retained') from None
 
 
+def _module(name, filename):
+    spec = importlib.util.spec_from_file_location(name, Path(__file__).with_name(filename))
+    if spec is None or spec.loader is None:
+        raise HandoffError('GPU admission component unavailable')
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _identity(lease):
+    pid = os.getpid()
+    stat = (Path('/proc') / str(pid) / 'stat').read_text().rsplit(')', 1)[1].split()
+    return lease.OwnerIdentity(Path('/proc/sys/kernel/random/boot_id').read_text().strip(),
+                               pid, int(stat[19]))
+
+
+def _idle():
+    try:
+        check = subprocess.run([str(STANDBY_COMMAND), 'status'], capture_output=True,
+                               text=True, timeout=5, check=True)
+        return check.stdout.strip() == 'visual standby'
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
+def _embed_local(inputs, model):
+    encoded = json.dumps({'model': model, 'input': inputs, 'keep_alive': 0}).encode()
+    opener = build_opener(ProxyHandler({}))
+    try:
+        with opener.open(Request('http://127.0.0.1:11434/api/embed', data=encoded,
+                                 headers={'Content-Type': 'application/json'}), timeout=180) as response:
+            data = response.read(MAX_RESULT_BYTES + 1)
+        if len(data) > MAX_RESULT_BYTES:
+            raise HandoffError('Embedding result exceeded bound')
+        return json.loads(data)['embeddings']
+    except (OSError, ValueError, KeyError):
+        raise HandoffError('Ollama embedding unavailable') from None
+
+
+def _unload_local_model():
+    opener = build_opener(ProxyHandler({}))
+    for _ in range(20):
+        with opener.open('http://127.0.0.1:11434/api/ps', timeout=5) as response:
+            resident = [m.get('name') for m in json.loads(response.read(65537)).get('models', [])]
+        if MODEL not in resident:
+            return
+        time.sleep(1)
+    # keep_alive=0 requests Ollama to unload when the request finishes. Never
+    # force-stop a model potentially shared with an uncoordinated active client.
+    raise HandoffError('Embedding model still resident; GPU lease retained')
+
+
+def _start_worker(db):
+    if subprocess.run(['/usr/bin/systemctl', '--user', 'is-active', '--quiet',
+                       WORKER_UNIT + '.service'], timeout=5).returncode == 0:
+        return
+    started = subprocess.run(['/usr/bin/systemd-run', '--user', '--collect', '--unit', WORKER_UNIT,
+                              '/usr/bin/python3', str(Path(__file__).resolve()), '--db', str(db), 'worker'],
+                             capture_output=True, timeout=10)
+    if started.returncode and subprocess.run(['/usr/bin/systemctl', '--user', 'is-active',
+                                               '--quiet', WORKER_UNIT + '.service'], timeout=5).returncode:
+        raise HandoffError('Embedding worker could not be started; queued job retained')
+
+
+def worker(db):
+    """Drain eligible FIFO batches only in verified visual standby under the shared GPU lease."""
+    lease = _module('tensor_gpu_embedding_lease', 'tensor-gpu-lease.py')
+    desktop = _module('tensor_gpu_embedding_desktop', 'tensor-gpu-systemd-adapter.py')
+    retry_after = 0.0
+    with Queue(db) as queue:
+        while True:
+            queue.recover_stale()
+            if time.monotonic() < retry_after:
+                time.sleep(min(5, retry_after - time.monotonic()))
+            row = queue.db.execute("SELECT id,kind,state,available_at,lease_until FROM jobs "
+                                   "WHERE state IN ('pending','retry','running') "
+                                   "AND kind IN ('embedding_batch','mineru_pdf') "
+                                   "ORDER BY priority DESC,seq LIMIT 1").fetchone()
+            if row is None:
+                return
+            if row['state'] == 'running':
+                time.sleep(5)
+                continue
+            if queue.paused():
+                time.sleep(5)
+                continue
+            if row['kind'] != 'embedding_batch':
+                raise HandoffError('Earlier PDF job blocks the FIFO until its native worker is installed')
+            if not _idle():
+                time.sleep(5)
+                continue
+            if row['available_at'] > time.time():
+                time.sleep(min(5, max(0.1, row['available_at'] - time.time())))
+                continue
+            with queue_module.worker_lock(db.parent, wait=True):
+                if not _idle():
+                    continue
+                with lease.LeaseManager(db.parent.parent / 'tensor-gpu-lease/queue.sqlite3',
+                                        desktop.TensorSleepAwareBackend(),
+                                        require_identity=True) as manager:
+                    try:
+                        token = manager.acquire('embedding-worker', 'ollama:' + MODEL,
+                                                activity='idle', identity=_identity(lease))
+                    except lease.LeaseError:
+                        if manager.status()['mode'] != 'normal':
+                            raise HandoffError('Unresolved GPU lifecycle state; job retained') from None
+                        retry_after = time.monotonic() + 5
+                        continue
+                    try:
+                        claim = queue.claim('idle', 'embedding-worker', kinds=('embedding_batch',),
+                                            lease_seconds=300)
+                        if claim is not None:
+                            try:
+                                run_admitted(db, claim, _embed_local)
+                            except HandoffError:
+                                pass  # The fenced queue records retry or terminal failure.
+                    finally:
+                        _unload_local_model()
+                        manager.release(token)
+
+
 def remote_embed(inputs, command, *, timeout=30):
     """Submit over configured SSH argv and wait boundedly; never fall back direct."""
     encoded = canonical(inputs)
@@ -224,6 +350,7 @@ def main():
     sub = ap.add_subparsers(dest='action', required=True)
     sub.add_parser('submit')
     sub.add_parser('result')
+    sub.add_parser('worker')
     args = ap.parse_args()
     try:
         if args.action == 'submit':
@@ -233,7 +360,14 @@ def main():
             value = json.loads(raw)
             if set(value) != {'model', 'inputs'} or value['model'] != MODEL:
                 raise HandoffError('Invalid embedding schema')
-            print(json.dumps({'job_id': submit(args.db, value['inputs'])}))
+            job_id = submit(args.db, value['inputs'])
+            with Queue(args.db) as queue:
+                state = queue.db.execute('SELECT state FROM jobs WHERE id=?', (job_id,)).fetchone()['state']
+            if state in ('pending', 'retry', 'running'):
+                _start_worker(args.db)
+            print(json.dumps({'job_id': job_id}))
+        elif args.action == 'worker':
+            worker(args.db)
         else:
             job_id = sys.stdin.buffer.read(80).decode().strip()
             try:

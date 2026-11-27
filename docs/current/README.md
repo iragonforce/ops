@@ -5,7 +5,7 @@ Verified 2026-11-06 unless marked otherwise. Task-specific physical acceptance r
 | Host | Role | Agent state | Access |
 |---|---|---|---|
 | qubit | macOS control machine | Codex CLI 0.167.0; Nexus Hermes SSH launcher; no local Hermes home | Existing strict-key SSH route works |
-| tensor | Arch desktop | Native Hermes gateway with custom provider to local llama.cpp `qwen3.8-27b-iq3`; native 300-second idle sleep verified, fail-closed inference denial installed while actual admission remains pending | Strict-key SSH route verified November 27 |
+| tensor | Arch desktop | Native Hermes gateway with local llama.cpp `qwen3.8-27b-iq3`; fail-closed GPU lease policy admits real prompts and a transient queued Ollama embedding worker ran a local sample; Nexus Qdrant and MinerU production dispatch not yet enabled | Strict-key SSH route verified November 27 |
 | nexus | Debian 13 NAS/Docker/KVM | Codex CLI 0.166.0; Hermes v0.21.6 Coordinator, native Kanban and openai-codex provider; redundant Qwen Hermes and Paperclip retired | Local execution host for this implementation |
 
 ## Main Hermes
@@ -30,24 +30,19 @@ and
 
 Tensor runs an independent native Hermes gateway using provider `custom` and
 llama.cpp at `http://127.0.0.1:8080/v1`, default `qwen3.8-27b-iq3`, context
-64000 (live configuration checked November 26). The 300-second native
-llama.cpp sleep and a direct cold request passed on November 25; authenticated
-gateway metadata requests passed, but gateway inference, tool use and concurrent
-admission have **not** passed. On November 26 at 10:38 EST, an unguarded
-`/slots` request woke the sleeping server while Ollama occupied VRAM and
-`hermes-llama.service` failed on CUDA OOM; the gateway stayed active.
-At 14:43 EST the llama unit remained failed, while gateway, MinerU WebUI and
-wallpaper were active; Ollama had no loaded models, but only 8,577 MiB was
-free against the failed reload's 9,685 MiB allocation. Native Hermes
-`llm_execution` middleware was also proven to skip a denied GPU lease and
-reach the provider in both streaming and direct paths. On November 27, the
-owner-approved gateway safety cutover installed the required fail-closed
-middleware and decoupled the gateway from failed llama startup. The restarted
-gateway served `/health` (HTTP 200), llama stayed failed, and a fresh
-installed-source negative test denied the protected provider before execution.
-**No positive GPU lease policy is registered:** inference remains denied and
-Stage 4–5 dispatch is still disabled. See the
-[cutover and rollback record](../changes/2026-11-27-tensor-hermes-gateway-failclosed-cutover.md).
+64000. The November 26 unguarded `/slots` wake caused a CUDA OOM while Ollama
+occupied VRAM. The November 27 required-middleware cutover initially denied
+every prompt because no actual policy was installed; a later cutover deployed
+the GPU lease plugin, its fixed read-only tools, and the Git-owned wrapper.
+Real default CLI prompts then exited successfully, with llama stopped and the
+lease released. A transient Tensor worker completed one queued local embedding
+sample, verified its input digest/vector and released its GPU lease; this is
+**not** Nexus Qdrant writer acceptance. Local Ollama tags are discoverable, but
+Ollama chat and model-side tool invocation are not accepted. Wallpaper
+active→stopped→restored has not been verified in an interactive desktop session.
+Nexus writer transport and MinerU conversion are not deployed. See the
+[live admission record](../changes/2026-11-27-tensor-gpu-live-admission.md)
+and the earlier [fail-closed cutover](../changes/2026-11-27-tensor-hermes-gateway-failclosed-cutover.md).
 After the owner's November 26 authorization, direct non-loopback Tensor
 Ollama (:11434) and MinerU WebUI (:7860) ingress and Tailscale Serve 8445
 were briefly restricted and then **restored** by verified targeted rollback.

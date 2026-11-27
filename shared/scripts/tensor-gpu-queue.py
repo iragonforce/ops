@@ -394,7 +394,7 @@ class Queue:
 
 
 @contextlib.contextmanager
-def worker_lock(state_dir: Path):
+def worker_lock(state_dir: Path, *, wait: bool = False):
     lock_path = state_dir / "worker.lock"
     if lock_path.is_symlink():
         raise QueueError("Refusing symlink worker lock")
@@ -408,7 +408,7 @@ def worker_lock(state_dir: Path):
         if info.st_uid != os.geteuid() or (info.st_mode & 0o077):
             raise QueueError("Insecure worker lock permissions")
         try:
-            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            fcntl.flock(fd, fcntl.LOCK_EX | (0 if wait else fcntl.LOCK_NB))
         except BlockingIOError as exc:
             raise QueueError("Synthetic worker already running") from exc
         yield

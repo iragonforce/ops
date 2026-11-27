@@ -4765,6 +4765,86 @@
     },
     {
       "host": "tensor",
+      "target": "/home/iragonforce/.config/systemd/user/hermes-llama.service.d/30-native-sleep.conf",
+      "source": "hosts/tensor/files/.config/systemd/user/hermes-llama.service.d/30-native-sleep.conf",
+      "mode": 420,
+      "deployed": true,
+      "deployed_sha256": "56e2d5e490679c0e68098f9b5e6163f89e89fd7b249d2797312309417238e7db",
+      "verified_at": "2026-11-27",
+      "group": "tensor-gpu-admission"
+    },
+    {
+      "host": "tensor",
+      "target": "/home/iragonforce/.hermes/plugins/tensor-gpu-admission/__init__.py",
+      "source": "hosts/tensor/files/.hermes/plugins/tensor-gpu-admission/__init__.py",
+      "mode": 420,
+      "deployed": true,
+      "deployed_sha256": "1b550c8f2709efdfde58b1a24034f756785f06e952ac2b280b345d36c396febc",
+      "verified_at": "2026-11-27",
+      "group": "tensor-gpu-admission"
+    },
+    {
+      "host": "tensor",
+      "target": "/home/iragonforce/.hermes/plugins/tensor-gpu-admission/plugin.yaml",
+      "source": "hosts/tensor/files/.hermes/plugins/tensor-gpu-admission/plugin.yaml",
+      "mode": 420,
+      "deployed": true,
+      "deployed_sha256": "89d5778042237a700e1ef8e0a9f4e6e2dced52f6400c5e1fa8c1f0428d69bb7e",
+      "verified_at": "2026-11-27",
+      "group": "tensor-gpu-admission"
+    },
+    {
+      "host": "tensor",
+      "target": "/home/iragonforce/.local/share/tensor-gpu/tensor-gpu-queue.py",
+      "source": "shared/scripts/tensor-gpu-queue.py",
+      "mode": 493,
+      "deployed": true,
+      "deployed_sha256": "a309ef8dcdb84e7ee277c6e46089f541e4b8e9eb488de7472e95919a413bf312",
+      "verified_at": "2026-11-27",
+      "group": "tensor-gpu-admission"
+    },
+    {
+      "host": "tensor",
+      "target": "/home/iragonforce/.local/share/tensor-gpu/tensor-gpu-lease.py",
+      "source": "shared/scripts/tensor-gpu-lease.py",
+      "mode": 493,
+      "deployed": true,
+      "deployed_sha256": "1aafdd7a0cbb7610b80b673e165fbc2aaaa8babab88b7ed920ad35734bd9510e",
+      "verified_at": "2026-11-27",
+      "group": "tensor-gpu-admission"
+    },
+    {
+      "host": "tensor",
+      "target": "/home/iragonforce/.local/share/tensor-gpu/tensor-gpu-systemd-adapter.py",
+      "source": "shared/scripts/tensor-gpu-systemd-adapter.py",
+      "mode": 493,
+      "deployed": true,
+      "deployed_sha256": "bed209af30213f4116bb7aacc8b85d6e9e5bc38e1edb2e53a877555f8b748500",
+      "verified_at": "2026-11-27",
+      "group": "tensor-gpu-admission"
+    },
+    {
+      "host": "tensor",
+      "target": "/home/iragonforce/.local/share/tensor-gpu/tensor-gpu-probe.py",
+      "source": "shared/scripts/tensor-gpu-probe.py",
+      "mode": 420,
+      "deployed": true,
+      "deployed_sha256": "9d3904f2577521fc03191944c2adcf9a15ab142d8369a2afd8c85fb7a5dba885",
+      "verified_at": "2026-11-27",
+      "group": "tensor-gpu-admission"
+    },
+    {
+      "host": "tensor",
+      "target": "/home/iragonforce/.local/share/tensor-gpu/tensor_gpu_embedding.py",
+      "source": "shared/scripts/tensor_gpu_embedding.py",
+      "mode": 420,
+      "deployed": true,
+      "deployed_sha256": "3944d5a5224797018e5104a56ed60a960b672015ea65e64ee962ddfb2e118b11",
+      "verified_at": "2026-11-27",
+      "group": "tensor-gpu-admission"
+    },
+    {
+      "host": "tensor",
       "target": "/home/iragonforce/.config/systemd/user/hyprland-notify-api.service",
       "source": "hosts/tensor/files/.config/systemd/user/hyprland-notify-api.service",
       "baseline_sha256": "dfbd490711b70d3106640ab068336937fcb6c943a009a4430d7ab33a9346c431",
@@ -5109,7 +5189,7 @@
       "group": "scripts",
       "help_added": false,
       "deployed_sha256": "e3702359d18cf70ca2a1c52154131f367b96932cf4df89c89f327ead88ad9dd0",
-      "verified_at": "2026-11-06"
+      "verified_at": "2026-11-27"
     },
     {
       "host": "tensor",

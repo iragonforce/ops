@@ -1,0 +1,17 @@
+--- a/hermes_cli/middleware.py
++++ b/hermes_cli/middleware.py
+@@ -29,12 +29,12 @@
+ class GpuAdmissionRequired(RuntimeError):
+     """The protected local model must not run without its admission policy."""
+ 
+ def _protected_tensor_model(kind: str, context: Dict[str, Any]) -> bool:
+-    if kind != LLM_EXECUTION_MIDDLEWARE or context.get("provider") != "custom":
++    if kind != LLM_EXECUTION_MIDDLEWARE or context.get("provider") not in ("custom", "ollama"):
+         return False
+     url = urlsplit(str(context.get("base_url") or ""))
+     return (url.scheme == "http" and url.hostname in ("127.0.0.1", "localhost")
+-            and url.port == 8080 and url.path.rstrip("/") == "/v1")
++            and url.port in (8080, 11434) and url.path.rstrip("/") == "/v1")
+ 
+ 
+ @dataclass
