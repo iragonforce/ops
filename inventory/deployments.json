@@ -4811,7 +4811,7 @@
       "source": "shared/scripts/tensor-gpu-lease.py",
       "mode": 493,
       "deployed": true,
-      "deployed_sha256": "1aafdd7a0cbb7610b80b673e165fbc2aaaa8babab88b7ed920ad35734bd9510e",
+      "deployed_sha256": "d551d7e7489dd504508bbc17271e4b62fd14c365a655d52227fabf909b23cd06",
       "verified_at": "2026-11-27",
       "group": "tensor-gpu-admission"
     },

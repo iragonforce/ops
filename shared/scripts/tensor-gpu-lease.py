@@ -229,6 +229,16 @@ class LeaseManager:
                 token = str(uuid.uuid4())
                 self._insert_holder(token, owner, resource, identity)
                 return token
+            if state['mode'] == 'preparing' and not state['restore_wallpaper']:
+                # A failed post-transition check can leave an idle desktop in
+                # preparing after a transient unleased model disappears. On
+                # the next request, recover only with independently verified
+                # released memory. An interrupted active wallpaper transition
+                # still requires explicit reconciliation/restoration.
+                if not self.backend.inference_memory_released():
+                    raise LeaseError("Unresolved GPU lifecycle state; reconcile before admission")
+                self._set_state('normal', None, False)
+                state = self._state()
             if state['mode'] != 'normal':
                 raise LeaseError("Unresolved GPU lifecycle state; reconcile before admission")
             # A second check after the scoped stop remains mandatory:

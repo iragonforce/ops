@@ -127,6 +127,21 @@ class LeaseTest(unittest.TestCase):
         self.assertEqual(self.lease.reconcile(),'normal')
         self.assertTrue(self.backend.wallpaper)
 
+    def test_idle_desktop_preparing_recovers_only_after_gpu_release(self):
+        self.backend.wallpaper=False
+        self.backend.may_acquire=False
+        with self.assertRaises(mod.LeaseError): self.acquire()
+        self.assertEqual(self.lease.status()['mode'], 'preparing')
+        self.backend.may_acquire=True
+        self.backend.gpu_idle=False
+        with self.assertRaises(mod.LeaseError): self.acquire()
+        self.assertEqual(self.lease.status()['mode'], 'preparing')
+        self.backend.gpu_idle=True
+        token=self.acquire()
+        self.assertEqual(self.lease.status()['mode'], 'reserved')
+        self.assertEqual(self.lease.release(token), 'normal')
+        self.assertEqual(self.backend.starts, 0)
+
     def test_model_still_loaded_blocks_restoration(self):
         token=self.acquire()
         self.backend.gpu_idle=False
