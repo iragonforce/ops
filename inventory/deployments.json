@@ -14213,6 +14213,16 @@
       "policy": "preserve target; overwrite only unchanged baseline or previously deployed digest",
       "source": "hosts/nexus/files/etc/systemd/system/nfs-server.service.d/20-t7-mount.conf",
       "target": "/etc/systemd/system/nfs-server.service.d/20-t7-mount.conf"
+    },
+    {
+      "host": "nexus",
+      "target": "/etc/systemd/system/qdrant-memory.service.d/30-tensor-gpu-embedding.conf",
+      "source": "hosts/nexus/files/etc/systemd/system/qdrant-memory.service.d/30-tensor-gpu-embedding.conf",
+      "mode": 420,
+      "deployed": false,
+      "allow_create": true,
+      "group": "tensor-gpu-admission",
+      "policy": "stage only; preserve the existing service until the transport and unit verify"
     }
   ],
   "excluded": [
