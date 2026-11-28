@@ -4839,7 +4839,7 @@
       "source": "shared/scripts/tensor_gpu_embedding.py",
       "mode": 420,
       "deployed": true,
-      "deployed_sha256": "3944d5a5224797018e5104a56ed60a960b672015ea65e64ee962ddfb2e118b11",
+      "deployed_sha256": "52a233929a97d7afd8f274bc9817604052e4f314bbab4db518b0c95d3635a112",
       "verified_at": "2026-11-27",
       "group": "tensor-gpu-admission"
     },
@@ -14219,10 +14219,12 @@
       "target": "/etc/systemd/system/qdrant-memory.service.d/30-tensor-gpu-embedding.conf",
       "source": "hosts/nexus/files/etc/systemd/system/qdrant-memory.service.d/30-tensor-gpu-embedding.conf",
       "mode": 420,
-      "deployed": false,
+      "deployed": true,
+      "deployed_sha256": "8dcaa35d2ed5f70e634d2d66b94fdadd1f4a58d8a5cf2400a5efd78aaeb0185c",
+      "verified_at": "2026-11-27",
       "allow_create": true,
       "group": "tensor-gpu-admission",
-      "policy": "stage only; preserve the existing service until the transport and unit verify"
+      "policy": "preserve original service; remove this scoped drop-in and daemon-reload for rollback"
     }
   ],
   "excluded": [

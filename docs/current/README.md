@@ -40,7 +40,14 @@ sample, verified its input digest/vector and released its GPU lease; this is
 **not** Nexus Qdrant writer acceptance. Local Ollama tags are discoverable, but
 Ollama chat and model-side tool invocation are not accepted. Wallpaper
 active→stopped→restored has not been verified in an interactive desktop session.
-Nexus writer transport and MinerU conversion are not deployed. See the
+Nexus's existing Qdrant timer now uses a scoped source-worktree drop-in and
+900-second queued-embedding wait for its host/container writers. A live
+writer initially queued behind a resident foreign Ollama model; after native
+unload, its job completed. The Nexus writer then retrieved its vector and
+passed an exact-ID/hash/vector Qdrant upsert/readback; the original point was
+restored. A fresh Hermes MCP process discovered both tools and a queued
+read-only search returned a result. Native MinerU conversion remains
+unverified. See the
 [live admission record](../changes/2026-11-27-tensor-gpu-live-admission.md)
 and the earlier [fail-closed cutover](../changes/2026-11-27-tensor-hermes-gateway-failclosed-cutover.md).
 After the owner's November 26 authorization, direct non-loopback Tensor

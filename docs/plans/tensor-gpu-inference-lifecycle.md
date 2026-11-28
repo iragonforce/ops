@@ -1,6 +1,6 @@
 # Tensor GPU inference lifecycle and persistent job queue
 
-**Status:** Stage 1 complete; Stage 2F restoration transport and sleep-aware ownership checks validated; Stage 3 actual Hermes lease policy installed and default local llama prompt passed on November 27, but wallpaper restoration and concurrent activity remain unverified; Stage 4 transient Tensor embedding worker passed one local sample, Nexus Qdrant transport still not deployed; Stage 5 MinerU dispatch not deployed. The earlier deny-only and failed-llama paragraphs below are dated checkpoints, not the current state.
+**Status:** Stage 1 complete; Stage 2F restoration transport and sleep-aware ownership checks validated; Stage 3 actual Hermes lease policy installed and default local llama prompt passed on November 27, but wallpaper restoration and concurrent activity remain unverified; Stage 4 transient Tensor embedding worker and Nexus Qdrant timer/MCP configuration installed, with a real queued batch followed by exact-ID/hash/vector Qdrant upsert/readback and restoration of the original point; Stage 5 MinerU dispatch not deployed. The earlier deny-only and failed-llama paragraphs below are dated checkpoints, not the current state.
 **Date:** 2026-11-27
 **Host:** `tensor` (Arch Linux, NVIDIA RTX 5070, 64 GB-class RAM)
 **Scope:** Hermes/llama.cpp, Ollama, MinerU, Nexus-initiated Qdrant embeddings, Hyprland desktop restoration
