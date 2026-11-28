@@ -91,6 +91,10 @@ class EmbeddingHandoffTest(unittest.TestCase):
                                      'TENSOR_GPU_EMBED_WAIT_SECONDS': '3601'}):
             with self.assertRaises(module.HandoffError):
                 module.writer_embed(self.inputs, self.fail)
+        with patch.dict(os.environ, {'QDRANT_MEMORY_EMBED_COMMAND': 'json:["ssh", "tensor"]'}):
+            with patch.object(module, 'remote_embed', return_value=self.vectors) as remote:
+                module.writer_embed(self.inputs, self.fail)
+                remote.assert_called_once_with(self.inputs, ['ssh', 'tensor'], timeout=30)
 
     def test_expired_claim_cannot_start_gpu_callback(self):
         job = module.submit(self.db, self.inputs)

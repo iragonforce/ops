@@ -27,6 +27,9 @@ Background writers may set TENSOR_GPU_EMBED_WAIT_SECONDS to an integer from 1
 to 3600; the Nexus Qdrant unit uses 900 seconds so occupied-GPU jobs can wait
 without losing their durable queue entry. Interactive calls retain the shorter
 default unless explicitly changed.
+Hermes `config set` may pass the same argv as a string prefixed with `json:`
+to prevent its YAML parser from storing a list where MCP environment values
+must be strings.
 .SH PYTHON API
 submit(db, inputs) deduplicates by operation/config revision and canonical
 input SHA-256. run_admitted(db, claim, embed) requires a caller-supplied claim

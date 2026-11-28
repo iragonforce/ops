@@ -338,7 +338,10 @@ def writer_embed(inputs, direct):
     if raw is None:
         return direct(inputs)
     try:
-        command = json.loads(raw)
+        # Hermes `config set` treats a bare JSON array as a YAML list; the
+        # `json:` prefix keeps an MCP env value a string without changing the
+        # existing JSON-array service environment contract.
+        command = json.loads(raw.removeprefix('json:'))
         timeout = int(os.environ.get('TENSOR_GPU_EMBED_WAIT_SECONDS', '30'))
         if not 1 <= timeout <= 3600:
             raise ValueError('Invalid embedding wait')
