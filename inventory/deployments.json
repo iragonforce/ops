@@ -2638,8 +2638,10 @@
       "source": "hosts/tensor/files/etc/systemd/system/ollama.service.d/override.conf",
       "baseline_sha256": "df1c7215bdec77c1e6dafecb31c73f835d5d300de73b816fcb40978e69850b71",
       "mode": 420,
-      "deployed": false,
-      "policy": "preserve target; overwrite only unchanged baseline or previously deployed digest"
+      "deployed": true,
+      "deployed_sha256": "eeb25a4b5ef0b1e2b276e24edd809c9645c8f5924cc59bcfb729dff33c1fbb63",
+      "verified_at": "2026-11-27",
+      "policy": "restore protected prior override when Ollama has no active model/request; daemon-reload and restart"
     },
     {
       "host": "tensor",

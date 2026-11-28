@@ -36,10 +36,17 @@ every prompt because no actual policy was installed; a later cutover deployed
 the GPU lease plugin, its fixed read-only tools, and the Git-owned wrapper.
 Real default CLI prompts then exited successfully, with llama stopped and the
 lease released. A transient Tensor worker completed one queued local embedding
-sample, verified its input digest/vector and released its GPU lease; this is
-**not** Nexus Qdrant writer acceptance. Local Ollama tags are discoverable, but
-Ollama chat and model-side tool invocation are not accepted. Wallpaper
-active→stopped→restored has not been verified in an interactive desktop session.
+sample, verified its input digest/vector and released its GPU lease. Nexus
+Qdrant writer acceptance is recorded below. Local Ollama tags are discoverable;
+Ollama chat with installed `qwen3.5:27b` passed after the OpenAI-compatible
+base URL was corrected to `/v1` and the existing Ollama service was set to
+unload models after each completed request (`OLLAMA_KEEP_ALIVE=0`). A real
+one-shot returned `Ready!`; afterward Ollama residency was empty and the GPU
+lease had zero holders. A local model invoked `tensor_local_models` and its
+handler returned the exact installed names, but that multi-turn session did
+not complete its final answer; full model-side tool acceptance remains open.
+Wallpaper active→stopped→restored has not been verified in an interactive
+desktop session.
 Nexus's existing Qdrant timer now uses a scoped source-worktree drop-in and
 900-second queued-embedding wait for its host/container writers. A live
 writer initially queued behind a resident foreign Ollama model; after native
