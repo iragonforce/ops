@@ -339,7 +339,10 @@ def writer_embed(inputs, direct):
         return direct(inputs)
     try:
         command = json.loads(raw)
-        return remote_embed(inputs, command)
+        timeout = int(os.environ.get('TENSOR_GPU_EMBED_WAIT_SECONDS', '30'))
+        if not 1 <= timeout <= 3600:
+            raise ValueError('Invalid embedding wait')
+        return remote_embed(inputs, command, timeout=timeout)
     except (ValueError, TypeError, KeyError, HandoffError):
         raise HandoffError('Queued embedding unavailable; writer checkpoint unchanged') from None
 

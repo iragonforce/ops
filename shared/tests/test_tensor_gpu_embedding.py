@@ -81,6 +81,17 @@ class EmbeddingHandoffTest(unittest.TestCase):
         with self.assertRaises(module.HandoffError):
             module.run_admitted(self.db, claim, lambda *_: self.fail('corrupt input executed'))
 
+    def test_configured_writer_wait_is_bounded_and_never_direct(self):
+        with patch.dict(os.environ, {'QDRANT_MEMORY_EMBED_COMMAND': '["ssh", "tensor"]',
+                                     'TENSOR_GPU_EMBED_WAIT_SECONDS': '900'}):
+            with patch.object(module, 'remote_embed', return_value=self.vectors) as remote:
+                self.assertEqual(module.writer_embed(self.inputs, self.fail), self.vectors)
+                remote.assert_called_once_with(self.inputs, ['ssh', 'tensor'], timeout=900)
+        with patch.dict(os.environ, {'QDRANT_MEMORY_EMBED_COMMAND': '["ssh", "tensor"]',
+                                     'TENSOR_GPU_EMBED_WAIT_SECONDS': '3601'}):
+            with self.assertRaises(module.HandoffError):
+                module.writer_embed(self.inputs, self.fail)
+
     def test_expired_claim_cannot_start_gpu_callback(self):
         job = module.submit(self.db, self.inputs)
         with module.Queue(self.db) as queue:

@@ -19,10 +19,14 @@ Existing Nexus Qdrant writers and the Hermes knowledge-search MCP can opt
 into the handoff by setting QDRANT_MEMORY_EMBED_COMMAND to a JSON argv array
 for a pinned, noninteractive SSH invocation of this script. Without that
 variable, their previous direct Ollama behavior is preserved. With it,
-failures and the 30-second bounded wait fail closed: no direct fallback,
+failures and the default 30-second bounded wait fail closed: no direct fallback,
 Qdrant write, or writer checkpoint advancement is attempted. Configure every
 writer and search consumer together only after a verified GPU-admitted worker
 and protected transport are deployed.
+Background writers may set TENSOR_GPU_EMBED_WAIT_SECONDS to an integer from 1
+to 3600; the Nexus Qdrant unit uses 900 seconds so occupied-GPU jobs can wait
+without losing their durable queue entry. Interactive calls retain the shorter
+default unless explicitly changed.
 .SH PYTHON API
 submit(db, inputs) deduplicates by operation/config revision and canonical
 input SHA-256. run_admitted(db, claim, embed) requires a caller-supplied claim
