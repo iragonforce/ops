@@ -42,9 +42,9 @@ Ollama chat with installed `qwen3.5:27b` passed after the OpenAI-compatible
 base URL was corrected to `/v1` and the existing Ollama service was set to
 unload models after each completed request (`OLLAMA_KEEP_ALIVE=0`). A real
 one-shot returned `Ready!`; afterward Ollama residency was empty and the GPU
-lease had zero holders. A local model invoked `tensor_local_models` and its
-handler returned the exact installed names, but that multi-turn session did
-not complete its final answer; full model-side tool acceptance remains open.
+lease had zero holders. A subsequent local model/tool turn invoked
+`tensor_local_models` and completed its answer with the exact installed names;
+Ollama residency was empty and the lease normal afterward.
 Wallpaper active→stopped→restored has not been verified in an interactive
 desktop session.
 Nexus's existing Qdrant timer now uses a scoped source-worktree drop-in and
